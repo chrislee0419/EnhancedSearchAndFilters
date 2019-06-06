@@ -1,0 +1,322 @@
+﻿using System;
+using System.Linq;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+using VRUI;
+using CustomUI.BeatSaber;
+using CustomUI.Utilities;
+using SongLoaderPlugin.OverrideClasses;
+
+namespace EnhancedSearchAndFilters.UI.ViewControllers
+{
+    class SongDetailsViewController : VRUIViewController
+    {
+        public Action<IPreviewBeatmapLevel> SelectButtonPressed;
+
+        private StandardLevelDetailView _standardLevelDetailView;
+        private LevelParamsPanel _levelParamsPanel;
+        private TextMeshProUGUI _songNameText;
+        private RawImage _coverImage;
+        private TextMeshProUGUI _detailsText;
+
+        private static readonly string[] _difficultyStrings = new string[] { "Easy", "Normal", "Hard", "Expert", "Expert+" };
+        private static readonly Color _checkmarkColor = new Color(0.8f, 1f, 0.8f);
+        private static readonly Color _crossColor = new Color(1f, 0.8f, 0.8f);
+        private Sprite _checkmarkSprite;
+        private Sprite _crossSprite;
+
+        private Dictionary<string, Tuple<TextMeshProUGUI, Image>> _difficultyElements = new Dictionary<string, Tuple<TextMeshProUGUI, Image>>();
+
+        private IPreviewBeatmapLevel _level;
+
+        protected override void DidActivate(bool firstActivation, ActivationType activationType)
+        {
+            if (firstActivation)
+            {
+                StandardLevelDetailView reference = Resources.FindObjectsOfTypeAll<StandardLevelDetailView>().First(x => x.name == "LevelDetail");
+                RectTransform referenceParent = reference.transform.parent as RectTransform;
+
+                this.rectTransform.anchorMin = referenceParent.anchorMin;
+                this.rectTransform.anchorMax = referenceParent.anchorMax;
+                this.rectTransform.anchoredPosition = Vector2.zero;
+                this.rectTransform.sizeDelta = referenceParent.sizeDelta;
+
+                _standardLevelDetailView = Instantiate(reference, this.transform, false);
+                _standardLevelDetailView.gameObject.SetActive(true);
+                _standardLevelDetailView.name = "SearchResultLevelDetail";
+
+                _levelParamsPanel = _standardLevelDetailView.GetPrivateField<LevelParamsPanel>("_levelParamsPanel");
+                _songNameText = _standardLevelDetailView.GetPrivateField<TextMeshProUGUI>("_songNameText");
+                _coverImage = _standardLevelDetailView.GetPrivateField<RawImage>("_coverImage");
+
+                _checkmarkSprite = UIUtilities.LoadSpriteFromResources("EnhancedSearchAndFilters.Assets.checkmark.png");
+                _crossSprite = UIUtilities.LoadSpriteFromResources("EnhancedSearchAndFilters.Assets.cross.png");
+
+                RemoveCustomUIElements(this.rectTransform);
+                RemoveSongRequirementsButton();
+                ModifyPanelElements();
+                ModifyTextElements();
+                ModifySelectionElements();
+            }
+            else
+            {
+                // strings get reset, so they have to be reapplied
+                foreach (var str in _difficultyStrings)
+                {
+                    _difficultyElements[str].Item1.text = str;
+                }
+            }
+        }
+
+        public void SetContent(IPreviewBeatmapLevel level)
+        {
+            _level = level;
+
+            _songNameText.text = level.songName;
+            _levelParamsPanel.bpm = level.beatsPerMinute;
+
+            foreach (var tuple in _difficultyElements.Values)
+            {
+                tuple.Item2.sprite = _crossSprite;
+                tuple.Item2.color = _crossColor;
+            }
+
+            if (level is CustomLevel)
+            {
+                CustomLevel customLevel = level as CustomLevel;
+
+                _levelParamsPanel.duration = 0f;
+                SongLoaderPlugin.SongLoader.Instance.LoadAudioClipForLevel(customLevel, SetCustomLevelDuration);
+                _coverImage.texture = customLevel.coverImageTexture2D;
+
+                SetOtherSongDetails(customLevel.difficultyBeatmapSets);
+            }
+            else
+            {
+                BeatmapLevelSO beatmapLevel = level as BeatmapLevelSO;
+
+                _levelParamsPanel.duration = level.songDuration;
+                _standardLevelDetailView.SetTextureAsync(level);
+
+                SetOtherSongDetails(beatmapLevel.difficultyBeatmapSets);
+            }
+        }
+
+        private void SetCustomLevelDuration(CustomLevel level)
+        {
+            _levelParamsPanel.duration = level.songDuration;
+        }
+
+        /// <summary>
+        /// Sets the _detailsText object and difficulty icons on the UI.
+        /// </summary>
+        /// <param name="difficultySets"></param>
+        private void SetOtherSongDetails(IDifficultyBeatmapSet[] difficultySets)
+        {
+            bool hasLightshow = false;
+
+            _detailsText.text = "";
+            foreach (var dbs in difficultySets)
+            {
+                // the colon character looks like a bullet in-game (for whatever reason), so we use that here
+                if (dbs.beatmapCharacteristic.characteristicName == "LEVEL_ONE_SABER")
+                    _detailsText.text += ": Has 'One Saber' mode\n";
+                else if (dbs.beatmapCharacteristic.characteristicName == "LEVEL_NO_ARROWS")
+                    _detailsText.text += ": Has 'No Arrows' mode\n";
+
+                SetDifficultyIcons(dbs.difficultyBeatmaps, ref hasLightshow);
+            }
+        }
+
+        private void SetDifficultyIcons(IDifficultyBeatmap[] difficulties, ref bool hasLightshow)
+        {
+            foreach (var db in difficulties)
+            {
+                string difficultyName = db.difficulty.Name() == "ExpertPlus" ? "Expert+" : db.difficulty.Name();
+
+                if (!_difficultyElements.TryGetValue(difficultyName, out var tuple))
+                    continue;
+
+                Image img = tuple.Item2;
+                img.sprite = _checkmarkSprite;
+                img.color = _checkmarkColor;
+
+                if (!hasLightshow && db.beatmapData.notesCount == 0)
+                {
+                    _detailsText.text += ": Has a Lightshow\n";
+                    hasLightshow = true;
+                }
+            }
+        }
+
+        private void RemoveCustomUIElements(Transform parent)
+        {
+            // taken from BeatSaverDownloader
+            // https://github.com/andruzzzhka/BeatSaverDownloader/blob/master/BeatSaverDownloader/UI/ViewControllers/SongDetailViewController.cs
+            for (int i = 0; i < parent.childCount; i++)
+            {
+                Transform child = parent.GetChild(i);
+
+                if (child.name.StartsWith("CustomUI"))
+                {
+                    Destroy(child.gameObject);
+                }
+                if (child.childCount > 0)
+                {
+                    RemoveCustomUIElements(child);
+                }
+            }
+        }
+
+        private void RemoveSongRequirementsButton()
+        {
+            // remove SongLoaderPlugin's info button if it exists
+            RectTransform[] buttonList = _levelParamsPanel.transform.parent.GetComponentsInChildren<RectTransform>(true)
+                .Where(delegate (RectTransform rt)
+                {
+                    Button btn = rt.GetComponent<Button>();
+
+                    // NOTE: if the button ever gets a proper name, this will need to be changed
+                    if (btn == null || btn.name != "PlayButton(Clone)")
+                        return false;
+
+                    var text = btn.GetComponentInChildren<TextMeshProUGUI>(true);
+                    return text != null ? text.text == "?" : false;
+                }).ToArray();
+
+            // there should only be one, but we don't need it so just delete them all anyways
+            if (buttonList.Length > 0)
+            {
+                foreach (RectTransform b in buttonList)
+                {
+                    Destroy(b.gameObject);
+                    Logger.log.Debug("Removed SongLoader's requirements info button from StandardLevelDetailView");
+                }
+            }
+            else
+            {
+                Logger.log.Info("Could not find SongLoader's requirements info button custom StandardLevelDetailView");
+            }
+        }
+
+        // NOTE: also deletes any elements added in by other mods
+        private void ModifyPanelElements()
+        {
+            RectTransform[] rectTransforms = _levelParamsPanel.GetComponentsInChildren<RectTransform>();
+
+            // remove unneeded elements and reposition time and bpm
+            foreach (var rt in rectTransforms)
+            {
+                if (rt.name == "Time" || rt.name == "BPM")
+                {
+                    rt.anchorMin = new Vector2(0.5f, 1f);
+                    rt.anchorMax = new Vector2(0.5f, 1f);
+                    rt.pivot = new Vector2(0.5f, 1f);
+                    rt.sizeDelta = new Vector2(20f, 0f);
+                }
+                else if ((rt.parent.name == "Time" || rt.parent.name == "BPM") && rt.name == "Icon")
+                {
+                    rt.anchorMin = new Vector2(0f, 0.5f);
+                    rt.anchorMax = new Vector2(0f, 0.5f);
+                    rt.pivot = new Vector2(0f, 0.5f);
+                    rt.sizeDelta = new Vector2(5f, 5f);
+                    rt.anchoredPosition = new Vector2(1f, 0f);
+                }
+                else if ((rt.parent.name == "Time" || rt.parent.name == "BPM") && rt.name == "ValueText")
+                {
+                    rt.anchorMin = new Vector2(0f, 0.5f);
+                    rt.anchorMax = new Vector2(0f, 0.5f);
+                    rt.pivot = new Vector2(0f, 0.5f);
+                    rt.sizeDelta = new Vector2(12f, 7f);
+                    rt.anchoredPosition = new Vector2(6f, 0f);
+
+                    rt.GetComponentInChildren<TextMeshProUGUI>().fontSize = 5f;
+                }
+                else if (rt.name != "LevelParamsPanel")
+                {
+                    Destroy(rt.gameObject);
+                }
+            }
+        }
+
+        // TODO: there's a bug here where, if immediately after clicking on the solo free play button, the user never selects
+        // a song (only the header was ever selected), and then goes to the search page, these text elements (and icons)
+        // will be very misplaced (middle of the screen)
+        private void ModifyTextElements()
+        {
+            RectTransform statsPanel = _standardLevelDetailView.GetComponentsInChildren<RectTransform>().First(x => x.name == "Stats");
+
+            RectTransform original = statsPanel.GetComponentsInChildren<RectTransform>().First(x => x.name == "Highscore");
+            Instantiate(original, statsPanel.transform, false);
+            Instantiate(original, statsPanel.transform, false);
+
+            RectTransform[] rectTransforms = statsPanel.GetComponentsInChildren<RectTransform>()
+                .Where(x => x.name != "Stats" && x.name != "Title" && x.name != "Value").ToArray();
+
+            float width = (statsPanel.rect.width - 2f) / 5f;
+            float height = statsPanel.rect.height - 1f;
+            float xPos = 1f;     // parent RectTransform position is sort of weird, needed a few units of buffer
+            for (int i = 0; i < rectTransforms.Length; ++i)
+            {
+                RectTransform rt = rectTransforms[i];
+                rt.name = _difficultyStrings[i];
+
+                rt.anchorMin = new Vector2(0f, 1f);
+                rt.anchorMax = new Vector2(0f, 1f);
+                rt.pivot = new Vector2(0f, 1f);
+                rt.anchoredPosition = new Vector2(xPos, 1.5f);
+                rt.sizeDelta = new Vector2(width, height);
+                xPos += width;
+
+                TextMeshProUGUI text = rt.GetComponentsInChildren<TextMeshProUGUI>().First(x => x.name == "Title");
+                text.text = _difficultyStrings[i];
+                text.alignment = TextAlignmentOptions.Center;
+                text.rectTransform.anchorMin = new Vector2(0.5f, 1f);
+                text.rectTransform.anchorMax = new Vector2(0.5f, 1f);
+                text.rectTransform.pivot = new Vector2(0.5f, 1f);
+                text.rectTransform.anchoredPosition = Vector2.zero;
+                text.rectTransform.sizeDelta = rt.sizeDelta;
+
+                Destroy(rt.GetComponentsInChildren<TextMeshProUGUI>().First(x => x.name == "Value"));
+
+                Image img = new GameObject("Icon").AddComponent<Image>();
+                img.rectTransform.SetParent(rt, false);
+                img.rectTransform.anchorMin = new Vector2(0.5f, 0f);
+                img.rectTransform.anchorMax = new Vector2(0.5f, 0f);
+                img.rectTransform.pivot = new Vector2(0.5f, 0f);
+                img.rectTransform.anchoredPosition = new Vector2(0f, -0.5f);
+                img.rectTransform.sizeDelta = new Vector2(2.5f, 2.5f);
+                img.sprite = _crossSprite;
+                img.color = _crossColor;
+
+                _difficultyElements.Add(_difficultyStrings[i], new Tuple<TextMeshProUGUI, Image>(text, img));
+            }
+        }
+
+        private void ModifySelectionElements()
+        {
+            Button selectButton = _standardLevelDetailView.playButton;
+            selectButton.SetButtonText("SELECT SONG");
+            selectButton.ToggleWordWrapping(false);
+            selectButton.onClick.RemoveAllListeners();
+            selectButton.onClick.AddListener(delegate ()
+            {
+                SelectButtonPressed?.Invoke(_level);
+            });
+
+            Destroy(_standardLevelDetailView.GetComponentInChildren<BeatmapDifficultySegmentedControlController>().gameObject);
+            Destroy(_standardLevelDetailView.GetComponentInChildren<BeatmapCharacteristicSegmentedControlController>().gameObject);
+            Destroy(_standardLevelDetailView.practiceButton.gameObject);
+
+            // transform: PlayButton -> PlayButtons -> PlayContainer
+            _detailsText = BeatSaberUI.CreateText(selectButton.transform.parent.parent as RectTransform, "", Vector2.zero);
+            _detailsText.rectTransform.anchorMin = new Vector2(0.5f, 1f);
+            _detailsText.rectTransform.anchorMax = new Vector2(0.5f, 1f);
+            _detailsText.rectTransform.pivot = new Vector2(0.5f, 1f);
+            _detailsText.rectTransform.anchoredPosition = new Vector2(0f, -2f);
+            _detailsText.fontSize = 4f;
+        }
+    }
+}
