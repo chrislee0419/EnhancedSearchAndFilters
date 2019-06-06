@@ -241,23 +241,20 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             }
         }
 
-        // TODO: there's a bug here where, if immediately after clicking on the solo free play button, the user never selects
-        // a song (only the header was ever selected), and then goes to the search page, these text elements (and icons)
-        // will be very misplaced (middle of the screen)
         private void ModifyTextElements()
         {
-            RectTransform statsPanel = _standardLevelDetailView.GetComponentsInChildren<RectTransform>().First(x => x.name == "Stats");
+            RectTransform statsPanel = _standardLevelDetailView.GetComponentsInChildren<RectTransform>(true).First(x => x.name == "Stats");
 
-            RectTransform original = statsPanel.GetComponentsInChildren<RectTransform>().First(x => x.name == "Highscore");
+            RectTransform original = statsPanel.GetComponentsInChildren<RectTransform>(true).First(x => x.name == "Highscore");
             Instantiate(original, statsPanel.transform, false);
             Instantiate(original, statsPanel.transform, false);
 
-            RectTransform[] rectTransforms = statsPanel.GetComponentsInChildren<RectTransform>()
+            RectTransform[] rectTransforms = statsPanel.GetComponentsInChildren<RectTransform>(true)
                 .Where(x => x.name != "Stats" && x.name != "Title" && x.name != "Value").ToArray();
 
-            float width = (statsPanel.rect.width - 2f) / 5f;
-            float height = statsPanel.rect.height - 1f;
-            float xPos = 1f;     // parent RectTransform position is sort of weird, needed a few units of buffer
+            float width = 14f;      // parent width = 72u
+            float height = 8f;      // parent height = 9u
+            float xPos = 1f;
             for (int i = 0; i < rectTransforms.Length; ++i)
             {
                 RectTransform rt = rectTransforms[i];
