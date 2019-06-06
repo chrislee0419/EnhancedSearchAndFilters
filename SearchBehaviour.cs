@@ -48,6 +48,7 @@ namespace EnhancedSearchAndFilters
         public void StartNewSearch(IPreviewBeatmapLevel[] searchSpace, string searchQuery, Action<IPreviewBeatmapLevel[]> action)
         {
             if (searchSpace == null || searchSpace.Count() < 1 || action == null)
+                return;
 
             if (_searchCoroutine != null)
                 StopSearch();
