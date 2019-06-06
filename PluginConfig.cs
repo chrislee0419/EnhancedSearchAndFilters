@@ -22,8 +22,8 @@ namespace EnhancedSearchAndFilters
                 config.SetInt("EnhancedSearchAndFilters", "MaxSearchResults", value);
             }
         }
-        public const int MaxSearchResultsDefaultValue = 12;
-        public const int MaxSearchResultsMaxValue = 24;
+        public const int MaxSearchResultsDefaultValue = 14;
+        public const int MaxSearchResultsMaxValue = 28;
         public const int MaxSearchResultsMinValue = 7;
 
         /// <summary>
