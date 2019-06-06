@@ -296,6 +296,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         {
             Button selectButton = _standardLevelDetailView.playButton;
             selectButton.SetButtonText("SELECT SONG");
+            (selectButton.transform as RectTransform).sizeDelta += new Vector2(10f, 0);
             selectButton.ToggleWordWrapping(false);
             selectButton.onClick.RemoveAllListeners();
             selectButton.onClick.AddListener(delegate ()
