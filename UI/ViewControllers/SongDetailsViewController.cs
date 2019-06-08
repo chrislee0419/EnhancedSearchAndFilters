@@ -62,6 +62,10 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             }
             else
             {
+                // stats panel gets disabled when in party mode, so re-enable it here just in case
+                RectTransform statsPanel = _standardLevelDetailView.GetComponentsInChildren<RectTransform>(true).First(x => x.name == "Stats");
+                statsPanel.gameObject.SetActive(true);
+
                 // strings get reset, so they have to be reapplied
                 foreach (var str in _difficultyStrings)
                 {
