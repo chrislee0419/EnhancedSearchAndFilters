@@ -45,7 +45,10 @@ namespace EnhancedSearchAndFilters.Tweaks
             Button searchButton;
             try
             {
-                buttonList = Resources.FindObjectsOfTypeAll<Button>().Where(x => x.name == "CustomUIButton").ToList();
+                RectTransform viewControllersContainer = Resources.FindObjectsOfTypeAll<RectTransform>().First(x => x.name == "ViewControllers");
+                var parent = viewControllersContainer.GetComponentInChildren<LevelPackLevelsViewController>(true);
+
+                buttonList = parent.transform.GetComponentsInChildren<Button>(true).Where(x => x.name == "CustomUIButton").ToList();
 
                 searchButton = buttonList.First(x => x.GetComponentInChildren<TextMeshProUGUI>(true)?.text.Contains("Search") == true);
                 _sortButton = buttonList.First(x => x.GetComponentInChildren<TextMeshProUGUI>(true)?.text.Contains("Sort By") == true);
@@ -58,9 +61,9 @@ namespace EnhancedSearchAndFilters.Tweaks
             }
             catch (InvalidOperationException)
             {
+                Logger.log.Debug("Unable to find the buttons created by BeatSaverDownloader mod.");
                 return false;
             }
-
 
             // modify BeatSaverDownloader's Search button to create our FlowCoordinator
             searchButton.onClick = new Button.ButtonClickedEvent();
@@ -68,9 +71,9 @@ namespace EnhancedSearchAndFilters.Tweaks
 
             // move BeatSaverDownloader's Sort and Random buttons to make room for our "Filter" and "Clear Filter" buttons
             DismissableNavigationController parentViewController = SongListUI.Instance.ButtonParentViewController;
-            searchButton.transform.parent = parentViewController.transform;
-            _sortButton.transform.parent = parentViewController.transform;
-            _randomButton.transform.parent = parentViewController.transform;
+            searchButton.transform.SetParent(parentViewController.transform, false);
+            _sortButton.transform.SetParent(parentViewController.transform, false);
+            _randomButton.transform.SetParent(parentViewController.transform, false);
             (searchButton.transform as RectTransform).sizeDelta = newButtonSize;
             (_sortButton.transform as RectTransform).sizeDelta = newButtonSize;
             (searchButton.transform as RectTransform).anchoredPosition = new Vector2(-52f, 36.5f);
