@@ -22,7 +22,7 @@ namespace EnhancedSearchAndFilters.UI
 
     class SongListUI : MonoBehaviour
     {
-        public FlowCoordinator _freePlayFlowCoordinator;
+        private FlowCoordinator _freePlayFlowCoordinator;
         private SearchFlowCoordinator _searchFlowCoordinator;
 
         private LevelPackLevelsTableView _levelsTableViewContainer;
@@ -180,7 +180,7 @@ namespace EnhancedSearchAndFilters.UI
                     break;
                 }
 
-                yield return new WaitForSeconds(0.1f);
+                yield return new WaitForSeconds(0.5f);
             }
 
             if (tries <= 0)
@@ -283,7 +283,7 @@ namespace EnhancedSearchAndFilters.UI
             if (_searchFlowCoordinator == null)
             {
                 _searchFlowCoordinator = new GameObject("EnhancedSearchFlowCoordinator").AddComponent<SearchFlowCoordinator>();
-                _searchFlowCoordinator.BackButtonPressed += DismissSearchViewController;
+                _searchFlowCoordinator.BackButtonPressed += DismissSearchFlowCoordinator;
                 _searchFlowCoordinator.SongSelected += SelectSongFromSearchResult;
             }
 
@@ -311,7 +311,7 @@ namespace EnhancedSearchAndFilters.UI
             ClearButton.gameObject.SetActive(active);
         }
 
-        private void DismissSearchViewController()
+        private void DismissSearchFlowCoordinator()
         {
             _freePlayFlowCoordinator.InvokeMethod("DismissFlowCoordinator", _searchFlowCoordinator, null, false);
         }
@@ -319,7 +319,7 @@ namespace EnhancedSearchAndFilters.UI
         private void SelectSongFromSearchResult(IPreviewBeatmapLevel level)
         {
             Logger.log.Debug($"Level selected from search: {level.songName} - {level.songSubName}");
-            DismissSearchViewController();
+            DismissSearchFlowCoordinator();
 
             IPreviewBeatmapLevel[] levels = _levelsViewController.GetPrivateField<IBeatmapLevelPack>("_levelPack").beatmapLevelCollection.beatmapLevels;
 
