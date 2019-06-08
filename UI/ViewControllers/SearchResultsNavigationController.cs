@@ -17,7 +17,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         private TextMeshProUGUI _resultsText;
 
         private const string _headerText = "Search Results";
-        private const string _placeholderResultsText = "Use the keyboard on the right screen\nto search for a song.\n---->";
+        private const string _placeholderResultsText = "Use the keyboard on the right screen\nto search for a song.\n\n---->";
 
         protected override void DidActivate(bool firstActivation, ActivationType activationType)
         {
@@ -33,7 +33,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 _resultsText = BeatSaberUI.CreateText(this.rectTransform, _placeholderResultsText, Vector2.zero, new Vector2(120f, 60f));
                 _resultsText.alignment = TextAlignmentOptions.Center;
                 _resultsText.enableWordWrapping = true;
-                _resultsText.fontSize = 8f;
+                _resultsText.fontSize = 6f;
                 BeatSaberUI.CreateBackButton(this.rectTransform, () => BackButtonPressed?.Invoke());
                 _loadingSpinner = BeatSaberUI.CreateLoadingSpinner(this.rectTransform);
             }

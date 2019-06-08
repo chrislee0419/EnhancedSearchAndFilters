@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using TMPro;
 using HMUI;
 using CustomUI.BeatSaber;
-using SongLoaderPlugin;
+using SongLoaderPlugin;     // NOTE: also provides the ReflectionUtils module that is typically found in CustomUI.Utilities
 using SongLoaderPlugin.OverrideClasses;
 
 namespace EnhancedSearchAndFilters.UI.ViewControllers
@@ -21,14 +21,17 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         {
             base.DidActivate(firstActivation, activationType);
 
-            // make the list view narrower and with a slight rightward bias
-            // to fit details view controller and back button
-            this.rectTransform.anchorMin = new Vector2(0.5f, 0f);
-            this.rectTransform.anchorMax = new Vector2(0.5f, 1f);
-            this.rectTransform.sizeDelta = new Vector2(74f, 0f);
-            this.rectTransform.pivot = new Vector2(0.4f, 0.5f);
+            if (firstActivation)
+            {
+                // make the list view narrower and with a slight rightward bias
+                // to fit details view controller and back button
+                this.rectTransform.anchorMin = new Vector2(0.5f, 0f);
+                this.rectTransform.anchorMax = new Vector2(0.5f, 1f);
+                this.rectTransform.sizeDelta = new Vector2(74f, 0f);
+                this.rectTransform.pivot = new Vector2(0.4f, 0.5f);
 
-            this.DidSelectRowEvent += RowSelected;
+                this.DidSelectRowEvent += RowSelected;
+            }
         }
 
         public void UpdateSongs(IPreviewBeatmapLevel[] beatmapLevels)
@@ -51,8 +54,6 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
             tableCell.GetPrivateField<TextMeshProUGUI>("_songNameText").text = $"{level.songName} <size=80%>{level.songSubName}</size>";
             tableCell.GetPrivateField<TextMeshProUGUI>("_authorText").text = level.songAuthorName;
-            tableCell.SetPrivateField("_beatmapCharacteristicAlphas", new float[0]);
-            tableCell.SetPrivateField("_beatmapCharacteristicImages", new UnityEngine.UI.Image[0]);
             tableCell.SetPrivateField("_bought", true);
 
             if (level is CustomLevel)
@@ -72,8 +73,6 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             else
             {
                 SetBaseGameCoverImageAsync(tableCell, level);
-
-                //tableCell.SetDataFromLevelAsync(_beatmapLevels[idx]);
             }
 
             return tableCell;
@@ -87,8 +86,6 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             Texture2D texture = await level.GetCoverImageTexture2DAsync(token);
             coverImage.texture = texture;
             coverImage.color = Color.white;
-
-            tableCell.SetPrivateField("_coverRawImage", coverImage);
         }
 
         public override int NumberOfCells()
