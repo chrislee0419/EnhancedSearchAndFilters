@@ -40,8 +40,6 @@ namespace EnhancedSearchAndFilters
 
         private void OnMenuSceneLoadedFresh()
         {
-            BSEvents.menuSceneLoadedFresh -= OnMenuSceneLoadedFresh;
-
 #pragma warning disable CS0618 // remove PluginManager.Plugins is obsolete warning
             Tweaks.BeatSaverDownloaderTweaks.ModLoaded = IPAPluginManager.AllPlugins.Any(x => x.Metadata.Id == "BeatSaverDownloader") || IPAPluginManager.Plugins.Any(x => x.Name == "BeatSaver Downloader");
             Tweaks.SongBrowserTweaks.ModLoaded = IPAPluginManager.AllPlugins.Any(x => x.Metadata.Id == "SongBrowser" || x.Metadata.Name == "Song Browser") || IPAPluginManager.Plugins.Any(x => x.Name == "Song Browser");
