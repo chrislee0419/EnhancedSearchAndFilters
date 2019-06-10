@@ -10,6 +10,7 @@ using VRUI;
 using TableView = HMUI.TableView;
 using EnhancedSearchAndFilters.Tweaks;
 using EnhancedSearchAndFilters.UI.FlowCoordinators;
+using EnhancedSearchAndFilters.UI.ViewControllers;
 
 namespace EnhancedSearchAndFilters.UI
 {
@@ -24,6 +25,7 @@ namespace EnhancedSearchAndFilters.UI
     {
         private FlowCoordinator _freePlayFlowCoordinator;
         private SearchFlowCoordinator _searchFlowCoordinator;
+        private FilterViewController _filterViewController;
 
         private LevelPackLevelsTableView _levelsTableViewContainer;
         private TableView _levelsTableView;
@@ -296,7 +298,16 @@ namespace EnhancedSearchAndFilters.UI
 
         public void FilterButtonPressed()
         {
-            Logger.log.Info("'Filter' button pressed.");
+            if (_filterViewController == null)
+            {
+                _filterViewController = new GameObject("FilterViewController").AddComponent<FilterViewController>();
+                _filterViewController.BackButtonPressed += DismissFilterViewController;
+            }
+
+            IPreviewBeatmapLevel[] levels = _levelsViewController.GetPrivateField<IBeatmapLevelPack>("_levelPack").beatmapLevelCollection.beatmapLevels;
+            _filterViewController.Activate(_freePlayFlowCoordinator, levels);
+
+            Logger.log.Debug("'Filter' button pressed.");
         }
 
         public void ClearButtonPressed()
@@ -314,6 +325,11 @@ namespace EnhancedSearchAndFilters.UI
         private void DismissSearchFlowCoordinator()
         {
             _freePlayFlowCoordinator.InvokeMethod("DismissFlowCoordinator", _searchFlowCoordinator, null, false);
+        }
+
+        private void DismissFilterViewController()
+        {
+            _freePlayFlowCoordinator.InvokeMethod("DismissViewController", _filterViewController, null, false);
         }
 
         private void SelectSongFromSearchResult(IPreviewBeatmapLevel level)

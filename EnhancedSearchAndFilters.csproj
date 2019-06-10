@@ -83,6 +83,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Filters\IFilter.cs" />
+    <Compile Include="Filters\NJSFilter.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="PluginConfig.cs" />
@@ -93,6 +95,8 @@
     <Compile Include="UI\SongListUI.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tweaks\BeatSaverDownloaderTweaks.cs" />
+    <Compile Include="UI\ViewControllers\FilterListViewController.cs" />
+    <Compile Include="UI\ViewControllers\FilterSettingsViewController.cs" />
     <Compile Include="UI\ViewControllers\FilterViewController.cs" />
     <Compile Include="UI\ViewControllers\SearchKeyboardViewController.cs" />
     <Compile Include="UI\ViewControllers\SearchOptionsViewController.cs" />
