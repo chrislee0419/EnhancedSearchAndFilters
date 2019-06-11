@@ -5,8 +5,7 @@ using UnityEngine.UI;
 using TMPro;
 using HMUI;
 using CustomUI.BeatSaber;
-using SongLoaderPlugin;     // NOTE: also provides the ReflectionUtils module that is typically found in CustomUI.Utilities
-using SongLoaderPlugin.OverrideClasses;
+using CustomUI.Utilities;
 
 namespace EnhancedSearchAndFilters.UI.ViewControllers
 {
@@ -56,24 +55,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             tableCell.GetPrivateField<TextMeshProUGUI>("_authorText").text = level.songAuthorName;
             tableCell.SetPrivateField("_bought", true);
 
-            if (level is CustomLevel)
-            {
-                CustomLevel customLevel = level as CustomLevel;
-                RawImage coverImage = tableCell.GetPrivateField<RawImage>("_coverRawImage");
-
-                // can't check if the cover image is the same as the CustomSongsIcon, since it is internal to SongLoaderPlugin
-                // but since loading cover images from disk the first time also stores it in memory for future use
-                // and a player will probably eventually see the image, might as well just load it every time without the check
-                SongLoader.LoadSprite($"{customLevel.customSongInfo.path}/{customLevel.customSongInfo.coverImagePath}", customLevel);
-
-                coverImage.texture = customLevel.coverImageTexture2D;
-                coverImage.color = Color.white;
-                tableCell.SetPrivateField("_coverRawImage", coverImage);
-            }
-            else
-            {
-                SetBaseGameCoverImageAsync(tableCell, level);
-            }
+            SetBaseGameCoverImageAsync(tableCell, level);
 
             return tableCell;
         }
@@ -83,9 +65,13 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             RawImage coverImage = tableCell.GetPrivateField<RawImage>("_coverRawImage");
             CancellationToken token = new CancellationToken();
 
-            Texture2D texture = await level.GetCoverImageTexture2DAsync(token);
-            coverImage.texture = texture;
-            coverImage.color = Color.white;
+            try
+            {
+                Texture2D texture = await level.GetCoverImageTexture2DAsync(token);
+                coverImage.texture = texture;
+                coverImage.color = Color.white;
+            }
+            catch (OperationCanceledException) { }
         }
 
         public override int NumberOfCells()

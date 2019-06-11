@@ -349,7 +349,7 @@ namespace EnhancedSearchAndFilters.UI
                 _levelsTableView.SelectCellWithIdx(row);
             }
 
-            _levelsViewController.InvokePrivateMethod("HandleLevelPackLevelsTableViewDidSelectLevel", new object[] { null, level });
+            _levelsViewController.HandleLevelPackLevelsTableViewDidSelectLevel(null, level);
         }
     }
 }

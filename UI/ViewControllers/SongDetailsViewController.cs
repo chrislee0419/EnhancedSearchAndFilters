@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,7 +8,6 @@ using TMPro;
 using VRUI;
 using CustomUI.BeatSaber;
 using CustomUI.Utilities;
-using SongLoaderPlugin.OverrideClasses;
 
 namespace EnhancedSearchAndFilters.UI.ViewControllers
 {
@@ -18,8 +18,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         private StandardLevelDetailView _standardLevelDetailView;
         private LevelParamsPanel _levelParamsPanel;
         private TextMeshProUGUI _songNameText;
-        private RawImage _coverImage;
         private TextMeshProUGUI _detailsText;
+        private BeatmapLevelsModelSO _beatmapLevelsModel;
 
         private static readonly string[] _difficultyStrings = new string[] { "Easy", "Normal", "Hard", "Expert", "Expert+" };
         private static readonly Color _checkmarkColor = new Color(0.8f, 1f, 0.8f);
@@ -49,7 +49,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
                 _levelParamsPanel = _standardLevelDetailView.GetPrivateField<LevelParamsPanel>("_levelParamsPanel");
                 _songNameText = _standardLevelDetailView.GetPrivateField<TextMeshProUGUI>("_songNameText");
-                _coverImage = _standardLevelDetailView.GetPrivateField<RawImage>("_coverImage");
+
+                _beatmapLevelsModel = Resources.FindObjectsOfTypeAll<StandardLevelDetailViewController>().First().GetPrivateField<BeatmapLevelsModelSO>("_beatmapLevelsModel");
 
                 _checkmarkSprite = UIUtilities.LoadSpriteFromResources("EnhancedSearchAndFilters.Assets.checkmark.png");
                 _crossSprite = UIUtilities.LoadSpriteFromResources("EnhancedSearchAndFilters.Assets.cross.png");
@@ -80,6 +81,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
             _songNameText.text = level.songName;
             _levelParamsPanel.bpm = level.beatsPerMinute;
+            _standardLevelDetailView.SetTextureAsync(level);
+            _levelParamsPanel.duration = level.songDuration;
 
             foreach (var tuple in _difficultyElements.Values)
             {
@@ -87,30 +90,28 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 tuple.Item2.color = _crossColor;
             }
 
-            if (level is CustomLevel)
+            if (level is CustomPreviewBeatmapLevel)
             {
-                CustomLevel customLevel = level as CustomLevel;
-
-                _levelParamsPanel.duration = 0f;
-                SongLoaderPlugin.SongLoader.Instance.LoadAudioClipForLevel(customLevel, SetCustomLevelDuration);
-                _coverImage.texture = customLevel.coverImageTexture2D;
-
-                SetOtherSongDetails(customLevel.difficultyBeatmapSets);
+                LoadCustomBeatmapLevelAsync(level as CustomPreviewBeatmapLevel);
             }
             else
             {
-                BeatmapLevelSO beatmapLevel = level as BeatmapLevelSO;
-
-                _levelParamsPanel.duration = level.songDuration;
-                _standardLevelDetailView.SetTextureAsync(level);
-
-                SetOtherSongDetails(beatmapLevel.difficultyBeatmapSets);
+                SetOtherSongDetails((level as BeatmapLevelSO).difficultyBeatmapSets);
             }
         }
 
-        private void SetCustomLevelDuration(CustomLevel level)
+        private async void LoadCustomBeatmapLevelAsync(CustomPreviewBeatmapLevel level)
         {
-            _levelParamsPanel.duration = level.songDuration;
+            CancellationToken token = new CancellationToken();
+            try
+            {
+                BeatmapLevelsModelSO.GetBeatmapLevelResult result = await _beatmapLevelsModel.GetBeatmapLevelAsync(level.levelID, token);
+                if (!result.isError && result.beatmapLevel != null)
+                {
+                    SetOtherSongDetails(result.beatmapLevel.beatmapLevelData.difficultyBeatmapSets);
+                }
+            }
+            catch (OperationCanceledException) { }
         }
 
         /// <summary>
@@ -176,7 +177,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
         private void RemoveSongRequirementsButton()
         {
-            // remove SongLoaderPlugin's info button if it exists
+            // remove SongCore's info button if it exists
             RectTransform[] buttonList = _levelParamsPanel.transform.parent.GetComponentsInChildren<RectTransform>(true)
                 .Where(delegate (RectTransform rt)
                 {
@@ -196,12 +197,12 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 foreach (RectTransform b in buttonList)
                 {
                     Destroy(b.gameObject);
-                    Logger.log.Debug("Removed SongLoader's requirements info button from StandardLevelDetailView");
+                    Logger.log.Debug("Removed SongCore's requirements info button from StandardLevelDetailView");
                 }
             }
             else
             {
-                Logger.log.Info("Could not find SongLoader's requirements info button custom StandardLevelDetailView");
+                Logger.log.Info("Could not find SongCore's requirements info button custom StandardLevelDetailView");
             }
         }
 
