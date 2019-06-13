@@ -74,12 +74,23 @@ namespace EnhancedSearchAndFilters
             }
         }
         public const SearchableSongFields SongFieldsToSearchDefaultValue = SearchableSongFields.All;
+
+        /// <summary>
+        /// The number of songs to search through in one frame. This setting is not exposed in the UI and can only be edited in the config.
+        /// </summary>
+        static public int MaxSongsToSearchInOneFrame
+        {
+            get
+            {
+                return config.GetInt("EnhancedSearchAndFilters", "MaxSongsToSearchInOneFrame", 100, true);
+            }
+        }
     }
 
     internal enum SearchableSongFields
     {
         All = 0,
-        TitleAndSubtitle = 1,
+        TitleAndAuthor = 1,
         TitleOnly = 2
     }
 }

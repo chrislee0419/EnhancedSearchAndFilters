@@ -87,20 +87,20 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
                 float[] songFieldsValues = new float[3]
                 {
-                    (float)SearchableSongFields.All, (float)SearchableSongFields.TitleAndSubtitle, (float)SearchableSongFields.TitleOnly
+                    (float)SearchableSongFields.All, (float)SearchableSongFields.TitleAndAuthor, (float)SearchableSongFields.TitleOnly
                 };
                 _songFieldsSetting = _submenu.AddList("Song Fields to Search", songFieldsValues,
                     "A query will only search in these particular details of a song.\n" +
                     "<color=#11FF11>Can get relevant results quicker if you never search for song artist or beatmap creator.</color>\n" +
-                    "Options - 'All', 'Title and Subtitle', 'Title Only'");
+                    "Options - 'All', 'Title and Author', 'Title Only'");
                 _songFieldsSetting.GetTextForValue += delegate (float value)
                 {
                     switch (value)
                     {
                         case (float)SearchableSongFields.All:
                             return "All";
-                        case (float)SearchableSongFields.TitleAndSubtitle:
-                            return "<size=80%>Title and Subtitle</size>";
+                        case (float)SearchableSongFields.TitleAndAuthor:
+                            return "<size=80%>Title and Author</size>";
                         //case (float)SearchableSongFields.TitleOnly:
                         default:
                             return "Title Only";

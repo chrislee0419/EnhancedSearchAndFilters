@@ -18,6 +18,8 @@ namespace EnhancedSearchAndFilters
                 {
                     _instance = new GameObject("EnhancedSearchBehaviour").AddComponent<SearchBehaviour>();
                     DontDestroyOnLoad(_instance.gameObject);
+
+                    MaxSearchInOneFrame = PluginConfig.MaxSongsToSearchInOneFrame;
                 }
 
                 _instance.gameObject.SetActive(true);
@@ -42,7 +44,7 @@ namespace EnhancedSearchAndFilters
             }
         }
 
-        private const int MaxSearchInOneFrame = 200;
+        private static int MaxSearchInOneFrame;
         private static readonly Regex RemoveSymbolsRegex = new Regex("[^a-zA-Z0-9 ]");
 
         public void StartNewSearch(IPreviewBeatmapLevel[] searchSpace, string searchQuery, Action<IPreviewBeatmapLevel[]> action)
@@ -120,10 +122,10 @@ namespace EnhancedSearchAndFilters
                     if (songFields == SearchableSongFields.All)
                         fields = $"{level.songName} {level.songSubName} {level.levelAuthorName} {level.songAuthorName}".ToLower();
                     else if (songFields == SearchableSongFields.TitleOnly)
-                        fields = $"{level.songName}".ToLower();
-                    //else if (songFields == SearchableSongFields.TitleAndSubtitle)
-                    else
                         fields = $"{level.songName} {level.songSubName}".ToLower();
+                    //else if (songFields == SearchableSongFields.TitleAndAuthor)
+                    else
+                        fields = $"{level.songName} {level.songSubName} {level.songAuthorName}".ToLower();
 
                     if (stripSymbols)
                         fields = RemoveSymbolsRegex.Replace(fields, string.Empty);
