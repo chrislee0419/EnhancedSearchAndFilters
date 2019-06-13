@@ -12,7 +12,8 @@ namespace EnhancedSearchAndFilters.Tweaks
     {
         Default,
         Newest,
-        Difficulty
+        Difficulty,
+        Author
     }
 
     internal static class BeatSaverDownloaderTweaks
@@ -22,7 +23,8 @@ namespace EnhancedSearchAndFilters.Tweaks
         private static Button _sortButton;
         private static Button _defaultSortButton;
         private static Button _newestSortButton;
-        private static Button _difficultySortButton;
+        private static Button _authorSortButton;
+        //private static Button _difficultySortButton;
         private static Button _randomButton;
 
         public static bool ModLoaded { get; set; } = false;
@@ -54,7 +56,8 @@ namespace EnhancedSearchAndFilters.Tweaks
                 _sortButton = buttonList.First(x => x.GetComponentInChildren<TextMeshProUGUI>(true)?.text.Contains("Sort By") == true);
                 _defaultSortButton = buttonList.First(x => x.GetComponentInChildren<TextMeshProUGUI>(true)?.text.Contains("Default") == true);
                 _newestSortButton = buttonList.First(x => x.GetComponentInChildren<TextMeshProUGUI>(true)?.text.Contains("Newest") == true);
-                _difficultySortButton = buttonList.First(x => x.GetComponentInChildren<TextMeshProUGUI>(true)?.text.Contains("Difficulty") == true);
+                _authorSortButton = buttonList.First(x => x.GetComponentInChildren<TextMeshProUGUI>(true)?.text.Contains("Song Author") == true);
+                //_difficultySortButton = buttonList.First(x => x.GetComponentInChildren<TextMeshProUGUI>(true)?.text.Contains("Difficulty") == true);
                 _randomButton = buttonList.First(x =>
                     x.GetComponentInChildren<TextMeshProUGUI>(true)?.text == null &&
                     x.transform.parent == _sortButton.transform.parent);
@@ -102,14 +105,23 @@ namespace EnhancedSearchAndFilters.Tweaks
                 // unapply filters + search
                 _sortMode = SortMode.Newest;
             });
-            _difficultySortButton.onClick.RemoveAllListeners();
-            _difficultySortButton.onClick.AddListener(() =>
+            _authorSortButton.onClick.RemoveAllListeners();
+            _authorSortButton.onClick.AddListener(() =>
             {
                 SongListUI.Instance.ToggleButtonsActive(true);
+                SetTopButtons(false);
 
                 // unapply filters + search
-                _sortMode = SortMode.Difficulty;
+                _sortMode = SortMode.Author;
             });
+            //_difficultySortButton.onClick.RemoveAllListeners();
+            //_difficultySortButton.onClick.AddListener(() =>
+            //{
+            //    SongListUI.Instance.ToggleButtonsActive(true);
+
+            //    // unapply filters + search
+            //    _sortMode = SortMode.Difficulty;
+            //});
 
             SongListUI.Instance.SearchButton = searchButton;
 
@@ -126,7 +138,8 @@ namespace EnhancedSearchAndFilters.Tweaks
             _randomButton.gameObject.SetActive(!showSortButtons);
             _defaultSortButton.gameObject.SetActive(showSortButtons);
             _newestSortButton.gameObject.SetActive(showSortButtons);
-            _difficultySortButton.gameObject.SetActive(showSortButtons);
+            _authorSortButton.gameObject.SetActive(showSortButtons);
+            //_difficultySortButton.gameObject.SetActive(showSortButtons);
         }
 
         public static void HideTopButtons()
@@ -137,7 +150,8 @@ namespace EnhancedSearchAndFilters.Tweaks
             _randomButton.gameObject.SetActive(false);
             _defaultSortButton.gameObject.SetActive(false);
             _newestSortButton.gameObject.SetActive(false);
-            _difficultySortButton.gameObject.SetActive(false);
+            _authorSortButton.gameObject.SetActive(false);
+            //_difficultySortButton.gameObject.SetActive(false);
         }
 
         public static void SortSongs()
