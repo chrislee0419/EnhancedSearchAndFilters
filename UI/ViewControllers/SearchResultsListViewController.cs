@@ -58,6 +58,11 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             tableCell.GetPrivateField<TextMeshProUGUI>("_authorText").text = $"{level.songAuthorName}<size=80%>{contributorsText}</size>";
             tableCell.SetPrivateField("_bought", true);
 
+            // black placeholder image
+            RawImage coverImage = tableCell.GetPrivateField<RawImage>("_coverRawImage");
+            coverImage.texture = Texture2D.blackTexture;
+            coverImage.color = Color.black;
+
             SetBaseGameCoverImageAsync(tableCell, level);
 
             return tableCell;
