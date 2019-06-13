@@ -24,8 +24,9 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         private static readonly string[] _difficultyStrings = new string[] { "Easy", "Normal", "Hard", "Expert", "Expert+" };
         private static readonly Color _checkmarkColor = new Color(0.8f, 1f, 0.8f);
         private static readonly Color _crossColor = new Color(1f, 0.8f, 0.8f);
-        private Sprite _checkmarkSprite;
-        private Sprite _crossSprite;
+        private static Sprite _checkmarkSprite;
+        private static Sprite _crossSprite;
+        private static Sprite _blankSprite;
 
         private Dictionary<string, Tuple<TextMeshProUGUI, Image>> _difficultyElements = new Dictionary<string, Tuple<TextMeshProUGUI, Image>>();
 
@@ -54,6 +55,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
                 _checkmarkSprite = UIUtilities.LoadSpriteFromResources("EnhancedSearchAndFilters.Assets.checkmark.png");
                 _crossSprite = UIUtilities.LoadSpriteFromResources("EnhancedSearchAndFilters.Assets.cross.png");
+                _blankSprite = Sprite.Create(Texture2D.blackTexture, new Rect(0f, 0f, 1f, 1f), Vector2.zero);
 
                 RemoveCustomUIElements(this.rectTransform);
                 RemoveSongRequirementsButton();
@@ -86,8 +88,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
             foreach (var tuple in _difficultyElements.Values)
             {
-                tuple.Item2.sprite = _crossSprite;
-                tuple.Item2.color = _crossColor;
+                tuple.Item2.sprite = _blankSprite;
+                tuple.Item2.color = Color.black;
             }
 
             if (level is CustomPreviewBeatmapLevel)
@@ -137,6 +139,12 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
         private void SetDifficultyIcons(IDifficultyBeatmap[] difficulties, ref bool hasLightshow)
         {
+            foreach (var tuple in _difficultyElements.Values)
+            {
+                tuple.Item2.sprite = _crossSprite;
+                tuple.Item2.color = _crossColor;
+            }
+
             foreach (var db in difficulties)
             {
                 string difficultyName = db.difficulty.Name() == "ExpertPlus" ? "Expert+" : db.difficulty.Name();
