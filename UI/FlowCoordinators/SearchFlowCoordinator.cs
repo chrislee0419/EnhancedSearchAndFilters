@@ -39,6 +39,10 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                     PopAllViewControllersFromNavigationController();
                     BackButtonPressed?.Invoke();
                 };
+                _searchResultsNavigationController.ForceShowButtonPressed += delegate ()
+                {
+                    ShowSearchResult(SearchBehaviour.Instance.CachedResult, true);
+                };
                 _searchResultsListViewController.SongSelected += delegate (IPreviewBeatmapLevel level)
                 {
                     if (!_songDetailsViewController.isInViewControllerHierarchy)
@@ -137,12 +141,17 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 
         private void SearchCompleted(IPreviewBeatmapLevel[] levels)
         {
-            if (levels.Length > PluginConfig.MaxSearchResults || levels.Length == 0)
+            ShowSearchResult(levels);
+        }
+
+        private void ShowSearchResult(IPreviewBeatmapLevel[] levels, bool force = false)
+        {
+            if (!force && (levels.Length > PluginConfig.MaxSearchResults || levels.Length == 0))
             {
                 PopAllViewControllersFromNavigationController();
                 _searchResultsNavigationController.ShowResults(_searchQuery, levels, _levelsSearchSpace.Length);
             }
-            else if (levels.Length > 0)
+            else
             {
                 _searchResultsNavigationController.HideUIElements();
 

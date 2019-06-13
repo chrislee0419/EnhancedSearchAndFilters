@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 using VRUI;
 using CustomUI.BeatSaber;
@@ -10,10 +11,12 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
     class SearchResultsNavigationController : VRUINavigationController
     {
         public Action BackButtonPressed;
+        public Action ForceShowButtonPressed;
 
         private GameObject _header;
         private GameObject _loadingSpinner;
         private TextMeshProUGUI _resultsText;
+        private Button _forceButton;
 
         private const string _headerText = "Search Results";
         private const string _placeholderResultsText = "Use the keyboard on the right screen\nto search for a song.\n\n---->";
@@ -35,6 +38,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 _resultsText.fontSize = 6f;
                 BeatSaberUI.CreateBackButton(this.rectTransform, () => BackButtonPressed?.Invoke());
                 _loadingSpinner = BeatSaberUI.CreateLoadingSpinner(this.rectTransform);
+                _forceButton = BeatSaberUI.CreateUIButton(this.rectTransform, "CancelButton", new Vector2(59f, -32f), new Vector2(36f, 10f), () => ForceShowButtonPressed?.Invoke(), "Force Show Results");
             }
             else
             {
@@ -44,12 +48,14 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
             _loadingSpinner.SetActive(false);
             _resultsText.gameObject.SetActive(true);
+            _forceButton.gameObject.SetActive(false);
             SetHeaderActive(true);
         }
 
         public void ShowLoadingSpinner()
         {
             _resultsText.gameObject.SetActive(false);
+            _forceButton.gameObject.SetActive(false);
 
             SetHeaderActive(true);
             _loadingSpinner.SetActive(true);
@@ -58,6 +64,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         public void ShowPlaceholderText()
         {
             _loadingSpinner.SetActive(false);
+            _forceButton.gameObject.SetActive(false);
 
             _resultsText.text = _placeholderResultsText;
             _resultsText.gameObject.SetActive(true);
@@ -68,9 +75,12 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         {
             _loadingSpinner.SetActive(false);
 
-            _resultsText.text = $"<color=#FFFF55>{searchResultsList.Count()}</color> out of <color=#FF1111>{searchSpaceSize}</color> beatmaps\n" +
+            string color = searchResultsList.Count() > 0 ? "#FFFF55" : "#FF2222";
+
+            _resultsText.text = $"<color={color}>{searchResultsList.Count()} out of {searchSpaceSize}</color> beatmaps\n" +
                 $"contain the text \"<color=#11FF11>{searchQuery}</color>\"";
             _resultsText.gameObject.SetActive(true);
+            _forceButton.gameObject.SetActive(true);
             SetHeaderActive(true);
         }
 
@@ -79,6 +89,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             SetHeaderActive(false);
             _loadingSpinner.SetActive(false);
             _resultsText.gameObject.SetActive(false);
+            _forceButton.gameObject.SetActive(false);
         }
 
         private void SetHeaderActive(bool active)

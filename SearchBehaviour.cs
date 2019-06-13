@@ -31,6 +31,14 @@ namespace EnhancedSearchAndFilters
             }
         }
 
+        public IPreviewBeatmapLevel[] CachedResult
+        {
+            get
+            {
+                return IsSearching ? null : _searchSpace.ToArray();
+            }
+        }
+
         private Action<IPreviewBeatmapLevel[]> _searchCompletedAction;
 
         private Coroutine _searchCoroutine;
