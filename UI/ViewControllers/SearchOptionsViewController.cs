@@ -56,7 +56,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                     .Select((x) => (float)x).ToArray();
                 _maxResultsShownSetting = _submenu.AddList("Maximum # of Results Shown", maxResultsShownValues,
                     "The maximum number of songs found before a search result is shown.\n" +
-                    "<color=#FF1111>A higher number may result in longer delays when refreshing the results screen and show more irrelevant results.</color>");
+                    "<color=#11FF11>A lower number is less distracting and only displays results when most irrelevant songs are removed.</color>\n" +
+                    "<color=#FFFF11>You can force a search results to be shown using the button on the main screen.</color>");
                 _maxResultsShownSetting.GetTextForValue += x => ((int)x).ToString();
                 _maxResultsShownSetting.GetValue += () => _maxResultsShownStagingValue;
                 _maxResultsShownSetting.SetValue += delegate (float value)
@@ -119,7 +120,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
                 _stripSymbolsSetting = _submenu.AddBool("Strip Symbols from Song Details",
                     "Removes symbols from song title, subtitle, artist, etc. fields when performing search.\n" +
-                    "<color=#11FF11>Can be useful when searching for song remixes and titles with apostrophes or quotations.</color>");
+                    "<color=#11FF11>Can be useful when searching for song remixes and titles with apostrophes, quotations, or hyphens.</color>");
                 _stripSymbolsSetting.GetValue += () => _stripSymbolsStagingValue;
                 _stripSymbolsSetting.SetValue += delegate (bool value)
                 {
