@@ -85,6 +85,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _levelParamsPanel.bpm = level.beatsPerMinute;
             _standardLevelDetailView.SetTextureAsync(level);
             _levelParamsPanel.duration = level.songDuration;
+            _detailsText.text = "";
 
             foreach (var tuple in _difficultyElements.Values)
             {
@@ -96,9 +97,9 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             {
                 LoadCustomBeatmapLevelAsync(level as CustomPreviewBeatmapLevel);
             }
-            else
+            else if (level is BeatmapDataSO)
             {
-                SetOtherSongDetails((level as BeatmapLevelSO).difficultyBeatmapSets);
+                SetOtherSongDetails((level as BeatmapLevelSO).beatmapLevelData, false);
             }
         }
 
@@ -117,15 +118,23 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         }
 
         /// <summary>
-        /// Sets the _detailsText object and difficulty icons on the UI.
+        /// Sets the duration and difficulty icons on the UI.
         /// </summary>
         /// <param name="difficultySets"></param>
-        private void SetOtherSongDetails(IDifficultyBeatmapSet[] difficultySets)
+        private void SetOtherSongDetails(IBeatmapLevelData beatmapLevelData, bool setDuration=true)
         {
             bool hasLightshow = false;
 
-            _detailsText.text = "";
-            foreach (var dbs in difficultySets)
+            if (setDuration && beatmapLevelData.audioClip != null)
+                _levelParamsPanel.duration = beatmapLevelData.audioClip.length;
+
+            foreach (var tuple in _difficultyElements.Values)
+            {
+                tuple.Item2.sprite = _crossSprite;
+                tuple.Item2.color = _crossColor;
+            }
+
+            foreach (var dbs in beatmapLevelData.difficultyBeatmapSets)
             {
                 // the colon character looks like a bullet in-game (for whatever reason), so we use that here
                 if (dbs.beatmapCharacteristic.characteristicName == "LEVEL_ONE_SABER")
@@ -139,12 +148,6 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
         private void SetDifficultyIcons(IDifficultyBeatmap[] difficulties, ref bool hasLightshow)
         {
-            foreach (var tuple in _difficultyElements.Values)
-            {
-                tuple.Item2.sprite = _crossSprite;
-                tuple.Item2.color = _crossColor;
-            }
-
             foreach (var db in difficulties)
             {
                 string difficultyName = db.difficulty.Name() == "ExpertPlus" ? "Expert+" : db.difficulty.Name();
