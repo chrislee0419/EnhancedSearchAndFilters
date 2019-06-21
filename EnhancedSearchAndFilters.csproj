@@ -131,8 +131,5 @@
     <EmbeddedResource Include="Assets\checkmark.png" />
     <EmbeddedResource Include="Assets\cross.png" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
