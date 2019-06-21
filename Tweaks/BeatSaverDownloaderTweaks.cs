@@ -8,23 +8,12 @@ using System;
 
 namespace EnhancedSearchAndFilters.Tweaks
 {
-    internal enum SortMode
-    {
-        Default,
-        Newest,
-        Difficulty,
-        Author
-    }
-
     internal static class BeatSaverDownloaderTweaks
     {
-        private static SortMode _sortMode = SortMode.Default;
-
         private static Button _sortButton;
         private static Button _defaultSortButton;
         private static Button _newestSortButton;
         private static Button _authorSortButton;
-        //private static Button _difficultySortButton;
         private static Button _randomButton;
 
         public static bool ModLoaded { get; set; } = false;
@@ -82,46 +71,30 @@ namespace EnhancedSearchAndFilters.Tweaks
             (searchButton.transform as RectTransform).anchoredPosition = new Vector2(-52f, 36.5f);
             (_sortButton.transform as RectTransform).anchoredPosition = new Vector2(14f, 36.5f);
             (_randomButton.transform as RectTransform).anchoredPosition = new Vector2(36f, 36.5f);
+            _sortButton.onClick.RemoveAllListeners();
             _sortButton.onClick.AddListener(() =>
             {
                 SongListUI.Instance.ToggleButtonsActive(false);
                 SetTopButtons(true);
             });
-            _defaultSortButton.onClick.RemoveAllListeners();
             _defaultSortButton.onClick.AddListener(() =>
             {
                 SongListUI.Instance.ToggleButtonsActive(true);
-                SetTopButtons(false);
 
                 // unapply filters + search
-                _sortMode = SortMode.Default;
             });
-            _newestSortButton.onClick.RemoveAllListeners();
             _newestSortButton.onClick.AddListener(() =>
             {
                 SongListUI.Instance.ToggleButtonsActive(true);
-                SetTopButtons(false);
 
                 // unapply filters + search
-                _sortMode = SortMode.Newest;
             });
-            _authorSortButton.onClick.RemoveAllListeners();
             _authorSortButton.onClick.AddListener(() =>
             {
                 SongListUI.Instance.ToggleButtonsActive(true);
-                SetTopButtons(false);
 
                 // unapply filters + search
-                _sortMode = SortMode.Author;
             });
-            //_difficultySortButton.onClick.RemoveAllListeners();
-            //_difficultySortButton.onClick.AddListener(() =>
-            //{
-            //    SongListUI.Instance.ToggleButtonsActive(true);
-
-            //    // unapply filters + search
-            //    _sortMode = SortMode.Difficulty;
-            //});
 
             SongListUI.Instance.SearchButton = searchButton;
 
@@ -139,7 +112,6 @@ namespace EnhancedSearchAndFilters.Tweaks
             _defaultSortButton.gameObject.SetActive(showSortButtons);
             _newestSortButton.gameObject.SetActive(showSortButtons);
             _authorSortButton.gameObject.SetActive(showSortButtons);
-            //_difficultySortButton.gameObject.SetActive(showSortButtons);
         }
 
         public static void HideTopButtons()
@@ -151,7 +123,6 @@ namespace EnhancedSearchAndFilters.Tweaks
             _defaultSortButton.gameObject.SetActive(false);
             _newestSortButton.gameObject.SetActive(false);
             _authorSortButton.gameObject.SetActive(false);
-            //_difficultySortButton.gameObject.SetActive(false);
         }
 
         public static void SortSongs()
