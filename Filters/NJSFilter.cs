@@ -1,301 +1,533 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using CustomUI.BeatSaber;
 using CustomUI.Settings;
-using SongLoaderPlugin.OverrideClasses;
+using EnhancedSearchAndFilters.UI;
+using Object = UnityEngine.Object;
 
 namespace EnhancedSearchAndFilters.Filters
 {
     class NJSFilter : IFilter
     {
         public string FilterName { get { return "Note Jump Speed (NJS)"; } }
-        public FilterStatus Status { get; private set; } = FilterStatus.NotApplied;
+        public FilterStatus Status {
+            get
+            {
+                if (ApplyFilter)
+                {
+                    if (_minEnabledStagingValue != _minEnabledAppliedValue ||
+                        _maxEnabledStagingValue != _maxEnabledAppliedValue ||
+                        _minStagingValue != _minAppliedValue ||
+                        _maxStagingValue != _maxAppliedValue)
+                        return FilterStatus.AppliedAndChanged;
+
+                    for (int i = 0; i < 5; ++i)
+                    {
+                        if (_difficultiesStagingValue[i] != _difficultiesAppliedValue[i])
+                            return FilterStatus.AppliedAndChanged;
+                    }
+
+                    return FilterStatus.Applied;
+                }
+                else if ((_minEnabledStagingValue || _maxEnabledStagingValue) && _difficultiesStagingValue.Contains(true))
+                {
+                    return FilterStatus.NotAppliedAndChanged;
+                }
+                else
+                {
+                    return FilterStatus.NotAppliedAndDefault;
+                }
+            }
+        }
         public bool ApplyFilter {
             get
             {
-                return _isApplied;
+                return (_minEnabledAppliedValue || _maxEnabledAppliedValue) && _difficultiesAppliedValue.Contains(true);
             }
             set
             {
-                _isApplied = value;
-
                 if (value)
                 {
-                    _enabledAppliedValue = _enabledStagingValue;
+                    _minEnabledAppliedValue = _minEnabledStagingValue;
+                    _maxEnabledAppliedValue = _maxEnabledStagingValue;
                     _minAppliedValue = _minStagingValue;
                     _maxAppliedValue = _maxStagingValue;
-                }
 
-                UpdateStatus();
+                    for (int i = 0; i < 5; ++i)
+                        _difficultiesAppliedValue[i] = _difficultiesStagingValue[i];
+                }
+                else
+                {
+                    _minEnabledAppliedValue = false;
+                    _maxEnabledAppliedValue = false;
+
+                    for (int i = 0; i < 5; ++i)
+                        _difficultiesAppliedValue[i] = false;
+                }
             }
         }
 
-        private FilterControl[] _controls = new FilterControl[3];
+        public FilterControl[] Controls { get; private set; } = new FilterControl[3];
 
-        BoolViewController _enabledViewController;
+        public event Action SettingChanged;
+
         ListViewController _minViewController;
         ListViewController _maxViewController;
+        private Toggle[] _difficultyToggles = new Toggle[5];
 
-        private bool _enabledStagingValue = false;
+        private bool _isInitialized = false;
+
+        private bool _minEnabledStagingValue = false;
+        private bool _maxEnabledStagingValue = false;
         private int _minStagingValue = DefaultMinValue;
         private int _maxStagingValue = DefaultMaxValue;
-        private bool _enabledAppliedValue = false;
+        private bool[] _difficultiesStagingValue = new bool[5];
+        private bool _minEnabledAppliedValue = false;
+        private bool _maxEnabledAppliedValue = false;
         private int _minAppliedValue = DefaultMinValue;
         private int _maxAppliedValue = DefaultMaxValue;
-
-        private Toggle[] _difficultyToggles = new Toggle[5];
+        private bool[] _difficultiesAppliedValue = new bool[5];
 
         private const int DefaultMinValue = 10;
         private const int DefaultMaxValue = 20;
+        private const int MinValue = 1;
+        private const int MaxValue = 50;
 
-        private bool _isApplied = false;
+        private static readonly string[] DifficultyStrings = new string[] { "Easy", "Normal", "Hard", "Expert", "ExpertPlus" };
 
-        public NJSFilter()
+        public void Init()
         {
+            if (_isInitialized)
+                return;
+
             SubMenu submenu = new SubMenu((Transform)null);
 
-            // enabled setting
-            _enabledViewController = submenu.AddBool("Enable This Filter");
-            _enabledViewController.GetValue += () => _enabledStagingValue;
-            _enabledViewController.SetValue += delegate (bool value)
-            {
-                _enabledStagingValue = value;
+            // difficulties
+            var difficultiesContainer = new GameObject("DifficultiesContainer");
+            Controls[0] = new FilterControl(difficultiesContainer, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 26f), Vector2.zero,
+                delegate ()
+                {
+                    for (int i = 0; i < 5; ++i)
+                        _difficultyToggles[i].isOn = _difficultiesStagingValue[i];
+                });
 
-                UpdateStatus();
-            };
-            _enabledViewController.Init();
+            // the container needs some graphical component to have the Transform to RectTransform cast work
+            var unused = difficultiesContainer.AddComponent<Image>();
+            unused.color = new Color(0f, 0f, 0f, 0f);
 
             var divider = new GameObject("Divider").AddComponent<Image>();
             divider.color = new Color(1f, 1f, 1f, 0.4f);
 
             var rt = divider.rectTransform;
-            rt.SetParent(_enabledViewController.transform);
+            rt.SetParent(difficultiesContainer.transform);
             rt.anchorMin = Vector2.zero;
             rt.anchorMax = new Vector2(1f, 0f);
-            rt.pivot = new Vector2(0.5f, 1f);
+            rt.pivot = new Vector2(0.5f, 0f);
             rt.sizeDelta = new Vector2(0f, 0.2f);
-            rt.anchoredPosition = new Vector2(0f, -4f);
-            _controls[0] = new FilterControl(_enabledViewController.gameObject, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 10f), Vector2.zero);
+            rt.anchoredPosition = Vector2.zero;
+
+            CreateDifficultyToggles(difficultiesContainer.transform);
 
             // minimum value setting
-            float[] values = Enumerable.Range(1, 50).Select(x => (float)x).ToArray();
-            _minViewController = submenu.AddList("Minimum", values);
+            float[] values = Enumerable.Range(MinValue, MaxValue).Select(x => (float)x).ToArray();
+            _minViewController = submenu.AddList("Minimum NJS", values, "Filter out songs that have a smaller NJS than this value");
             _minViewController.GetTextForValue += x => ((int)x).ToString();
             _minViewController.GetValue += () => _minStagingValue;
             _minViewController.SetValue += delegate (float value)
             {
-                if (value > _maxStagingValue)
+                if (_maxEnabledStagingValue && value > _maxStagingValue)
                 {
-                    // only way i know of refreshing the value in the value displayed
-                    _minViewController.Init();
+                    _minStagingValue = _maxStagingValue;
+                    RefreshUI();
                     return;
                 }
 
                 _minStagingValue = (int)value;
 
-                UpdateStatus();
+                RefreshUI(false);
+
+                SettingChanged?.Invoke();
             };
             _minViewController.Init();
             _minViewController.applyImmediately = true;
 
-            rt = _minViewController.transform.Find("NameText") as RectTransform;
-            rt.anchorMin = new Vector2(0f, 1f);
-            rt.anchorMax = Vector2.one;
-            rt.pivot = new Vector2(0.5f, 1f);
-            rt.anchoredPosition = Vector2.zero;
-            rt.sizeDelta = new Vector2(0f, 10f);
-            rt.GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.Center;
-            Logger.log.Info($"{rt.name}: rect={rt.rect}, offsetMin={rt.offsetMin}, offsetMax={rt.offsetMax}");
+            var minToggle = CreateEnableToggle(_minViewController);
+            minToggle.name = "MinValueToggle";
+            minToggle.onValueChanged.AddListener(delegate (bool value)
+            {
+                _minEnabledStagingValue = value;
 
-            //rt = _minViewController.transform.Find("Value") as RectTransform;
-            //rt.anchorMin = Vector2.zero;
-            //rt.anchorMax = new Vector2(1f, 0f);
-            //rt.pivot = new Vector2(0.5f, 0f);
-            //rt.anchoredPosition = Vector2.zero;
-            //rt.sizeDelta = new Vector2(45f, 8f);
-            //Logger.log.Info($"{rt.name}: rect={valurteRt.rect}, offsetMin={rt.offsetMin}, offsetMax={rt.offsetMax}");
+                if (value && _maxEnabledStagingValue && _minStagingValue > _maxStagingValue)
+                    _minStagingValue = _maxStagingValue;
 
-            rt = _minViewController.transform.Find("Value").Find("ValueText") as RectTransform;
-            rt.SetParent(_minViewController.transform, false);
+                RefreshUI(true, true);
+
+                SettingChanged?.Invoke();
+            });
+
+            MoveViewControllerElements(_minViewController);
+
+            divider = new GameObject("Divider").AddComponent<Image>();
+            divider.color = new Color(1f, 1f, 1f, 0.15f);
+
+            rt = divider.rectTransform;
+            rt.SetParent(_minViewController.transform);
             rt.anchorMin = Vector2.zero;
             rt.anchorMax = new Vector2(1f, 0f);
-            //rt.offsetMin = Vector2.zero;
-            //rt.offsetMax = Vector2.zero;
-            rt.pivot = new Vector2(0.5f, 0f);
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.sizeDelta = new Vector2(-4f, 0.1f);
             rt.anchoredPosition = Vector2.zero;
-            rt.sizeDelta = new Vector2(0f, 8f);
-            Logger.log.Info($"Min{rt.name}: rect={rt.rect}");
 
-            rt = _minViewController.transform.Find("Value").Find("DecButton") as RectTransform;
-            rt.SetParent(_minViewController.transform, false);
-            rt.anchorMin = Vector2.zero;
-            rt.anchorMax = Vector2.zero;
-            rt.pivot = Vector2.zero;
-            rt.anchoredPosition = Vector2.zero;
-            rt.sizeDelta = new Vector2(8f, 8f);
-            Logger.log.Info($"Min{rt.name}: rect={rt.rect}");
+            Controls[1] = new FilterControl(_minViewController.gameObject, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 12f), new Vector2(0f, -26f),
+                delegate ()
+                {
+                    // disabling buttons needs to be done after the view controller is enabled to override the interactable assignments of ListSettingsController:OnEnable()
+                    _minViewController.GetComponentsInChildren<Button>().First(x => x.name == "DecButton").interactable = _minEnabledStagingValue && _minStagingValue > MinValue;
+                    _minViewController.GetComponentsInChildren<Button>().First(x => x.name == "IncButton").interactable = _minEnabledStagingValue && (!_maxEnabledStagingValue || _minStagingValue < _maxStagingValue) && _minStagingValue < MaxValue;
 
-            rt = _minViewController.transform.Find("Value").Find("IncButton") as RectTransform;
-            rt.SetParent(_minViewController.transform, false);
-            rt.anchorMin = new Vector2(1f, 0f);
-            rt.anchorMax = new Vector2(1f, 0f);
-            rt.pivot = new Vector2(1f, 0f);
-            rt.anchoredPosition = Vector2.zero;
-            rt.sizeDelta = new Vector2(8f, 8f);
-            Logger.log.Info($"Min{rt.name}: rect={rt.rect}");
-
-            _controls[1] = new FilterControl(_minViewController.gameObject, new Vector2(0f, 0.95f), new Vector2(0.5f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 20f), new Vector2(0f, -15f));
+                    minToggle.isOn = _minEnabledStagingValue;
+                });
 
             // maximum value setting
-            _maxViewController = submenu.AddList("Maximum", values);
+            _maxViewController = submenu.AddList("Maximum NJS", values, "Filter out songs that have a larger NJS than this value");
             _maxViewController.GetTextForValue += x => ((int)x).ToString();
             _maxViewController.GetValue += () => _maxStagingValue;
             _maxViewController.SetValue += delegate (float value)
             {
-                if (value < _minStagingValue)
+                if (_minEnabledStagingValue && value < _minStagingValue)
                 {
-                    // only way i know of refreshing the value in the value displayed
-                    _maxViewController.Init();
+                    _maxStagingValue = _minStagingValue;
+                    RefreshUI();
                     return;
                 }
 
                 _maxStagingValue = (int)value;
 
-                UpdateStatus();
+                RefreshUI(false);
+
+                SettingChanged?.Invoke();
             };
             _maxViewController.Init();
             _maxViewController.applyImmediately = true;
 
-            rt = _maxViewController.transform.Find("NameText") as RectTransform;
-            rt.anchorMin = new Vector2(0f, 1f);
-            rt.anchorMax = Vector2.one;
-            rt.pivot = new Vector2(0.5f, 1f);
-            rt.anchoredPosition = Vector2.zero;
-            rt.sizeDelta = new Vector2(0f, 10f);
-            rt.GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.Center;
+            var maxToggle = CreateEnableToggle(_maxViewController);
+            maxToggle.name = "MaxValueToggle";
+            maxToggle.onValueChanged.AddListener(delegate (bool value)
+            {
+                _maxEnabledStagingValue = value;
 
-            rt = _maxViewController.transform.Find("Value") as RectTransform;
-            rt.anchorMin = Vector2.zero;
-            rt.anchorMax = new Vector2(1f, 0f);
-            rt.pivot = new Vector2(0.5f, 0f);
-            rt.anchoredPosition = Vector2.zero;
-            rt.sizeDelta = new Vector2(0f, 8f);
+                if (value && _minEnabledStagingValue && _maxStagingValue < _minStagingValue)
+                    _maxStagingValue = _minStagingValue;
 
-            rt = rt.Find("ValueText") as RectTransform;
-            rt.anchorMin = Vector2.zero;
-            rt.anchorMax = Vector2.one;
-            Logger.log.Info($"Max{rt.name}: rect={rt.rect}, offsetMin={rt.offsetMin}, offsetMax={rt.offsetMax}");
-            rt.pivot = new Vector2(0.5f, 0.5f);
-            rt.anchoredPosition = Vector2.zero;
-            //rt.sizeDelta = Vector2.zero;
+                RefreshUI(true, true);
 
-            _controls[2] = new FilterControl(_maxViewController.gameObject, new Vector2(0.5f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 20f), new Vector2(0f, -15f));
+                SettingChanged?.Invoke();
+            });
 
-            //var child = enabled.transform.Find("Value") as RectTransform;
-            //child.anchorMin = new Vector2(0.7f, 0f);
-            //child.sizeDelta = Vector2.zero;
+            MoveViewControllerElements(_maxViewController);
 
-            //var child2 = child.Find("DecButton") as RectTransform;
-            //child2.SetParent(child, false);
-            //child2.anchorMin = Vector2.zero;
-            //child2.anchorMax = Vector2.zero;
-            //child2.pivot = Vector2.zero;
-            //child2.anchoredPosition = Vector2.zero;
-            //child2.sizeDelta = new Vector2(10f, 10f);
+            Controls[2] = new FilterControl(_maxViewController.gameObject, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 12f), new Vector2(0f, -38f),
+                delegate ()
+                {
+                    _maxViewController.GetComponentsInChildren<Button>().First(x => x.name == "DecButton").interactable = _maxEnabledStagingValue && (!_minEnabledStagingValue || _maxStagingValue > _minStagingValue) && _maxStagingValue < MinValue;
+                    _maxViewController.GetComponentsInChildren<Button>().First(x => x.name == "IncButton").interactable = _maxEnabledStagingValue && _maxStagingValue < MaxValue;
 
-            //child2 = child.Find("ValueText") as RectTransform;
-            //child2.GetComponent<TextMeshProUGUI>().enableWordWrapping = false;
-            //child2.anchorMin = Vector2.zero;
-            //child2.anchorMax = Vector2.one;
-            //child2.pivot = new Vector2(0.5f, 0.5f);
-            //child2.anchoredPosition = Vector2.zero;
-            //child2.sizeDelta = new Vector2(20f, 0f);
+                    maxToggle.isOn = _maxEnabledStagingValue;
+                });
 
-            //child2 = child.Find("IncButton") as RectTransform;
-            //child2.SetParent(child, false);
-            //child2.anchorMin = new Vector2(1f, 0f);
-            //child2.anchorMax = new Vector2(1f, 1f);
-            //child2.pivot = new Vector2(1f, 0.5f);
-            //child2.anchoredPosition = Vector2.zero;
-            //child2.sizeDelta = new Vector2(10f, 0f);
-
-        }
-
-        public FilterControl[] GetControls()
-        {
-            return _controls;
+            _isInitialized = true;
         }
 
         public void SetDefaultValues()
         {
-            _enabledStagingValue = false;
+            if (!_isInitialized)
+                return;
+
+            _minEnabledStagingValue = false;
+            _maxEnabledStagingValue = false;
             _minStagingValue = DefaultMinValue;
             _maxStagingValue = DefaultMaxValue;
 
-            UpdateStatus();
+            _minViewController.GetComponentInChildren<Toggle>().isOn = false;
+            _maxViewController.GetComponentInChildren<Toggle>().isOn = false;
+
+            foreach (var toggle in _difficultyToggles)
+                toggle.isOn = false;
+
+            RefreshUI();
+            // don't need to invoke SettingsChanged here, since that will be handed by FilterViewController
         }
 
         public void ResetValues()
         {
-            _enabledStagingValue = _enabledAppliedValue;
+            if (!_isInitialized)
+                return;
+
+            _minEnabledStagingValue = _minEnabledAppliedValue;
+            _maxEnabledStagingValue = _maxEnabledAppliedValue;
             _minStagingValue = _minAppliedValue;
             _maxStagingValue = _maxAppliedValue;
 
+            _minViewController.GetComponentInChildren<Toggle>().isOn = _minEnabledAppliedValue;
+            _maxViewController.GetComponentInChildren<Toggle>().isOn = _maxEnabledAppliedValue;
+
+            for (int i = 0; i < 5; ++i)
+                _difficultyToggles[i].isOn = _difficultiesAppliedValue[i];
+
             RefreshUI();
-            UpdateStatus();
+            // don't need to invoke SettingsChanged here, since that will be handed by FilterViewController
         }
 
-        public void FilterSongList(ref List<IPreviewBeatmapLevel> levels)
+        public void FilterSongList(ref List<BeatmapDetails> detailsList)
         {
             // don't need to check _isApplied, that's done outside of this module
-            if (!_enabledAppliedValue)
+            if ((!_isInitialized) ||
+                (!_minEnabledAppliedValue && !_maxEnabledAppliedValue) ||
+                (!_difficultiesAppliedValue.Aggregate((x, y) => x || y)))
                 return;
 
-            for (int i = 0; i < levels.Count;)
+            for (int i = 0; i < detailsList.Count;)
             {
-                IPreviewBeatmapLevel level = levels[i];
+                BeatmapDetails details = detailsList[i];
 
-                if (!(level is CustomLevel))
+                // don't filter out OST beatmaps
+                if (details.IsOST)
                 {
-                    // don't remove beatmaps we can't filter
                     ++i;
                     continue;
                 }
 
-                CustomLevel customLevel = level as CustomLevel;
+                SimplifiedDifficultyBeatmapSet[] difficultySets = details.DifficultyBeatmapSets;
 
-                //if (customLevel.beatmapLevelData.)
-            }
-        }
+                bool remove = false;
+                for (int j = 0; j < 5; ++j)
+                {
+                    if (!_difficultiesAppliedValue[j])
+                        continue;
 
-        private void RefreshUI()
-        {
-            _enabledViewController.Init();
-            _minViewController.Init();
-            _maxViewController.Init();
-        }
+                    remove = difficultySets.Count(delegate (SimplifiedDifficultyBeatmapSet difficultySet)
+                    {
+                        return difficultySet.DifficultyBeatmaps.Count(delegate (SimplifiedDifficultyBeatmap difficulty)
+                        {
+                            return difficulty.Difficulty.ToString() == DifficultyStrings[j] && (difficulty.NoteJumpMovementSpeed < _minAppliedValue || difficulty.NoteJumpMovementSpeed > _maxAppliedValue);
+                        }) > 0;
+                    }) > 0;
 
-        private void UpdateStatus()
-        {
-            if (_enabledAppliedValue && _isApplied)
-            {
-                if (_enabledStagingValue != _enabledAppliedValue ||
-                    _minStagingValue != _minAppliedValue ||
-                    _maxStagingValue != _maxAppliedValue)
-                    Status = FilterStatus.Changed;
+                    if (remove)
+                        break;
+                }
+
+                if (remove)
+                    detailsList.RemoveAt(i);
                 else
-                    Status = FilterStatus.Applied;
+                    ++i;
             }
-            else if (_enabledStagingValue)
+        }
+
+        /// <summary>
+        /// Used to move the buttons and text outside of the "Value" transform for a ListViewController. 
+        /// This is done because the "Value" transform has some forced horizontal layout that messes up child RectTransform positioning.
+        /// </summary>
+        /// <param name="controller"></param>
+        private void MoveViewControllerElements(ListViewController controller)
+        {
+            var incButton = controller.transform.Find("Value/IncButton") as RectTransform;
+            incButton.SetParent(controller.transform);
+            incButton.anchorMin = new Vector2(1f, 0.5f);
+            incButton.anchorMax = new Vector2(1f, 0.5f);
+            incButton.pivot = new Vector2(1f, 0.5f);
+            incButton.sizeDelta = new Vector2(8f, 8f);
+            incButton.anchoredPosition = Vector2.zero;
+
+            var text = controller.transform.Find("Value/ValueText") as RectTransform;
+            text.SetParent(controller.transform);
+            text.anchorMin = new Vector2(1f, 0.5f);
+            text.anchorMax = new Vector2(1f, 0.5f);
+            text.pivot = new Vector2(1f, 0.5f);
+            text.sizeDelta = new Vector2(16f, 8f);
+            text.anchoredPosition = new Vector2(-8f, 0f);
+
+            var decButton = controller.transform.Find("Value/DecButton") as RectTransform;
+            decButton.SetParent(controller.transform);
+            decButton.anchorMin = new Vector2(1f, 0.5f);
+            decButton.anchorMax = new Vector2(1f, 0.5f);
+            decButton.pivot = new Vector2(1f, 0.5f);
+            decButton.sizeDelta = new Vector2(8f, 8f);
+            decButton.anchoredPosition = new Vector2(-24f, 0f);
+
+            var toggle = controller.transform.Find("Value/MinValueToggle") as RectTransform ?? controller.transform.Find("Value/MaxValueToggle") as RectTransform;
+            toggle.SetParent(controller.transform);
+            toggle.anchorMin = new Vector2(1f, 0.5f);
+            toggle.anchorMax = new Vector2(1f, 0.5f);
+            toggle.pivot = new Vector2(1f, 0.5f);
+            toggle.sizeDelta = new Vector2(8f, 8f);
+            toggle.anchoredPosition = new Vector2(-34f, 0f);
+        }
+
+        private Toggle CreateEnableToggle(ListViewController controller)
+        {
+            var gameplayToggle = Utilities.GetTogglePrefab();
+
+            var toggle = Utilities.CreateToggleFromPrefab(gameplayToggle.toggle, controller.transform.Find("Value"));
+
+            Object.Destroy(gameplayToggle);
+
+            return toggle;
+        }
+
+        private void CreateDifficultyToggles(Transform parent)
+        {
+            var gameplayToggle = Utilities.GetTogglePrefab();
+
+            var text = BeatSaberUI.CreateText(parent as RectTransform, "Difficulties To Filter NJS", Vector2.zero, new Vector2(50f, 6f));
+            text.rectTransform.anchorMin = new Vector2(0f, 1f);
+            text.rectTransform.anchorMax = new Vector2(0f, 1f);
+            text.rectTransform.pivot = new Vector2(0f, 1f);
+            text.fontSize = 5.5f;
+            BeatSaberUI.AddHintText(text.rectTransform, "Song is kept if at least one of the checked difficulties passes the filter. Songs without a checked difficulty and OST songs are not removed.");
+
+            // easy
+            var toggle = CreateToggleFromPrefab(gameplayToggle.toggle, parent, Vector2.zero, new Vector2(0.2f, 0.5f));
+            toggle.onValueChanged.AddListener(delegate (bool value)
             {
-                Status = FilterStatus.Changed;
-            }
-            else
+                _difficultiesStagingValue[0] = value;
+
+                if (_minEnabledStagingValue || _maxEnabledStagingValue)
+                    SettingChanged?.Invoke();
+            });
+            _difficultyToggles[0] = toggle;
+
+            text = BeatSaberUI.CreateText(parent as RectTransform, "Easy", new Vector2(0f, -2f), new Vector2(8f, 4f));
+            text.rectTransform.anchorMin = new Vector2(0.1f, 0.5f);
+            text.rectTransform.anchorMax = new Vector2(0.1f, 0.5f);
+            text.rectTransform.pivot = new Vector2(0.5f, 0f);
+            text.enableWordWrapping = false;
+            text.alignment = TextAlignmentOptions.Bottom;
+            text.fontSize = 3.5f;
+
+            // normal
+            toggle = CreateToggleFromPrefab(gameplayToggle.toggle, parent, new Vector2(0.2f, 0f), new Vector2(0.4f, 0.5f));
+            toggle.onValueChanged.AddListener(delegate (bool value)
             {
-                Status = FilterStatus.NotApplied;
+                _difficultiesStagingValue[1] = value;
+
+                if (_minEnabledStagingValue || _maxEnabledStagingValue)
+                    SettingChanged?.Invoke();
+            });
+            _difficultyToggles[1] = toggle;
+
+            text = BeatSaberUI.CreateText(parent as RectTransform, "Normal", new Vector2(0f, -2f), new Vector2(8f, 4f));
+            text.rectTransform.anchorMin = new Vector2(0.3f, 0.5f);
+            text.rectTransform.anchorMax = new Vector2(0.3f, 0.5f);
+            text.rectTransform.pivot = new Vector2(0.5f, 0f);
+            text.enableWordWrapping = false;
+            text.alignment = TextAlignmentOptions.Bottom;
+            text.fontSize = 3.5f;
+
+            // hard
+            toggle = CreateToggleFromPrefab(gameplayToggle.toggle, parent, new Vector2(0.4f, 0f), new Vector2(0.6f, 0.5f));
+            toggle.onValueChanged.AddListener(delegate (bool value)
+            {
+                _difficultiesStagingValue[2] = value;
+
+                if (_minEnabledStagingValue || _maxEnabledStagingValue)
+                    SettingChanged?.Invoke();
+            });
+            _difficultyToggles[2] = toggle;
+
+            text = BeatSaberUI.CreateText(parent as RectTransform, "Hard", new Vector2(0f, -2f), new Vector2(8f, 4f));
+            text.rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+            text.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            text.rectTransform.pivot = new Vector2(0.5f, 0f);
+            text.enableWordWrapping = false;
+            text.alignment = TextAlignmentOptions.Bottom;
+            text.fontSize = 3.5f;
+
+            // expert
+            toggle = CreateToggleFromPrefab(gameplayToggle.toggle, parent, new Vector2(0.6f, 0f), new Vector2(0.8f, 0.5f));
+            toggle.onValueChanged.AddListener(delegate (bool value)
+            {
+                _difficultiesStagingValue[3] = value;
+
+                if (_minEnabledStagingValue || _maxEnabledStagingValue)
+                    SettingChanged?.Invoke();
+            });
+            _difficultyToggles[3] = toggle;
+
+            text = BeatSaberUI.CreateText(parent as RectTransform, "Expert", new Vector2(0f, -2f), new Vector2(8f, 4f));
+            text.rectTransform.anchorMin = new Vector2(0.7f, 0.5f);
+            text.rectTransform.anchorMax = new Vector2(0.7f, 0.5f);
+            text.rectTransform.pivot = new Vector2(0.5f, 0f);
+            text.enableWordWrapping = false;
+            text.alignment = TextAlignmentOptions.Bottom;
+            text.fontSize = 3.5f;
+
+            // expert+
+            toggle = CreateToggleFromPrefab(gameplayToggle.toggle, parent, new Vector2(0.8f, 0f), new Vector2(1f, 0.5f));
+            toggle.onValueChanged.AddListener(delegate (bool value)
+            {
+                _difficultiesStagingValue[4] = value;
+
+                if (_minEnabledStagingValue || _maxEnabledStagingValue)
+                    SettingChanged?.Invoke();
+            });
+            _difficultyToggles[4] = toggle;
+
+            text = BeatSaberUI.CreateText(parent as RectTransform, "Expert+", new Vector2(0f, -2f), new Vector2(8f, 4f));
+            text.rectTransform.anchorMin = new Vector2(0.9f, 0.5f);
+            text.rectTransform.anchorMax = new Vector2(0.9f, 0.5f);
+            text.rectTransform.pivot = new Vector2(0.5f, 0f);
+            text.enableWordWrapping = false;
+            text.alignment = TextAlignmentOptions.Bottom;
+            text.fontSize = 3.5f;
+
+            Object.Destroy(gameplayToggle.gameObject);
+        }
+
+        private Toggle CreateToggleFromPrefab(Toggle prefab, Transform parent, Vector2 anchorMin, Vector2 anchorMax)
+        {
+            var toggle = Utilities.CreateToggleFromPrefab(prefab, parent);
+
+            var rt = toggle.transform as RectTransform;
+            rt.anchorMin = anchorMin + ((anchorMax - anchorMin) / 2f);
+            rt.anchorMax = rt.anchorMin;
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.sizeDelta = new Vector2(6f, 6f);
+            rt.anchoredPosition = Vector2.zero;
+
+            return toggle;
+        }
+
+        private void RefreshUI(bool init = true, bool refreshValue = false)
+        {
+            if (init)
+            {
+                if (!refreshValue)
+                {
+                    // disable applyImmediately temporarily, otherwise Init() triggers a call to SetValue, which also calls RefreshUI()
+                    _minViewController.applyImmediately = false;
+                    _maxViewController.applyImmediately = false;
+                }
+
+                _minViewController.Init();
+                _maxViewController.Init();
+
+                if (!refreshValue)
+                {
+                    _minViewController.applyImmediately = true;
+                    _maxViewController.applyImmediately = true;
+                }
             }
+
+            // reset button state
+            _minViewController.GetComponentsInChildren<Button>().First(x => x.name == "DecButton").interactable = _minEnabledStagingValue && _minStagingValue > MinValue;
+            _minViewController.GetComponentsInChildren<Button>().First(x => x.name == "IncButton").interactable = _minEnabledStagingValue && (!_maxEnabledStagingValue || _minStagingValue < _maxStagingValue) && _minStagingValue < MaxValue;
+            _maxViewController.GetComponentsInChildren<Button>().First(x => x.name == "DecButton").interactable = _maxEnabledStagingValue && (!_minEnabledStagingValue || _maxStagingValue > _minStagingValue) && _maxStagingValue > MinValue;
+            _maxViewController.GetComponentsInChildren<Button>().First(x => x.name == "IncButton").interactable = _maxEnabledStagingValue && _maxStagingValue < MaxValue;
         }
     }
 }

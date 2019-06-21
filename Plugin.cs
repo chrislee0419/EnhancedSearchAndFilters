@@ -1,8 +1,10 @@
 ﻿using System.Linq;
+using System.Collections.Generic;
 using IPA;
 using UnityEngine.SceneManagement;
 using IPALogger = IPA.Logging.Logger;
 using IPAPluginManager = IPA.Loader.PluginManager;
+using SongCore;
 using CustomUI.Utilities;
 
 namespace EnhancedSearchAndFilters
@@ -17,10 +19,14 @@ namespace EnhancedSearchAndFilters
         public void OnApplicationStart()
         {
             BSEvents.menuSceneLoadedFresh += OnMenuSceneLoadedFresh;
+            Loader.SongsLoadedEvent += SongCoreLoaderFinishedLoading;
         }
 
         public void OnApplicationQuit()
         {
+            BeatmapDetailsLoader.Instance.CancelLoading();
+            BeatmapDetailsLoader.Instance.CancelPopulatingCache();
+            BeatmapDetailsLoader.Instance.SaveCacheToFile();
         }
 
         public void OnFixedUpdate()
@@ -35,7 +41,10 @@ namespace EnhancedSearchAndFilters
 
         public void OnActiveSceneChanged(Scene prevScene, Scene nextScene)
         {
-
+            if (nextScene.name == "MenuCore" && BeatmapDetailsLoader.Instance.IsCaching)
+                BeatmapDetailsLoader.Instance.StartPopulatingCache();
+            if ((prevScene.name == "MenuCore" || nextScene.name == "GameCore") && BeatmapDetailsLoader.Instance.IsCaching)
+                BeatmapDetailsLoader.Instance.PausePopulatingCache();
         }
 
         private void OnMenuSceneLoadedFresh()
@@ -46,6 +55,11 @@ namespace EnhancedSearchAndFilters
 #pragma warning restore CS0618
 
             UI.SongListUI.Instance.OnMenuSceneLoadedFresh();
+        }
+
+        public void SongCoreLoaderFinishedLoading(Loader loader, Dictionary<string, CustomPreviewBeatmapLevel> beatmaps)
+        {
+            BeatmapDetailsLoader.Instance.StartPopulatingCache();
         }
 
         public void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode)

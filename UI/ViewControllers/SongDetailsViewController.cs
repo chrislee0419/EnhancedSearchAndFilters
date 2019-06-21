@@ -19,7 +19,6 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         private LevelParamsPanel _levelParamsPanel;
         private TextMeshProUGUI _songNameText;
         private TextMeshProUGUI _detailsText;
-        private BeatmapLevelsModelSO _beatmapLevelsModel;
 
         private static readonly string[] _difficultyStrings = new string[] { "Easy", "Normal", "Hard", "Expert", "Expert+" };
         private static readonly Color _checkmarkColor = new Color(0.8f, 1f, 0.8f);
@@ -50,8 +49,6 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
                 _levelParamsPanel = _standardLevelDetailView.GetPrivateField<LevelParamsPanel>("_levelParamsPanel");
                 _songNameText = _standardLevelDetailView.GetPrivateField<TextMeshProUGUI>("_songNameText");
-
-                _beatmapLevelsModel = Resources.FindObjectsOfTypeAll<StandardLevelDetailViewController>().First().GetPrivateField<BeatmapLevelsModelSO>("_beatmapLevelsModel");
 
                 _checkmarkSprite = UIUtilities.LoadSpriteFromResources("EnhancedSearchAndFilters.Assets.checkmark.png");
                 _crossSprite = UIUtilities.LoadSpriteFromResources("EnhancedSearchAndFilters.Assets.cross.png");
@@ -95,26 +92,23 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
             if (level is CustomPreviewBeatmapLevel)
             {
-                LoadCustomBeatmapLevelAsync(level as CustomPreviewBeatmapLevel);
+#pragma warning disable CS4014
+                BeatmapDetailsLoader.Instance.LoadSingleBeatmapAsync(level as CustomPreviewBeatmapLevel,
+                    delegate (IBeatmapLevel beatmapLevel)
+                    {
+                        if (beatmapLevel != null)
+                            SetOtherSongDetails(beatmapLevel.beatmapLevelData);
+                    });
+#pragma warning restore CS4014
             }
             else if (level is BeatmapDataSO)
             {
                 SetOtherSongDetails((level as BeatmapLevelSO).beatmapLevelData, false);
             }
-        }
-
-        private async void LoadCustomBeatmapLevelAsync(CustomPreviewBeatmapLevel level)
-        {
-            CancellationToken token = new CancellationToken();
-            try
+            else
             {
-                BeatmapLevelsModelSO.GetBeatmapLevelResult result = await _beatmapLevelsModel.GetBeatmapLevelAsync(level.levelID, token);
-                if (!result.isError && result.beatmapLevel != null)
-                {
-                    SetOtherSongDetails(result.beatmapLevel.beatmapLevelData.difficultyBeatmapSets);
-                }
+                // TODO: not purchased message
             }
-            catch (OperationCanceledException) { }
         }
 
         /// <summary>

@@ -7,6 +7,7 @@ using CustomUI.BeatSaber;
 using CustomUI.Utilities;
 using TMPro;
 using VRUI;
+using SongCore.OverrideClasses;
 using TableView = HMUI.TableView;
 using EnhancedSearchAndFilters.Tweaks;
 using EnhancedSearchAndFilters.UI.FlowCoordinators;
@@ -30,6 +31,7 @@ namespace EnhancedSearchAndFilters.UI
         private LevelPackLevelsTableView _levelsTableViewContainer;
         private TableView _levelsTableView;
         private LevelPackLevelsViewController _levelsViewController;
+        private IBeatmapLevelPack _lastPack;
 
         public DismissableNavigationController ButtonParentViewController { get; private set; } = null;
 
@@ -41,6 +43,7 @@ namespace EnhancedSearchAndFilters.UI
         private static readonly Vector2 DefaultFilterButtonPosition = new Vector2(30f, 35.5f);
         private static readonly Vector2 DefaultClearButtonPosition = new Vector2(48f, 35.5f);
         private static readonly Vector2 DefaultButtonSize = new Vector2(18f, 6f);
+        private const string FilteredSongsPackName = "Filtered Songs";
 
         private static SongListUI _instance;
 
@@ -71,6 +74,7 @@ namespace EnhancedSearchAndFilters.UI
             _levelsTableViewContainer = viewControllersContainer.GetComponentInChildren<LevelPackLevelsTableView>(true);
             _levelsTableView = _levelsTableViewContainer.GetPrivateField<TableView>("_tableView");
             _levelsViewController = viewControllersContainer.GetComponentInChildren<LevelPackLevelsViewController>(true);
+            _levelsViewController.didSelectPackEvent += LevelPackSelected;
 
             var levelPacksViewController = viewControllersContainer.GetComponentInChildren<LevelPacksViewController>(true);
             
@@ -302,9 +306,15 @@ namespace EnhancedSearchAndFilters.UI
             {
                 _filterViewController = new GameObject("FilterViewController").AddComponent<FilterViewController>();
                 _filterViewController.BackButtonPressed += DismissFilterViewController;
+                _filterViewController.LevelsModified += SetFilteredSongs;
+                _filterViewController.FiltersUnapplied += FiltersUnapplied;
             }
 
-            IPreviewBeatmapLevel[] levels = _levelsViewController.GetPrivateField<IBeatmapLevelPack>("_levelPack").beatmapLevelCollection.beatmapLevels;
+            if (_lastPack == null || _levelsViewController.levelPack.packName != FilteredSongsPackName)
+                _lastPack = _levelsViewController.levelPack;
+
+            IPreviewBeatmapLevel[] levels = _lastPack.beatmapLevelCollection.beatmapLevels;
+
             _filterViewController.Activate(_freePlayFlowCoordinator, levels);
 
             Logger.log.Debug("'Filter' button pressed.");
@@ -312,7 +322,10 @@ namespace EnhancedSearchAndFilters.UI
 
         public void ClearButtonPressed()
         {
-            Logger.log.Info("'Clear Filter' button pressed.");
+            if (_filterViewController.IsFilterApplied)
+                _filterViewController?.UnapplyFilters();
+
+            Logger.log.Debug("'Clear Filter' button pressed.");
         }
 
         public void ToggleButtonsActive(bool active)
@@ -320,6 +333,14 @@ namespace EnhancedSearchAndFilters.UI
             SearchButton.gameObject.SetActive(active);
             FilterButton.gameObject.SetActive(active);
             ClearButton.gameObject.SetActive(active);
+        }
+
+        private void LevelPackSelected(LevelPackLevelsViewController viewController, IBeatmapLevelPack levelPack)
+        {
+            // TODO: reference LevelPacksViewController instead, cause this doesn't really work
+            _lastPack = levelPack;
+
+            _filterViewController?.UnapplyFilters();
         }
 
         private void DismissSearchFlowCoordinator()
@@ -350,6 +371,17 @@ namespace EnhancedSearchAndFilters.UI
             }
 
             _levelsViewController.HandleLevelPackLevelsTableViewDidSelectLevel(null, level);
+        }
+
+        private void SetFilteredSongs(IPreviewBeatmapLevel[] levels)
+        {
+            BeatmapLevelPack levelPack = new BeatmapLevelPack("", FilteredSongsPackName, _levelsViewController.levelPack.coverImage, new BeatmapLevelCollection(levels));
+            _levelsViewController.SetData(levelPack);
+        }
+
+        private void FiltersUnapplied()
+        {
+            _levelsViewController.SetData(_lastPack);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace EnhancedSearchAndFilters.Filters
@@ -8,13 +9,24 @@ namespace EnhancedSearchAndFilters.Filters
         string FilterName { get; }
         FilterStatus Status { get; }
         bool ApplyFilter { get; set; }
+        FilterControl[] Controls { get; }
 
-        FilterControl[] GetControls();
+        event Action SettingChanged;
+
+        void Init();
 
         void SetDefaultValues();
         void ResetValues();
 
-        void FilterSongList(ref List<IPreviewBeatmapLevel> levels);
+        void FilterSongList(ref List<BeatmapDetails> detailsList);
+    }
+
+    public enum FilterStatus
+    {
+        NotAppliedAndDefault,
+        NotAppliedAndChanged,
+        Applied,
+        AppliedAndChanged
     }
 
     public class FilterControl
@@ -26,10 +38,21 @@ namespace EnhancedSearchAndFilters.Filters
         private Vector2 _anchoredPosition;
 
         private GameObject _control;
+        private Action OnEnable;
 
-        private bool _hadBeenInitialized;
+        public bool HasBeenInitialized { get; private set; }
 
-        public FilterControl(GameObject control, Vector2 anchorMin, Vector2 anchorMax, Vector2 pivot, Vector2 sizeDelta, Vector2 anchoredPosition)
+        /// <summary>
+        /// Creates a new FilterControl object, which contains a GameObject that controls some or many UI elements for a filter.
+        /// </summary>
+        /// <param name="control">GameObject containing one or more filter UI element(s).</param>
+        /// <param name="anchorMin"></param>
+        /// <param name="anchorMax"></param>
+        /// <param name="pivot"></param>
+        /// <param name="sizeDelta"></param>
+        /// <param name="anchoredPosition">Anchored position of the control on the parent transform set by Init().</param>
+        /// <param name="onEnable">A function that is called every time the filter is displayed. Used to update the state of the control if it is reset when it is disabled.</param>
+        public FilterControl(GameObject control, Vector2 anchorMin, Vector2 anchorMax, Vector2 pivot, Vector2 sizeDelta, Vector2 anchoredPosition, Action onEnable=null)
         {
             _control = control;
             _control.SetActive(false);
@@ -39,63 +62,45 @@ namespace EnhancedSearchAndFilters.Filters
             _pivot = pivot;
             _sizeDelta = sizeDelta;
             _anchoredPosition = anchoredPosition;
+
+            OnEnable = onEnable;
         }
 
+        /// <summary>
+        /// Initializes the filter control elements. Attaches the elements to a parent transform.
+        /// </summary>
+        /// <param name="transform">The transform that will become the parent to the control element.</param>
         public void Init(Transform transform)
         {
-            _control.transform.SetParent(transform, false);
-
             RectTransform rt = _control.transform as RectTransform;
+            rt.SetParent(transform, false);
             rt.anchorMin = _anchorMin;
             rt.anchorMax = _anchorMax;
             rt.pivot = _pivot;
             rt.sizeDelta = _sizeDelta;
             rt.anchoredPosition = _anchoredPosition;
 
-            Logger.log.Info($"control - {rt.name}: rect={(rt as RectTransform).rect}, localPos={rt.localPosition}, parent={rt.parent?.name}");
-            //Logger.log.Info($"control - {rt.name}: anchorMin={(rt as RectTransform).anchorMin}, anchorMax={(rt as RectTransform).anchorMax}");
-            //Logger.log.Info($"control - {rt.name}: pivot={(rt as RectTransform).pivot}, anchoredPos={(rt as RectTransform).anchoredPosition}");
-            for (int i = 0; i < _control.transform.childCount; ++i)
-            {
-                var t = _control.transform.GetChild(i);
-                if (t.name != "Value")
-                    continue;
-                Logger.log.Info($"{t.name}: rect={(t as RectTransform).rect}, localPos={t.localPosition}, parent={t.parent?.name}");
-                Logger.log.Info($"{t.name}: anchorMin={(t as RectTransform).anchorMin}, anchorMax={(t as RectTransform).anchorMax}");
-                Logger.log.Info($"{t.name}: pivot={(t as RectTransform).pivot}, anchoredPos={(t as RectTransform).anchoredPosition}");
-                Logger.log.Info($"{t.name}: offsetMin={(t as RectTransform).offsetMin}, offsetMax={(t as RectTransform).offsetMax}");
-                Logger.log.Info($"{t.name}: localRotation={(t as RectTransform).localRotation}, localScale={(t as RectTransform).localScale}");
-
-                for (int j = 0; j < t.childCount; ++j)
-                {
-                    var t2 = t.GetChild(j);
-                    Logger.log.Info($"{t2.name}: rect={(t2 as RectTransform).rect}, localPos={t2.localPosition}, parent={t2.parent?.name}");
-                    Logger.log.Info($"{t2.name}: anchorMin={(t2 as RectTransform).anchorMin}, anchorMax={(t2 as RectTransform).anchorMax}");
-                    Logger.log.Info($"{t2.name}: pivot={(t2 as RectTransform).pivot}, anchoredPos={(t2 as RectTransform).anchoredPosition}");
-                    Logger.log.Info($"{t2.name}: offsetMin={(t2 as RectTransform).offsetMin}, offsetMax={(t2 as RectTransform).offsetMax}");
-                    Logger.log.Info($"{t2.name}: localRotation={(t2 as RectTransform).localRotation}, localScale={(t2 as RectTransform).localScale}");
-                }
-            }
-
-            _hadBeenInitialized = true;
+            HasBeenInitialized = true;
         }
 
+        /// <summary>
+        /// Set the filter control elements to be displayed.
+        /// </summary>
         public void EnableControl()
         {
-            if (_hadBeenInitialized)
+            if (HasBeenInitialized)
+            {
                 _control.SetActive(true);
+                OnEnable?.Invoke();
+            }
         }
 
+        /// <summary>
+        /// Hides the filter control elements.
+        /// </summary>
         public void DisableControl()
         {
             _control.SetActive(false);
         }
-    }
-
-    public enum FilterStatus
-    {
-        NotApplied,
-        Changed,
-        Applied
     }
 }

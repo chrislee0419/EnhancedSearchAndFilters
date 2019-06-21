@@ -85,6 +85,18 @@ namespace EnhancedSearchAndFilters
                 return config.GetInt("EnhancedSearchAndFilters", "MaxSongsToSearchInOneFrame", 100, true);
             }
         }
+
+        static public bool ShowFirstTimeLoadingText
+        {
+            get
+            {
+                return config.GetBool("EnhancedSearchAndFilters", "ShowFirstTimeLoadingText", true, true);
+            }
+            set
+            {
+                config.SetBool("EnhancedSearchAndFilters", "ShowFirstTimeLoadingText", value);
+            }
+        }
     }
 
     internal enum SearchableSongFields

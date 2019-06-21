@@ -17,25 +17,29 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         public Action<IFilter, IFilter> FilterSelected;
 
         public List<IFilter> FilterList { get; private set; } = new List<IFilter>();
-        public int CurrentRow { get; private set; }
+        public int CurrentRow { get; private set; } = 0;
+        public IFilter CurrentFilter { get { return FilterList[CurrentRow]; } }
 
         public new string reuseIdentifier = "FilterListTableCell";
 
         private LevelListTableCell _songListTableCellInstance;
 
-        //private static readonly Color DefaultFilterColor = Color.white;
-        private static readonly Color DefaultFilterColor = new Color(1f, 0.3f, 0.3f);
-        private static readonly Color PendingFilterColor = new Color(1f, 1f, 0.3f);
-        private static readonly Color AppliedFilterColor = new Color(0.3f, 1f, 0.3f);
+        private static readonly Color DefaultFilterColor = new Color(1f, 0.2f, 0.2f);
+        private static readonly Color PendingFilterColor = new Color(1f, 1f, 0.2f);
+        private static readonly Color AppliedFilterColor = new Color(0.2f, 1f, 0.2f);
+        private static readonly Color AppliedPendingFilterColor = new Color(0.2f, 0.5f, 1f);
 
         protected override void DidActivate(bool firstActivation, ActivationType type)
         {
+            if (firstActivation)
+            {
+                _songListTableCellInstance = Resources.FindObjectsOfTypeAll<LevelListTableCell>().First(x => (x.name == "LevelListTableCell"));
+            }
+
             base.DidActivate(firstActivation, type);
 
             if (firstActivation)
             {
-                _songListTableCellInstance = Resources.FindObjectsOfTypeAll<LevelListTableCell>().First(x => (x.name == "LevelListTableCell"));
-
                 RectTransform rt = this._customListTableView.transform as RectTransform;
                 rt.sizeDelta = Vector2.zero;
                 (rt.parent as RectTransform).sizeDelta = new Vector2(50f, 45f);
@@ -62,15 +66,15 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 rt.anchoredPosition = Vector2.zero;
 
                 this.DidSelectRowEvent += RowSelected;
-
-                // select row 0 as default
-                _customListTableView.SelectCellWithIdx(0);
             }
         }
 
-        public void RefreshTable()
+        public void RefreshTable(bool useCallback = false)
         {
             _customListTableView.ReloadData();
+
+            // since ReloadData() clears the cell selection, we re-select the current row (callback disabled)
+            _customListTableView.SelectCellWithIdx(CurrentRow, useCallback);
         }
 
         private void RowSelected(TableView unused, int idx)
@@ -118,7 +122,6 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 highlightImg.rectTransform.anchoredPosition = Vector2.zero;
                 highlightImg.rectTransform.sizeDelta = Vector2.zero;
 
-                // TODO: figure out a way to show the user that a filter is applied, has changes, is not applied
                 statusImg = new GameObject("StatusImage").AddComponent<UEImage>();
                 statusImg.transform.SetParent(tableCell.transform, false);
                 statusImg.rectTransform.anchorMin = Vector2.zero;
@@ -144,10 +147,12 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
             cellText.text = filter.FilterName;
 
-            if (filter.Status == FilterStatus.NotApplied)
+            if (filter.Status == FilterStatus.NotAppliedAndDefault)
                 statusImg.color = DefaultFilterColor;
-            else if (filter.Status == FilterStatus.Changed)
+            else if (filter.Status == FilterStatus.NotAppliedAndChanged)
                 statusImg.color = PendingFilterColor;
+            else if (filter.Status == FilterStatus.AppliedAndChanged)
+                statusImg.color = AppliedPendingFilterColor;
             else
                 statusImg.color = AppliedFilterColor;
 
