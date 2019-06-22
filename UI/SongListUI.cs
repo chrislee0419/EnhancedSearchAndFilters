@@ -74,9 +74,9 @@ namespace EnhancedSearchAndFilters.UI
             _levelsTableViewContainer = viewControllersContainer.GetComponentInChildren<LevelPackLevelsTableView>(true);
             _levelsTableView = _levelsTableViewContainer.GetPrivateField<TableView>("_tableView");
             _levelsViewController = viewControllersContainer.GetComponentInChildren<LevelPackLevelsViewController>(true);
-            _levelsViewController.didSelectPackEvent += LevelPackSelected;
 
             var levelPacksViewController = viewControllersContainer.GetComponentInChildren<LevelPacksViewController>(true);
+            levelPacksViewController.didSelectPackEvent += LevelPackSelected;
             
             Button soloFreePlayButton = Resources.FindObjectsOfTypeAll<Button>().First(x => x.name == "SoloFreePlayButton");
             Button partyFreePlayButton = Resources.FindObjectsOfTypeAll<Button>().First(x => x.name == "PartyFreePlayButton");
@@ -284,6 +284,11 @@ namespace EnhancedSearchAndFilters.UI
             Logger.log.Debug("Created clear filter button.");
         }
 
+        public void UnapplyFilters()
+        {
+            _filterViewController?.UnapplyFilters(false);
+        }
+
         public void SearchButtonPressed()
         {
             if (_searchFlowCoordinator == null)
@@ -335,12 +340,11 @@ namespace EnhancedSearchAndFilters.UI
             ClearButton.gameObject.SetActive(active);
         }
 
-        private void LevelPackSelected(LevelPackLevelsViewController viewController, IBeatmapLevelPack levelPack)
+        private void LevelPackSelected(LevelPacksViewController viewController, IBeatmapLevelPack levelPack)
         {
-            // TODO: reference LevelPacksViewController instead, cause this doesn't really work
             _lastPack = levelPack;
 
-            _filterViewController?.UnapplyFilters();
+            _filterViewController?.UnapplyFilters(false);
         }
 
         private void DismissSearchFlowCoordinator()

@@ -241,9 +241,24 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             parentFlowCoordinator.InvokePrivateMethod("PresentViewController", new object[] { this, null, false });
         }
 
-        public void UnapplyFilters()
+        public void UnapplyFilters(bool sendEvent = true)
         {
-            HandleUnapplyButtonPressed();
+            _resetButton.interactable = false;
+            _applyButton.interactable = true;
+            _unapplyButton.interactable = false;
+
+            _applyButton.gameObject.SetActive(true);
+            _unapplyButton.gameObject.SetActive(false);
+
+            foreach (var filter in _listViewController.FilterList)
+                filter.ApplyFilter = false;
+
+            IsFilterApplied = false;
+
+            _listViewController.RefreshTable();
+
+            if (sendEvent)
+                FiltersUnapplied?.Invoke();
         }
 
         private string GetLoadingProgressString(int loadedCount, int total)
@@ -381,21 +396,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             if (BeatmapDetailsLoader.Instance.IsLoading)
                 return;
 
-            _resetButton.interactable = false;
-            _applyButton.interactable = true;
-            _unapplyButton.interactable = false;
-
-            _applyButton.gameObject.SetActive(true);
-            _unapplyButton.gameObject.SetActive(false);
-
-            foreach (var filter in _listViewController.FilterList)
-                filter.ApplyFilter = false;
-
-            IsFilterApplied = false;
-
-            _listViewController.RefreshTable();
-            FiltersUnapplied?.Invoke();
-
+            UnapplyFilters();
         }
 
         private void FilterSettingChanged()

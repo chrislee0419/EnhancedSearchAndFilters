@@ -80,20 +80,17 @@ namespace EnhancedSearchAndFilters.Tweaks
             _defaultSortButton.onClick.AddListener(() =>
             {
                 SongListUI.Instance.ToggleButtonsActive(true);
-
-                // unapply filters + search
+                SongListUI.Instance.UnapplyFilters();
             });
             _newestSortButton.onClick.AddListener(() =>
             {
                 SongListUI.Instance.ToggleButtonsActive(true);
-
-                // unapply filters + search
+                SongListUI.Instance.UnapplyFilters();
             });
             _authorSortButton.onClick.AddListener(() =>
             {
                 SongListUI.Instance.ToggleButtonsActive(true);
-
-                // unapply filters + search
+                SongListUI.Instance.UnapplyFilters();
             });
 
             SongListUI.Instance.SearchButton = searchButton;
