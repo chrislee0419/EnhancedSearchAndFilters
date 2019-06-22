@@ -140,29 +140,19 @@ namespace EnhancedSearchAndFilters.UI
             int tries;
             for (tries = 10; tries > 0; --tries)
             {
-                try
+                if (SongBrowserTweaks.Init())
                 {
-                    // modify SongBrowser's Search button to create our FlowCoordinator
-                    SearchButton = Resources.FindObjectsOfTypeAll<Button>().First(x => x.name == "FilterSearchButton");
-                    SearchButton.onClick = new Button.ButtonClickedEvent();
-                    SearchButton.onClick.AddListener(SearchButtonPressed);
-
-                    // modify SongBrowser's clear sort button to also clear filters
-                    // TODO
-
                     CreateIconFilterButton();
 
-                    Logger.log.Info("Modified SongBrowser's search and clear button");
                     break;
                 }
-                catch (InvalidOperationException) { }
 
-                yield return new WaitForSeconds(0.1f);
+                yield return new WaitForSeconds(0.5f);
             }
 
             if (tries <= 0)
             {
-                Logger.log.Warn("SongBrowser Search button was not found. Creating Search button, which may overlap with other UI elements.");
+                Logger.log.Warn("SongBrowser Search button was not found. Creating new Search button, which may overlap with other UI elements.");
                 CreateSearchButton(DefaultSearchButtonPosition, DefaultButtonSize);
                 CreateFilterButton(DefaultFilterButtonPosition, DefaultButtonSize);
                 CreateClearButton(DefaultClearButtonPosition, DefaultButtonSize);
@@ -191,7 +181,7 @@ namespace EnhancedSearchAndFilters.UI
 
             if (tries <= 0)
             {
-                Logger.log.Warn("BeatSaverDownloader Search button was not found. Creating Search button, which may overlap with other UI elements.");
+                Logger.log.Warn("BeatSaverDownloader Search button was not found. Creating new Search button, which may overlap with other UI elements.");
                 CreateSearchButton(DefaultSearchButtonPosition, DefaultButtonSize);
                 CreateFilterButton(DefaultFilterButtonPosition, DefaultButtonSize);
                 CreateClearButton(DefaultClearButtonPosition, DefaultButtonSize);
@@ -234,12 +224,10 @@ namespace EnhancedSearchAndFilters.UI
             if (FilterButton != null || ButtonParentViewController == null)
                 return;
 
-            // TODO: fix this up after SongBrowser is updated for v1.0.0, icon scale is scuffed
-
             // modify button design to fit with other SongBrowser icon buttons
-            const float iconSize = 3.5f;
+            const float iconSize = 2.5f;
             const float iconScale = 1f;
-            Vector2 buttonPos = new Vector2(53.625f, 34.75f);
+            Vector2 buttonPos = new Vector2(52.625f, 37.25f);
             Vector2 buttonSize = new Vector2(5f, 5f);
 
             FilterButton = ButtonParentViewController.CreateUIButton("PracticeButton", buttonPos, buttonSize, FilterButtonPressed);
@@ -255,7 +243,7 @@ namespace EnhancedSearchAndFilters.UI
             icon.rectTransform.sizeDelta = new Vector2(iconSize, iconSize);
             icon.rectTransform.localScale = new Vector2(iconScale, iconScale);
 
-            Logger.log.Info($"Filter Sprite info: texw={filterIcon.texture.width}, texh={filterIcon.texture.height}, ppu={filterIcon.pixelsPerUnit}, pivot={filterIcon.pivot.ToString()}");
+            Logger.log.Debug("Created icon filter button.");
         }
 
         public void CreateFilterButton(Vector2 anchoredPosition, Vector2 sizeDelta, string buttonTemplate = "CancelButton")
@@ -335,9 +323,9 @@ namespace EnhancedSearchAndFilters.UI
 
         public void ToggleButtonsActive(bool active)
         {
-            SearchButton.gameObject.SetActive(active);
-            FilterButton.gameObject.SetActive(active);
-            ClearButton.gameObject.SetActive(active);
+            SearchButton?.gameObject.SetActive(active);
+            FilterButton?.gameObject.SetActive(active);
+            ClearButton?.gameObject.SetActive(active);
         }
 
         private void LevelPackSelected(LevelPacksViewController viewController, IBeatmapLevelPack levelPack)

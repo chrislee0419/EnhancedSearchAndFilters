@@ -96,7 +96,7 @@ namespace EnhancedSearchAndFilters.Tweaks
             SongListUI.Instance.SearchButton = searchButton;
 
             Initialized = true;
-            Logger.log.Info("Modified BeatSaverDownloader's search, sort, and random buttons.");
+            Logger.log.Info("Modified BeatSaverDownloader's search, sort, and random buttons");
             return true;
         }
 
@@ -120,11 +120,6 @@ namespace EnhancedSearchAndFilters.Tweaks
             _defaultSortButton.gameObject.SetActive(false);
             _newestSortButton.gameObject.SetActive(false);
             _authorSortButton.gameObject.SetActive(false);
-        }
-
-        public static void SortSongs()
-        {
-
         }
     }
 }
