@@ -78,6 +78,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _resultsText.text = $"<color={color}>{searchResultsList.Count()} out of {searchSpaceSize}</color> beatmaps\n" +
                 $"contain the text \"<color=#11FF11>{searchQuery}</color>\"";
             _resultsText.gameObject.SetActive(true);
+            _forceButton.interactable = searchResultsList.Any() ? true : false;
             _forceButton.gameObject.SetActive(true);
             SetHeaderActive(true);
         }
