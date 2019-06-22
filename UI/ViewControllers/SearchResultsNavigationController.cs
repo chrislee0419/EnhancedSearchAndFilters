@@ -36,8 +36,6 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 _resultsText.alignment = TextAlignmentOptions.Center;
                 _resultsText.enableWordWrapping = true;
                 _resultsText.fontSize = 6f;
-                BeatSaberUI.CreateBackButton(this.rectTransform, () => BackButtonPressed?.Invoke());
-                _loadingSpinner = BeatSaberUI.CreateLoadingSpinner(this.rectTransform);
                 _forceButton = BeatSaberUI.CreateUIButton(this.rectTransform, "CancelButton", new Vector2(59f, -32f), new Vector2(36f, 10f), () => ForceShowButtonPressed?.Invoke(), "Force Show Results");
             }
             else
