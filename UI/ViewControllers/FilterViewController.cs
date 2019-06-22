@@ -28,6 +28,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         private Button _resetButton;
         private Button _applyButton;
         private Button _unapplyButton;
+        private Button _colorHint;
 
         private GameObject _loadingSpinner;
         private TextMeshProUGUI _loadingText;
@@ -102,6 +103,23 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 rt.anchoredPosition = new Vector2(-5f, 2f);
                 BeatSaberUI.AddHintText(rt, "Unapplies the filter (Keeps all settings as-is for re-application)");
                 _unapplyButton.gameObject.SetActive(false);
+
+                _colorHint = BeatSaberUI.CreateUIButton(this.rectTransform, "CancelButton", null, "?");
+                _colorHint.GetComponentsInChildren<HorizontalLayoutGroup>().First(x => x.name == "Content").padding = new RectOffset(1, 1, 0, 0);
+                _colorHint.SetButtonTextSize(4f);
+                _colorHint.interactable = false;
+                rt = _colorHint.transform as RectTransform;
+                rt.anchorMin = new Vector2(0f, 1f);
+                rt.anchorMax = new Vector2(0f, 1f);
+                rt.pivot = new Vector2(0f, 1f);
+                rt.sizeDelta = new Vector2(6f, 6f);
+                rt.anchoredPosition = new Vector2(3f, -5f);
+                BeatSaberUI.AddHintText(rt, "Filter Color Legend\n" + 
+                    "<color=#FF5555>Red</color> - Not applied\n" +
+                    "<color=#FFFF55>Yellow</color> - Not applied, but has changes\n" +
+                    "<color=#55FF55>Green</color> - Applied\n" +
+                    "<color=#55AAFF>Blue</color> - Applied, but has changes");
+                _colorHint.gameObject.SetActive(false);
 
                 _listViewController = new GameObject("FilterListViewController").AddComponent<FilterListViewController>();
                 rt = _listViewController.rectTransform;
@@ -207,6 +225,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                     _listViewController.__Activate(ActivationType.NotAddedToHierarchy);
                     _listViewController.SetUserInteraction(true);
                     _listViewController.RefreshTable(true);
+                    _colorHint.gameObject.SetActive(true);
 
                     _settingsRectTransform.gameObject.SetActive(true);
                     foreach (var control in _listViewController.CurrentFilter.Controls)

@@ -25,7 +25,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         private LevelListTableCell _songListTableCellInstance;
 
         private static readonly Color DefaultFilterColor = new Color(1f, 0.2f, 0.2f);
-        private static readonly Color PendingFilterColor = new Color(1f, 1f, 0.2f);
+        private static readonly Color PendingFilterColor = new Color(1f, 1f, 0f);
         private static readonly Color AppliedFilterColor = new Color(0.2f, 1f, 0.2f);
         private static readonly Color AppliedPendingFilterColor = new Color(0.2f, 0.5f, 1f);
 
