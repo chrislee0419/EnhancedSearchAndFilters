@@ -183,7 +183,7 @@ namespace EnhancedSearchAndFilters
             _loadingTask = new HMTask(
                 delegate ()
                 {
-                    Logger.log.Info("Starting to load beatmap details");
+                    Logger.log.Debug("Starting to load beatmap details");
 
                     GetBeatmapLevelsAsync().GetAwaiter().GetResult();
                 },
@@ -310,7 +310,7 @@ namespace EnhancedSearchAndFilters
             }
 
             sw.Stop();
-            Logger.log.Info($"Finished loading the details of {_loadedLevelsUnsorted.Count} beatmaps (took {sw.ElapsedMilliseconds/1000f} seconds)");
+            Logger.log.Debug($"Finished loading the details of {_loadedLevelsUnsorted.Count} beatmaps (took {sw.ElapsedMilliseconds/1000f} seconds)");
 
             // all beatmaps are loaded, sort to maintain order
             _loadedLevelsUnsorted.Sort((x, y) => x.Item1 - y.Item1);
