@@ -275,6 +275,12 @@ namespace EnhancedSearchAndFilters.UI
         public void UnapplyFilters()
         {
             _filterViewController?.UnapplyFilters(false);
+
+            if (!SongBrowserTweaks.ModLoaded)
+            {
+                FilterButton.SetButtonText("Filter");
+                FilterButton.SetButtonTextSize(3f);
+            }
         }
 
         public void SearchButtonPressed()
@@ -332,7 +338,7 @@ namespace EnhancedSearchAndFilters.UI
         {
             _lastPack = levelPack;
 
-            _filterViewController?.UnapplyFilters(false);
+            UnapplyFilters();
         }
 
         private void DismissSearchFlowCoordinator()
@@ -369,11 +375,23 @@ namespace EnhancedSearchAndFilters.UI
         {
             BeatmapLevelPack levelPack = new BeatmapLevelPack("", FilteredSongsPackName, _levelsViewController.levelPack.coverImage, new BeatmapLevelCollection(levels));
             _levelsViewController.SetData(levelPack);
+
+            if (!SongBrowserTweaks.ModLoaded)
+            {
+                FilterButton.SetButtonText("Filter\n(Applied)");
+                FilterButton.SetButtonTextSize(2.3f);
+            }
         }
 
         private void FiltersUnapplied()
         {
             _levelsViewController.SetData(_lastPack);
+
+            if (!SongBrowserTweaks.ModLoaded)
+            {
+                FilterButton.SetButtonText("Filter");
+                FilterButton.SetButtonTextSize(3f);
+            }
         }
     }
 }
