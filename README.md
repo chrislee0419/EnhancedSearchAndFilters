@@ -17,6 +17,12 @@ A mod that helps you find the songs you want to play quicker! Includes a more op
 - Mod compatibility
      - Compatible with BeatSaverDownloader and SongBrowser.
 
+## Dependencies
+
+- SongCore
+- CustomUI
+- BS Utils
+
 ## Demo
 
 ![search](https://user-images.githubusercontent.com/14931856/59971425-cf46c000-9530-11e9-9dd9-38dc92a7f05f.PNG)
