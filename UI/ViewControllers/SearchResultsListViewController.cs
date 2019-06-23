@@ -51,8 +51,12 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
             IPreviewBeatmapLevel level = _beatmapLevels[idx];
 
-            string contributorsText = $"[{level.levelAuthorName}]";
-            contributorsText = (string.IsNullOrEmpty(level.songAuthorName) ? "" : " ") + contributorsText;
+            string contributorsText = "";
+            if (!string.IsNullOrEmpty(level.levelAuthorName))
+            {
+                contributorsText = $"[{level.levelAuthorName}]";
+                contributorsText = (string.IsNullOrEmpty(level.songAuthorName) ? "" : " ") + contributorsText;
+            }
 
             tableCell.GetPrivateField<TextMeshProUGUI>("_songNameText").text = $"{level.songName} <size=80%>{level.songSubName}</size>";
             tableCell.GetPrivateField<TextMeshProUGUI>("_authorText").text = $"{level.songAuthorName}<size=80%>{contributorsText}</size>";

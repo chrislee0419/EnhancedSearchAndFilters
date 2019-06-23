@@ -101,13 +101,19 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                     });
 #pragma warning restore CS4014
             }
-            else if (level is BeatmapDataSO)
+            else if (level is IBeatmapLevel)
             {
-                SetOtherSongDetails((level as BeatmapLevelSO).beatmapLevelData, false);
+                SetOtherSongDetails((level as IBeatmapLevel).beatmapLevelData, false);
             }
             else
             {
-                // TODO: not purchased message
+                foreach (var tuple in _difficultyElements.Values)
+                {
+                    tuple.Item2.sprite = _crossSprite;
+                    tuple.Item2.color = _crossColor;
+                }
+
+                _detailsText.text = ": DLC song not yet purchased";
             }
         }
 
