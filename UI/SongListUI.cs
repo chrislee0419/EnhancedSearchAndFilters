@@ -321,7 +321,7 @@ namespace EnhancedSearchAndFilters.UI
 
         public void ClearButtonPressed()
         {
-            if (_filterViewController.IsFilterApplied)
+            if (_filterViewController?.IsFilterApplied == true)
                 _filterViewController?.UnapplyFilters();
 
             Logger.log.Debug("'Clear Filter' button pressed.");
