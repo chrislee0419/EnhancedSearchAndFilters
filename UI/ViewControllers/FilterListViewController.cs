@@ -137,8 +137,6 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 tableCell.SetPrivateField("_beatmapCharacteristicAlphas", new float[0]);
                 tableCell.SetPrivateField("_beatmapCharacteristicImages", new UEImage[0]);
                 tableCell.reuseIdentifier = reuseIdentifier;
-
-                Logger.log.Info("Custom TableCell created");
             }
 
             IFilter filter = FilterList[idx];

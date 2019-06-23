@@ -64,7 +64,7 @@ namespace EnhancedSearchAndFilters
         /// </summary>
         public void StartPopulatingCache(bool force = false)
         {
-            if (IsLoading || (SongsAreCached && !force))
+            if (IsLoading || (SongsAreCached && !force && !IsCaching))
                 return;
 
             if (!IsCaching)
@@ -215,7 +215,7 @@ namespace EnhancedSearchAndFilters
             _loadingTokenSource = null;
             _loadingTask = null;
 
-            if (IsCaching && !SongsAreCached)
+            if (IsCaching)
                 StartPopulatingCache();
         }
 
@@ -250,7 +250,7 @@ namespace EnhancedSearchAndFilters
 
                 for (int i = 0; i < WorkChunkSize && index < allLevels.Count; ++index)
                 {
-                    if (!_cache.ContainsKey(allLevels[index].levelID))
+                    if (!_cache.ContainsKey(allLevels[index].levelID) || _cache[allLevels[index].levelID].SongDuration == 0f)
                     {
                         taskList.Add(CacheCustomBeatmapDetailsAsync(allLevels[index] as CustomPreviewBeatmapLevel));
                         ++i;

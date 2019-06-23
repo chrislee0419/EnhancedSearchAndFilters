@@ -178,7 +178,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 _loadingText.alignment = TextAlignmentOptions.Center;
                 _loadingText.fontSize = 5f;
 
-                _infoText = BeatSaberUI.CreateText(this.rectTransform, "", new Vector2(27f, 2f), new Vector2(38f, 8f));
+                // info text
+                _infoText = BeatSaberUI.CreateText(this.rectTransform, "", new Vector2(28f, 2f), new Vector2(36f, 8f));
                 _infoText.rectTransform.anchorMin = Vector2.zero;
                 _infoText.rectTransform.anchorMax = Vector2.zero;
                 _infoText.rectTransform.pivot = Vector2.zero;
@@ -232,8 +233,6 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                         control.EnableControl();
 
                     _beatmapDetails = levels.Zip(_levels, (details, beatmap) => new { details, beatmap }).ToDictionary((item) => item.details, (item) => item.beatmap);
-
-                    Logger.log.Info("Beatmaps loaded successfully");
                 });
         }
 
