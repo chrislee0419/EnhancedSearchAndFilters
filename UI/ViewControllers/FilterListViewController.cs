@@ -131,6 +131,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 statusImg.rectTransform.anchoredPosition = Vector2.zero;
                 statusImg.sprite = Sprite.Create(Texture2D.whiteTexture, new Rect(0f, 0f, 1f, 1f), Vector2.zero);
                 statusImg.color = DefaultFilterColor;
+                statusImg.material = UIUtilities.NoGlowMaterial;
 
                 foreach (UEImage i in tableCell.GetPrivateField<UEImage[]>("_beatmapCharacteristicImages"))
                     i.enabled = false;

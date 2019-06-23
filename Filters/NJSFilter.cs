@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using TMPro;
 using CustomUI.BeatSaber;
 using CustomUI.Settings;
+using CustomUI.Utilities;
 using EnhancedSearchAndFilters.UI;
 using Object = UnityEngine.Object;
 
@@ -121,6 +122,7 @@ namespace EnhancedSearchAndFilters.Filters
 
             var divider = new GameObject("Divider").AddComponent<Image>();
             divider.color = new Color(1f, 1f, 1f, 0.4f);
+            divider.material = UIUtilities.NoGlowMaterial;
 
             var rt = divider.rectTransform;
             rt.SetParent(difficultiesContainer.transform);
@@ -173,6 +175,7 @@ namespace EnhancedSearchAndFilters.Filters
 
             divider = new GameObject("Divider").AddComponent<Image>();
             divider.color = new Color(1f, 1f, 1f, 0.15f);
+            divider.material = UIUtilities.NoGlowMaterial;
 
             rt = divider.rectTransform;
             rt.SetParent(_minViewController.transform);

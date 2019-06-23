@@ -163,6 +163,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 Image divider = new GameObject("WhiteDivider").AddComponent<Image>();
                 divider.sprite = Sprite.Create(Texture2D.whiteTexture, new Rect(0f, 0f, 1f, 1f), Vector2.zero);
                 divider.color = Color.white;
+                divider.material = UIUtilities.NoGlowMaterial;
                 rt = divider.rectTransform;
                 rt.SetParent(_settingsRectTransform, false);
                 rt.anchorMin = Vector2.zero;
