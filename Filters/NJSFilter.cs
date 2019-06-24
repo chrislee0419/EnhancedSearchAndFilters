@@ -120,17 +120,10 @@ namespace EnhancedSearchAndFilters.Filters
             var unused = difficultiesContainer.AddComponent<Image>();
             unused.color = new Color(0f, 0f, 0f, 0f);
 
-            var divider = new GameObject("Divider").AddComponent<Image>();
+            var divider = Utilities.CreateHorizontalDivider(difficultiesContainer.transform);
             divider.color = new Color(1f, 1f, 1f, 0.4f);
             divider.material = UIUtilities.NoGlowMaterial;
-
-            var rt = divider.rectTransform;
-            rt.SetParent(difficultiesContainer.transform);
-            rt.anchorMin = Vector2.zero;
-            rt.anchorMax = new Vector2(1f, 0f);
-            rt.pivot = new Vector2(0.5f, 0f);
-            rt.sizeDelta = new Vector2(0f, 0.2f);
-            rt.anchoredPosition = Vector2.zero;
+            divider.rectTransform.sizeDelta = new Vector2(0f, 0.2f);
 
             CreateDifficultyToggles(difficultiesContainer.transform);
 
@@ -171,19 +164,8 @@ namespace EnhancedSearchAndFilters.Filters
                 SettingChanged?.Invoke();
             });
 
-            MoveViewControllerElements(_minViewController);
-
-            divider = new GameObject("Divider").AddComponent<Image>();
-            divider.color = new Color(1f, 1f, 1f, 0.15f);
-            divider.material = UIUtilities.NoGlowMaterial;
-
-            rt = divider.rectTransform;
-            rt.SetParent(_minViewController.transform);
-            rt.anchorMin = Vector2.zero;
-            rt.anchorMax = new Vector2(1f, 0f);
-            rt.pivot = new Vector2(0.5f, 0.5f);
-            rt.sizeDelta = new Vector2(-4f, 0.1f);
-            rt.anchoredPosition = Vector2.zero;
+            Utilities.MoveMinMaxListViewControllerElements(_minViewController);
+            Utilities.CreateHorizontalDivider(_minViewController.transform);
 
             Controls[1] = new FilterControl(_minViewController.gameObject, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 12f), new Vector2(0f, -26f),
                 delegate ()
@@ -231,7 +213,7 @@ namespace EnhancedSearchAndFilters.Filters
                 SettingChanged?.Invoke();
             });
 
-            MoveViewControllerElements(_maxViewController);
+            Utilities.MoveMinMaxListViewControllerElements(_maxViewController);
 
             Controls[2] = new FilterControl(_maxViewController.gameObject, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 12f), new Vector2(0f, -38f),
                 delegate ()
@@ -329,46 +311,6 @@ namespace EnhancedSearchAndFilters.Filters
                 else
                     ++i;
             }
-        }
-
-        /// <summary>
-        /// Used to move the buttons and text outside of the "Value" transform for a ListViewController. 
-        /// This is done because the "Value" transform has some forced horizontal layout that messes up child RectTransform positioning.
-        /// </summary>
-        /// <param name="controller"></param>
-        private void MoveViewControllerElements(ListViewController controller)
-        {
-            var incButton = controller.transform.Find("Value/IncButton") as RectTransform;
-            incButton.SetParent(controller.transform);
-            incButton.anchorMin = new Vector2(1f, 0.5f);
-            incButton.anchorMax = new Vector2(1f, 0.5f);
-            incButton.pivot = new Vector2(1f, 0.5f);
-            incButton.sizeDelta = new Vector2(8f, 8f);
-            incButton.anchoredPosition = Vector2.zero;
-
-            var text = controller.transform.Find("Value/ValueText") as RectTransform;
-            text.SetParent(controller.transform);
-            text.anchorMin = new Vector2(1f, 0.5f);
-            text.anchorMax = new Vector2(1f, 0.5f);
-            text.pivot = new Vector2(1f, 0.5f);
-            text.sizeDelta = new Vector2(16f, 8f);
-            text.anchoredPosition = new Vector2(-8f, 0f);
-
-            var decButton = controller.transform.Find("Value/DecButton") as RectTransform;
-            decButton.SetParent(controller.transform);
-            decButton.anchorMin = new Vector2(1f, 0.5f);
-            decButton.anchorMax = new Vector2(1f, 0.5f);
-            decButton.pivot = new Vector2(1f, 0.5f);
-            decButton.sizeDelta = new Vector2(8f, 8f);
-            decButton.anchoredPosition = new Vector2(-24f, 0f);
-
-            var toggle = controller.transform.Find("Value/MinValueToggle") as RectTransform ?? controller.transform.Find("Value/MaxValueToggle") as RectTransform;
-            toggle.SetParent(controller.transform);
-            toggle.anchorMin = new Vector2(1f, 0.5f);
-            toggle.anchorMax = new Vector2(1f, 0.5f);
-            toggle.pivot = new Vector2(1f, 0.5f);
-            toggle.sizeDelta = new Vector2(8f, 8f);
-            toggle.anchoredPosition = new Vector2(-34f, 0f);
         }
 
         private Toggle CreateEnableToggle(ListViewController controller)

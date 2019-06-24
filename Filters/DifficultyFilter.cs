@@ -123,17 +123,8 @@ namespace EnhancedSearchAndFilters.Filters
 
             if (createDivider)
             {
-                var divider = new GameObject("Divider").AddComponent<Image>();
-                divider.color = new Color(1f, 1f, 1f, 0.15f);
-                divider.material = UIUtilities.NoGlowMaterial;
-
-                rt = divider.rectTransform;
-                rt.SetParent(parent);
-                rt.anchorMin = new Vector2(0f, 1f);
-                rt.anchorMax = Vector2.one;
-                rt.pivot = new Vector2(0.5f, 0.5f);
-                rt.sizeDelta = new Vector2(0f, 0.1f);
-                rt.anchoredPosition = new Vector2(0f, -18f - (10f * index));
+                var divider = Utilities.CreateHorizontalDivider(parent, 0f, false);
+                divider.rectTransform.anchoredPosition = new Vector2(0f, -18f - (10f * index));
             }
         }
 
