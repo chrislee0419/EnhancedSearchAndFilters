@@ -136,7 +136,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 // 90f wide, 60f tall
                 var containerImage = new GameObject("FilterSettingsContainer").AddComponent<Image>();
                 containerImage.sprite = Sprite.Create(Texture2D.blackTexture, new Rect(0f, 0f, 1f, 1f), Vector2.zero);
-                containerImage.color = Color.black;
+                containerImage.color = new Color(0f, 0f, 0f, 0f);
+                containerImage.material = UIUtilities.NoGlowMaterial;
                 _settingsRectTransform = containerImage.gameObject.transform as RectTransform;
                 _settingsRectTransform.SetParent(this.transform, false);
                 _settingsRectTransform.anchorMin = Vector2.one;
