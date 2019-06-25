@@ -140,7 +140,7 @@ namespace EnhancedSearchAndFilters.Filters
                 SettingChanged?.Invoke();
             });
 
-            Utilities.MoveMinMaxListViewControllerElements(_minViewController);
+            Utilities.MoveListViewControllerElements(_minViewController);
             Utilities.CreateHorizontalDivider(_minViewController.transform);
 
             Controls[1] = new FilterControl(_minViewController.gameObject, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 12f), new Vector2(0f, -8f),
@@ -187,7 +187,7 @@ namespace EnhancedSearchAndFilters.Filters
                 SettingChanged?.Invoke();
             });
 
-            Utilities.MoveMinMaxListViewControllerElements(_maxViewController);
+            Utilities.MoveListViewControllerElements(_maxViewController);
 
             Controls[2] = new FilterControl(_maxViewController.gameObject, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 12f), new Vector2(0f, -20f),
                 delegate ()

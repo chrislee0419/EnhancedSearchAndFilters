@@ -10,7 +10,7 @@ namespace EnhancedSearchAndFilters.Filters
 {
     class OtherFilter : IFilter
     {
-        public string FilterName { get { return "Misc."; } }
+        public string FilterName { get { return "Other"; } }
         public FilterStatus Status
         {
             get
@@ -75,7 +75,7 @@ namespace EnhancedSearchAndFilters.Filters
             SubMenu submenu = new SubMenu((Transform)null);
 
             // title text
-            var text = BeatSaberUI.CreateText(null, "Miscellaneous Filters", Vector2.zero, Vector2.zero);
+            var text = BeatSaberUI.CreateText(null, "Other Filters", Vector2.zero, Vector2.zero);
             text.fontSize = 5.5f;
             var rt = text.rectTransform;
             rt.anchorMin = new Vector2(0f, 1f);
@@ -96,6 +96,7 @@ namespace EnhancedSearchAndFilters.Filters
             _oneSaberViewController.applyImmediately = true;
 
             Utilities.CreateHorizontalDivider(_oneSaberViewController.transform);
+            Utilities.MoveIncDecViewControllerElements(_oneSaberViewController);
 
             Controls[1] = new FilterControl(_oneSaberViewController.gameObject, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 12f), new Vector2(0f, -8f));
 
@@ -109,6 +110,8 @@ namespace EnhancedSearchAndFilters.Filters
             };
             _lightshowViewController.Init();
             _lightshowViewController.applyImmediately = true;
+
+            Utilities.MoveIncDecViewControllerElements(_lightshowViewController);
 
             Controls[2] = new FilterControl(_lightshowViewController.gameObject, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 12f), new Vector2(0f, -20f));
 

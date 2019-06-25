@@ -96,11 +96,32 @@ namespace EnhancedSearchAndFilters.UI
         }
 
         /// <summary>
-        /// Moves the decrement button, value, increment button, and toggle (if it exists) of a min/max ListViewController outside of the "Value" transform.
+        /// Moves the decrement button, value, increment button, and toggle (if it exists) of a ListViewController outside of the "Value" transform.
+        /// </summary>
+        /// <param name="controller">A ListViewController that represents a filter's control's UI element.</param>
+        public static void MoveListViewControllerElements(ListViewController controller)
+        {
+            MoveIncDecViewControllerElements(controller);
+
+            // for min/max ListViewControllers that have an enable toggle
+            if (controller.transform.Find("Value/MinValueToggle") != null || controller.transform.Find("Value/MaxValueToggle") != null)
+            {
+                var toggle = controller.transform.Find("Value/MinValueToggle") as RectTransform ?? controller.transform.Find("Value/MaxValueToggle") as RectTransform;
+                toggle.SetParent(controller.transform);
+                toggle.anchorMin = new Vector2(1f, 0.5f);
+                toggle.anchorMax = new Vector2(1f, 0.5f);
+                toggle.pivot = new Vector2(1f, 0.5f);
+                toggle.sizeDelta = new Vector2(8f, 8f);
+                toggle.anchoredPosition = new Vector2(-34f, 0f);
+            }
+        }
+
+        /// <summary>
+        /// Moves the decrement button, value, and increment button of an IncDecSettingsController outside of the "Value" transform. 
         /// This method is here for consistency of UI elements and because the "Value" transform has some forced horizontal layout that messes up child RectTransform positioning.
         /// </summary>
-        /// <param name="controller">A ListViewController that represents a filter's min or max value UI element.</param>
-        public static void MoveMinMaxListViewControllerElements(ListViewController controller)
+        /// <param name="controller">An IncDecSettingsController that represents a filter's control's UI element.</param>
+        public static void MoveIncDecViewControllerElements(IncDecSettingsController controller)
         {
             var incButton = controller.transform.Find("Value/IncButton") as RectTransform;
             incButton.SetParent(controller.transform);
@@ -125,17 +146,6 @@ namespace EnhancedSearchAndFilters.UI
             decButton.pivot = new Vector2(1f, 0.5f);
             decButton.sizeDelta = new Vector2(8f, 8f);
             decButton.anchoredPosition = new Vector2(-24f, 0f);
-
-            if (controller.transform.Find("Value/MinValueToggle") != null || controller.transform.Find("Value/MaxValueToggle") != null)
-            {
-                var toggle = controller.transform.Find("Value/MinValueToggle") as RectTransform ?? controller.transform.Find("Value/MaxValueToggle") as RectTransform;
-                toggle.SetParent(controller.transform);
-                toggle.anchorMin = new Vector2(1f, 0.5f);
-                toggle.anchorMax = new Vector2(1f, 0.5f);
-                toggle.pivot = new Vector2(1f, 0.5f);
-                toggle.sizeDelta = new Vector2(8f, 8f);
-                toggle.anchoredPosition = new Vector2(-34f, 0f);
-            }
         }
     }
 }

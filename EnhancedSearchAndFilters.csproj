@@ -103,6 +103,7 @@
     <Compile Include="Filters\IFilter.cs" />
     <Compile Include="Filters\NJSFilter.cs" />
     <Compile Include="Filters\OtherFilter.cs" />
+    <Compile Include="Filters\VotedFilter.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="PluginConfig.cs" />

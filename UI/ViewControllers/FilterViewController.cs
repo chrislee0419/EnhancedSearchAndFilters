@@ -150,6 +150,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 _listViewController.FilterList.Add(new DifficultyFilter());
                 _listViewController.FilterList.Add(new DurationFilter());
                 _listViewController.FilterList.Add(new NJSFilter());
+                _listViewController.FilterList.Add(new VotedFilter());
                 _listViewController.FilterList.Add(new OtherFilter());
 
                 foreach (var filter in _listViewController.FilterList)
