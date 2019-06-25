@@ -57,7 +57,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 _maxResultsShownSetting = _submenu.AddList("Maximum # of Results Shown", maxResultsShownValues,
                     "The maximum number of songs found before a search result is shown.\n" +
                     "<color=#11FF11>A lower number is less distracting and only displays results when most irrelevant songs are removed.</color>\n" +
-                    "<color=#FFFF11>You can force a search results to be shown using the button on the main screen.</color>");
+                    "<color=#FFFF11>You can force a search result to be shown using the button on the center screen.</color>");
                 _maxResultsShownSetting.GetTextForValue += x => ((int)x).ToString();
                 _maxResultsShownSetting.GetValue += () => _maxResultsShownStagingValue;
                 _maxResultsShownSetting.SetValue += delegate (float value)

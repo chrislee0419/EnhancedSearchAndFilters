@@ -260,6 +260,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         private void ModifyTextElements()
         {
             RectTransform statsPanel = _standardLevelDetailView.GetComponentsInChildren<RectTransform>(true).First(x => x.name == "Stats");
+            statsPanel.gameObject.SetActive(true);
 
             RectTransform original = statsPanel.GetComponentsInChildren<RectTransform>(true).First(x => x.name == "Highscore");
             Instantiate(original, statsPanel.transform, false);
