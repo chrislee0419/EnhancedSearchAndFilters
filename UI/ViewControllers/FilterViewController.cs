@@ -194,14 +194,14 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _loadingSpinner.gameObject.SetActive(true);
             if (PluginConfig.ShowFirstTimeLoadingText && _levels.Length > 0 && _levels[0] is CustomPreviewBeatmapLevel)
             {
-                _loadingText.text = "<color=#FF5555>Loading custom beatmap details for the first time...</color>\n\n" +
+                _loadingText.text = "<color=#FF5555>Loading custom song details for the first time...</color>\n\n" +
                     "This first load may take several minutes, depending on the number of custom songs you have\n(it usually takes about 10 to 15 seconds for every 100 songs).\n\n" +
                     "<color=#CCFFCC>You may back out of this screen and have the loading occur in the background</color>,\nhowever, loading will pause when playing a level.";
                 (_loadingSpinner.transform as RectTransform).anchoredPosition = new Vector2(0f, -20f);
             }
             else
             {
-                _loadingText.text = "Loading beatmap details...";
+                _loadingText.text = "Loading song details...";
                 (_loadingSpinner.transform as RectTransform).anchoredPosition = Vector2.zero;
             }
 
@@ -285,7 +285,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
         private string GetLoadingProgressString(int loadedCount, int total)
         {
-            return $"Loaded {loadedCount} out of {total} beatmaps...";
+            return $"Loaded {loadedCount} out of {total} songs...";
         }
 
         private void HandleBackButtonPressed()
