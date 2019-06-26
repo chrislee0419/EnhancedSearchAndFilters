@@ -95,7 +95,7 @@ namespace EnhancedSearchAndFilters.Filters
             // since we're using BeatSaverDownloader's votedSong.json file, we need the mod to be present
             if (!_isModLoaded)
             {
-                _noModMessage = BeatSaberUI.CreateText(null, "<color=#FFAAAA>Sorry!\n\nThis filter requires the BeatSaverDownloader mod to be install.</color>", Vector2.zero);
+                _noModMessage = BeatSaberUI.CreateText(null, "<color=#FFAAAA>Sorry!\n\n<size=80%>This filter requires the BeatSaverDownloader mod\n to be installed.</size></color>", Vector2.zero);
                 _noModMessage.alignment = TextAlignmentOptions.Center;
                 _noModMessage.fontSize = 5.5f;
 
@@ -117,7 +117,7 @@ namespace EnhancedSearchAndFilters.Filters
                 unused.color = new Color(0f, 0f, 0f, 0f);
                 unused.material = UIUtilities.NoGlowMaterial;
 
-                var text = BeatSaberUI.CreateText(container.transform as RectTransform, "Keep Songs With These Voted Status", Vector2.zero);
+                var text = BeatSaberUI.CreateText(container.transform as RectTransform, "Keep Songs With These Voted Statuses", Vector2.zero);
                 text.fontSize = 5.5f;
                 var rt = text.rectTransform;
                 rt.anchorMin = new Vector2(0f, 1f);
