@@ -18,9 +18,11 @@ namespace EnhancedSearchAndFilters.Filters
         {
             get
             {
-                if (_minEnabledAppliedValue || _maxEnabledAppliedValue)
+                if (ApplyFilter)
                 {
-                    if (_minAppliedValue != _minStagingValue ||
+                    if (_minEnabledAppliedValue != _minEnabledStagingValue ||
+                        _maxEnabledAppliedValue != _maxEnabledStagingValue ||
+                        _minAppliedValue != _minStagingValue ||
                         _maxAppliedValue != _maxStagingValue)
                         return FilterStatus.AppliedAndChanged;
                     else

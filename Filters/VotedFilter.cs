@@ -23,7 +23,7 @@ namespace EnhancedSearchAndFilters.Filters
         {
             get
             {
-                if (_upvotedAppliedValue || _noVoteAppliedValue || _downvotedAppliedValue)
+                if (ApplyFilter)
                 {
                     if (_upvotedAppliedValue != _upvotedStagingValue ||
                         _noVoteAppliedValue != _noVoteStagingValue ||

@@ -18,7 +18,7 @@ namespace EnhancedSearchAndFilters.Filters
         {
             get
             {
-                if (_oneSaberAppliedValue || _lightshowAppliedValue || _mappingExtensionsAppliedValue != SongRequirement.Off)
+                if (ApplyFilter)
                 {
                     if (_oneSaberAppliedValue != _oneSaberStagingValue ||
                         _lightshowAppliedValue != _lightshowStagingValue ||
