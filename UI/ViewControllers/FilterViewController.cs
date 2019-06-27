@@ -191,13 +191,19 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 _infoText.fontSize = 3.5f;
             }
 
+            var originalLevels = _levels;
+
             _loadingSpinner.gameObject.SetActive(true);
-            if (PluginConfig.ShowFirstTimeLoadingText && _levels.Length > 0 && _levels[0] is CustomPreviewBeatmapLevel)
+            if (PluginConfig.ShowFirstTimeLoadingText)
             {
                 _loadingText.text = "<color=#FF5555>Loading custom song details for the first time...</color>\n\n" +
                     "This first load may take several minutes, depending on the number of custom songs you have\n(it usually takes about 10 to 15 seconds for every 100 songs).\n\n" +
                     "<color=#CCFFCC>You may back out of this screen and have the loading occur in the background</color>,\nhowever, loading will pause when playing a level.";
                 (_loadingSpinner.transform as RectTransform).anchoredPosition = new Vector2(0f, -20f);
+
+                // force the player to load all custom beatmaps on first load, rather than just the selected levels
+                // this is done instead of the old behaviour because SongBrowser will be able to apply filters outside of this view controller
+                _levels = _levels.Union(SongCore.Loader.CustomLevels.Values).ToArray();
             }
             else
             {
@@ -221,8 +227,6 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 delegate (BeatmapDetails[] levels)
                 {
                     // on finish
-                    PluginConfig.ShowFirstTimeLoadingText = false;
-
                     _loadingSpinner.SetActive(false);
                     _loadingText.gameObject.SetActive(false);
                     _infoText.gameObject.SetActive(false);
@@ -236,7 +240,23 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                     foreach (var control in _listViewController.CurrentFilter.Controls)
                         control.EnableControl();
 
-                    _beatmapDetails = levels.Zip(_levels, (details, beatmap) => new { details, beatmap }).ToDictionary((item) => item.details, (item) => item.beatmap);
+                    // if this was the first load, only take the beatmap details objects that correspond to the requested list of levels
+                    if (PluginConfig.ShowFirstTimeLoadingText)
+                    {
+                        _beatmapDetails = new Dictionary<BeatmapDetails, IPreviewBeatmapLevel>(originalLevels.Length);
+                        Array.ForEach(originalLevels, delegate (IPreviewBeatmapLevel originalLevel)
+                        {
+                            if (originalLevel == null)
+                                return;
+                            _beatmapDetails[levels.First(x => x.LevelID == originalLevel.levelID)] = originalLevel;
+                        });
+                    }
+                    else
+                    {
+                        _beatmapDetails = levels.Zip(_levels, (details, beatmap) => new { details, beatmap }).Where(pair => pair.details != null).ToDictionary(item => item.details, (item) => item.beatmap);
+                    }
+
+                    PluginConfig.ShowFirstTimeLoadingText = false;
                 });
         }
 
@@ -261,6 +281,39 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         {
             _levels = levels;
             parentFlowCoordinator.InvokePrivateMethod("PresentViewController", new object[] { this, null, false });
+        }
+
+        /// <summary>
+        /// Intended to be used outside of this view controller, with filters already applied. Primarily an adaptation to SongBrowser mod.
+        /// </summary>
+        /// <param name="levels">Array of levels to filter</param>
+        /// <returns>The filtered list of beatmaps.</returns>
+        public List<IPreviewBeatmapLevel> ApplyFilters(IPreviewBeatmapLevel[] levels)
+        {
+            if (_listViewController == null)
+                return levels.ToList();
+            Logger.log.Debug($"Using filter from outside FilterViewController, starting with {levels.Length} songs");
+
+            BeatmapDetails[] detailsList = BeatmapDetailsLoader.Instance.LoadBeatmapsInstant(levels);
+
+            Dictionary<BeatmapDetails, IPreviewBeatmapLevel> pairs = new Dictionary<BeatmapDetails, IPreviewBeatmapLevel>(levels.Length);
+            for (int i = 0; i < levels.Length; ++i)
+            {
+                if (detailsList[i] == null)
+                    continue;
+
+                pairs.Add(detailsList[i], levels[i]);
+            }
+
+            var filteredLevels = pairs.Keys.ToList();
+            foreach (var filter in _listViewController.FilterList)
+            {
+                if (filter.Status == FilterStatus.Applied)
+                    filter.FilterSongList(ref filteredLevels);
+            }
+            Logger.log.Debug($"Filter completed, {filteredLevels.Count} songs left");
+
+            return pairs.Where(x => filteredLevels.Contains(x.Key)).Select(x => x.Value).ToList();
         }
 
         public void UnapplyFilters(bool sendEvent = true)

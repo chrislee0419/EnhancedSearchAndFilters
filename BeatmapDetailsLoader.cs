@@ -208,6 +208,42 @@ namespace EnhancedSearchAndFilters
             _loadingTask.Run();
         }
 
+        /// <summary>
+        /// Load beatmaps that have already been cached or are OST. It is highly recommended that LoadBeatmaps is used instead.
+        /// </summary>
+        /// <param name="levels">Array of IPreviewBeatmapLevel objects to get the beatmap details of.</param>
+        /// <returns>Array of BeatmapDetails objects that represent the passed IPreviewBeatmapLevel objects.</returns>
+        public BeatmapDetails[] LoadBeatmapsInstant(IPreviewBeatmapLevel[] levels)
+        {
+            BeatmapDetails[] detailsList = new BeatmapDetails[levels.Length];
+            int unloadable = 0;
+
+            for (int i = 0; i < levels.Length; ++i)
+            {
+                IPreviewBeatmapLevel level = levels[i];
+
+                if (level is IBeatmapLevel)
+                {
+                    detailsList[i] = new BeatmapDetails(level as IBeatmapLevel);
+                }
+                else if (_cache.ContainsKey(level.levelID))
+                {
+                    detailsList[i] = _cache[level.levelID];
+                }
+                else
+                {
+                    // unable to load from cache or convert directly to BeatmapDetails object
+                    detailsList[i] = null;
+                    ++unloadable;
+                }
+            }
+
+            if (unloadable > 0)
+                Logger.log.Warn($"LoadBeatmapsInstant was unable to retrieve all BeatmapDetails objects from cache ({unloadable} could not be loaded)");
+
+            return detailsList;
+        }
+
         public void CancelLoading()
         {
             if (!IsLoading || _loadingTokenSource == null || _loadingTask == null)
@@ -296,6 +332,11 @@ namespace EnhancedSearchAndFilters
                         taskList.Add(GetCustomBeatmapDetailsAsync(level as CustomPreviewBeatmapLevel, index));
                         ++i;
                     }
+                    else
+                    {
+                        // add null details object if not convertable (possibly unbought DLC?)
+                        _loadedLevelsUnsorted.Add(new Tuple<int, BeatmapDetails>(index, null));
+                    }
                 }
 
                 while (taskList.Any())
@@ -303,8 +344,7 @@ namespace EnhancedSearchAndFilters
                     Task<Tuple<int, BeatmapDetails>> finished = await Task.WhenAny(taskList);
                     Tuple<int, BeatmapDetails> loadedBeatmap = await finished;
 
-                    if (loadedBeatmap != null)
-                        _loadedLevelsUnsorted.Add(loadedBeatmap);
+                    _loadedLevelsUnsorted.Add(loadedBeatmap);
 
                     if (_loadingTokenSource.IsCancellationRequested)
                         return;
@@ -350,7 +390,7 @@ namespace EnhancedSearchAndFilters
             }
             catch (OperationCanceledException) { }
 
-            return null;
+            return new Tuple<int, BeatmapDetails>(index, null);
         }
     }
 }

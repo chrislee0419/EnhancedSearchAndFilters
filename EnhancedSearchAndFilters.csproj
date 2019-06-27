@@ -50,6 +50,12 @@
     <Reference Include="Newtonsoft.Json.12.0.0.0">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Libs\Newtonsoft.Json.12.0.0.0.dll</HintPath>
     </Reference>
+    <Reference Include="SemVer.1.2.0.0">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Libs\SemVer.1.2.0.0.dll</HintPath>
+    </Reference>
+    <Reference Include="SongBrowser">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Plugins\SongBrowser.dll</HintPath>
+    </Reference>
     <Reference Include="SongCore">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Plugins\SongCore.dll</HintPath>
     </Reference>

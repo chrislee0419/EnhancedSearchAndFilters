@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
@@ -30,9 +31,9 @@ namespace EnhancedSearchAndFilters.UI
 
         private LevelPackLevelsTableView _levelsTableViewContainer;
         private TableView _levelsTableView;
-        private LevelPackLevelsViewController _levelsViewController;
         private IBeatmapLevelPack _lastPack;
 
+        public LevelPackLevelsViewController LevelsViewController { get; private set; } = null;
         public DismissableNavigationController ButtonParentViewController { get; private set; } = null;
 
         public Button SearchButton { get; set; } = null;
@@ -73,7 +74,7 @@ namespace EnhancedSearchAndFilters.UI
 
             _levelsTableViewContainer = viewControllersContainer.GetComponentInChildren<LevelPackLevelsTableView>(true);
             _levelsTableView = _levelsTableViewContainer.GetPrivateField<TableView>("_tableView");
-            _levelsViewController = viewControllersContainer.GetComponentInChildren<LevelPackLevelsViewController>(true);
+            LevelsViewController = viewControllersContainer.GetComponentInChildren<LevelPackLevelsViewController>(true);
 
             var levelPacksViewController = viewControllersContainer.GetComponentInChildren<LevelPacksViewController>(true);
             levelPacksViewController.didSelectPackEvent += LevelPackSelected;
@@ -104,7 +105,7 @@ namespace EnhancedSearchAndFilters.UI
 
         private void OnModeSelection(FreePlayMode mode)
         {
-            if (SongBrowserTweaks.ModLoaded && !SongBrowserTweaks.Initialized)
+            if (SongBrowserTweaks.ModLoaded && !SongBrowserTweaks.Initialized && mode != FreePlayMode.Campaign)
                 StartCoroutine(GetSongBrowserButtons());
 
             if (mode == FreePlayMode.Solo)
@@ -131,18 +132,21 @@ namespace EnhancedSearchAndFilters.UI
                 ToggleButtonsActive(false);
                 BeatSaverDownloaderTweaks.HideTopButtons();
             }
+
+            SongBrowserTweaks.OnModeSelection();
         }
 
         IEnumerator GetSongBrowserButtons()
         {
-            Logger.log.Info("SongBrowser mod found. Attempting to modify search and clear button behaviour.");
+            Logger.log.Info("SongBrowser mod found. Attempting to modify button behaviour.");
 
             int tries;
             for (tries = 10; tries > 0; --tries)
             {
                 if (SongBrowserTweaks.Init())
                 {
-                    CreateIconFilterButton();
+                    if (SongBrowserTweaks.IsOldVersion)
+                        CreateIconFilterButton();
 
                     break;
                 }
@@ -152,7 +156,7 @@ namespace EnhancedSearchAndFilters.UI
 
             if (tries <= 0)
             {
-                Logger.log.Warn("SongBrowser Search button was not found. Creating new Search button, which may overlap with other UI elements.");
+                Logger.log.Warn("SongBrowser buttons were not found. Creating new buttons, which may overlap with other UI elements.");
                 CreateSearchButton(DefaultSearchButtonPosition, DefaultButtonSize);
                 CreateFilterButton(DefaultFilterButtonPosition, DefaultButtonSize);
                 CreateClearButton(DefaultClearButtonPosition, DefaultButtonSize);
@@ -181,7 +185,7 @@ namespace EnhancedSearchAndFilters.UI
 
             if (tries <= 0)
             {
-                Logger.log.Warn("BeatSaverDownloader Search button was not found. Creating new Search button, which may overlap with other UI elements.");
+                Logger.log.Warn("BeatSaverDownloader buttons were not found. Creating new buttons, which may overlap with other UI elements.");
                 CreateSearchButton(DefaultSearchButtonPosition, DefaultButtonSize);
                 CreateFilterButton(DefaultFilterButtonPosition, DefaultButtonSize);
                 CreateClearButton(DefaultClearButtonPosition, DefaultButtonSize);
@@ -199,6 +203,15 @@ namespace EnhancedSearchAndFilters.UI
 
             ToggleButtonsActive(false);
             BeatSaverDownloaderTweaks.HideTopButtons();
+
+            // unapply filters before leaving the screen
+            if (_filterViewController?.IsFilterApplied == true)
+            {
+                UnapplyFilters();
+
+                if (SongBrowserTweaks.ModLoaded && SongBrowserTweaks.Initialized && !SongBrowserTweaks.IsOldVersion)
+                    SongBrowserTweaks.FiltersUnapplied();
+            }
 
             _freePlayFlowCoordinator = null;
         }
@@ -272,7 +285,44 @@ namespace EnhancedSearchAndFilters.UI
             Logger.log.Debug("Created clear filter button.");
         }
 
-        public void UnapplyFilters()
+        /// <summary>
+        /// Used by SongBrowserTweaks to apply an existing filter onto another set of beatmaps.
+        /// </summary>
+        public IPreviewBeatmapLevel[] ApplyFilters(IPreviewBeatmapLevel[] levels)
+        {
+            // the behaviour here is going to be a bit odd, since SongBrowser overwrites a level pack's levels
+
+            // we can't filter OST songs, otherwise SongBrowser will overwrite the pack, losing songs for the play session
+            if (_filterViewController == null || (levels.Length > 0 && !(levels[0] is CustomPreviewBeatmapLevel)))
+            {
+                _filterViewController?.UnapplyFilters(false);
+                SongBrowserTweaks.FiltersUnapplied();
+                return levels;
+            }
+
+            // get the levels again here after refreshing, otherwise, we'll break the filtering
+            SongCore.Loader.Instance.RefreshLevelPacks();
+            var levelPacksViewController = Resources.FindObjectsOfTypeAll<LevelPacksViewController>().First();
+            levels = levelPacksViewController.GetPrivateField<IBeatmapLevelPackCollection>("_levelPackCollection").beatmapLevelPacks[levelPacksViewController.selectedPackNum].beatmapLevelCollection.beatmapLevels;
+
+            // store all unbought dlc (we can't filter them now, otherwise they'll get obliterated by the overwrite)
+            List<IPreviewBeatmapLevel> unboughtDLCLevels = new List<IPreviewBeatmapLevel>(levels.Length);
+            foreach (var level in levels)
+            {
+                if (!(level is IBeatmapLevel) && !(level is CustomPreviewBeatmapLevel))
+                    unboughtDLCLevels.Add(level);
+            }
+
+            var filteredLevels = _filterViewController.ApplyFilters(levels);
+            filteredLevels.AddRange(unboughtDLCLevels);
+            return filteredLevels.ToArray();
+        }
+
+        /// <summary>
+        /// Unapplies the filters in the Filter view controller, but saves their current status.
+        /// </summary>
+        /// <param name="songBrowserFilterSelected">Used only by the SongBrowser mod. Set this to true when another filter (Favorites/Playlist) was selected.</param>
+        public void UnapplyFilters(bool songBrowserFilterSelected = false)
         {
             _filterViewController?.UnapplyFilters(false);
 
@@ -280,6 +330,10 @@ namespace EnhancedSearchAndFilters.UI
             {
                 FilterButton.SetButtonText("Filter");
                 FilterButton.SetButtonTextSize(3f);
+            }
+            else if (SongBrowserTweaks.Initialized && !SongBrowserTweaks.IsOldVersion && !songBrowserFilterSelected)
+            {
+                LevelsViewController.SetData(_lastPack);
             }
         }
 
@@ -293,7 +347,7 @@ namespace EnhancedSearchAndFilters.UI
             }
 
             // TODO?: toggle to search every level pack instead of just the current?
-            IPreviewBeatmapLevel[] levels = _levelsViewController.GetPrivateField<IBeatmapLevelPack>("_levelPack").beatmapLevelCollection.beatmapLevels;
+            IPreviewBeatmapLevel[] levels = LevelsViewController.GetPrivateField<IBeatmapLevelPack>("_levelPack").beatmapLevelCollection.beatmapLevels;
             _searchFlowCoordinator.Activate(_freePlayFlowCoordinator, levels);
 
             Logger.log.Debug("'Search' button pressed.");
@@ -305,12 +359,12 @@ namespace EnhancedSearchAndFilters.UI
             {
                 _filterViewController = new GameObject("FilterViewController").AddComponent<FilterViewController>();
                 _filterViewController.BackButtonPressed += DismissFilterViewController;
-                _filterViewController.LevelsModified += SetFilteredSongs;
-                _filterViewController.FiltersUnapplied += FiltersUnapplied;
+                _filterViewController.LevelsModified += FilterViewControllerSetFilteredSongs;
+                _filterViewController.FiltersUnapplied += FilterViewControllerFiltersUnapplied;
             }
 
-            if (_lastPack == null || _levelsViewController.levelPack.packName != FilteredSongsPackName)
-                _lastPack = _levelsViewController.levelPack;
+            if (_lastPack == null || LevelsViewController.levelPack.packName != FilteredSongsPackName)
+                _lastPack = LevelsViewController.levelPack;
 
             IPreviewBeatmapLevel[] levels = _lastPack.beatmapLevelCollection.beatmapLevels;
 
@@ -336,9 +390,26 @@ namespace EnhancedSearchAndFilters.UI
 
         private void LevelPackSelected(LevelPacksViewController viewController, IBeatmapLevelPack levelPack)
         {
-            _lastPack = levelPack;
+            var previousPack = _lastPack;
 
-            UnapplyFilters();
+            if (levelPack.packName != FilteredSongsPackName)
+                _lastPack = levelPack;
+
+            if (SongBrowserTweaks.ModLoaded && SongBrowserTweaks.Initialized && !SongBrowserTweaks.IsOldVersion)
+            {
+                // on the new version of SongBrowser, selecting the same level pack should have no changes to what is shown
+                // unless it is an OST song pack (which we then clear the filter)
+                IPreviewBeatmapLevel[] levels = levelPack.beatmapLevelCollection.beatmapLevels;
+                if (previousPack != levelPack || (levels.Length > 0 && !(levels[0] is CustomPreviewBeatmapLevel)))
+                {
+                    _filterViewController?.UnapplyFilters(false);
+                    SongBrowserTweaks.FiltersUnapplied();
+                }
+            }
+            else
+            {
+                UnapplyFilters();
+            }
         }
 
         private void DismissSearchFlowCoordinator()
@@ -356,7 +427,7 @@ namespace EnhancedSearchAndFilters.UI
             Logger.log.Debug($"Level selected from search: {level.songName} - {level.songSubName}");
             DismissSearchFlowCoordinator();
 
-            IPreviewBeatmapLevel[] levels = _levelsViewController.GetPrivateField<IBeatmapLevelPack>("_levelPack").beatmapLevelCollection.beatmapLevels;
+            IPreviewBeatmapLevel[] levels = LevelsViewController.GetPrivateField<IBeatmapLevelPack>("_levelPack").beatmapLevelCollection.beatmapLevels;
 
             int row = Array.IndexOf(levels, level);
             if (row >= 0)
@@ -368,10 +439,10 @@ namespace EnhancedSearchAndFilters.UI
                 _levelsTableView.SelectCellWithIdx(row);
             }
 
-            _levelsViewController.HandleLevelPackLevelsTableViewDidSelectLevel(null, level);
+            LevelsViewController.HandleLevelPackLevelsTableViewDidSelectLevel(null, level);
         }
 
-        private void SetFilteredSongs(IPreviewBeatmapLevel[] levels)
+        private void FilterViewControllerSetFilteredSongs(IPreviewBeatmapLevel[] levels)
         {
             // SongBrowser does some weird checks when sorting that we have to accomodate for
             if (SongBrowserTweaks.ModLoaded)
@@ -380,8 +451,11 @@ namespace EnhancedSearchAndFilters.UI
                 {
                     if (levels[0] is CustomPreviewBeatmapLevel)
                     {
-                        SongCoreCustomBeatmapLevelPack customLevelPack = new SongCoreCustomBeatmapLevelPack("", FilteredSongsPackName, _levelsViewController.levelPack.coverImage, new CustomBeatmapLevelCollection(levels.Cast<CustomPreviewBeatmapLevel>().ToArray()));
-                        _levelsViewController.SetData(customLevelPack);
+                        SongCoreCustomBeatmapLevelPack customLevelPack = new SongCoreCustomBeatmapLevelPack("", FilteredSongsPackName, LevelsViewController.levelPack.coverImage, new CustomBeatmapLevelCollection(levels.Cast<CustomPreviewBeatmapLevel>().ToArray()));
+                        LevelsViewController.SetData(customLevelPack);
+
+                        if (SongBrowserTweaks.Initialized && !SongBrowserTweaks.IsOldVersion)
+                            SongBrowserTweaks.FiltersApplied();
                         return;
                     }
                     else if (levels[0] is BeatmapLevelSO)
@@ -392,10 +466,13 @@ namespace EnhancedSearchAndFilters.UI
                         BeatmapLevelPackSO beatmapLevelPack = ScriptableObject.CreateInstance<BeatmapLevelPackSO>();
                         beatmapLevelPack.SetPrivateField("_packID", "");
                         beatmapLevelPack.SetPrivateField("_packName", FilteredSongsPackName);
-                        beatmapLevelPack.SetPrivateField("_coverImage", _levelsViewController.levelPack.coverImage);
+                        beatmapLevelPack.SetPrivateField("_coverImage", LevelsViewController.levelPack.coverImage);
                         beatmapLevelPack.SetPrivateField("_beatmapLevelCollection", levelCollection);
 
-                        _levelsViewController.SetData(beatmapLevelPack);
+                        LevelsViewController.SetData(beatmapLevelPack);
+
+                        if (SongBrowserTweaks.Initialized && !SongBrowserTweaks.IsOldVersion)
+                            SongBrowserTweaks.FiltersApplied();
                         return;
                     }
                     else if (levels[0] is PreviewBeatmapLevelSO)
@@ -406,10 +483,13 @@ namespace EnhancedSearchAndFilters.UI
                         PreviewBeatmapLevelPackSO previewLevelPack = ScriptableObject.CreateInstance<PreviewBeatmapLevelPackSO>();
                         previewLevelPack.SetPrivateField("_packID", "");
                         previewLevelPack.SetPrivateField("_packName", FilteredSongsPackName);
-                        previewLevelPack.SetPrivateField("_coverImage", _levelsViewController.levelPack.coverImage);
+                        previewLevelPack.SetPrivateField("_coverImage", LevelsViewController.levelPack.coverImage);
                         previewLevelPack.SetPrivateField("_previewBeatmapLevelCollection", levelCollection);
 
-                        _levelsViewController.SetData(previewLevelPack);
+                        LevelsViewController.SetData(previewLevelPack);
+
+                        if (SongBrowserTweaks.Initialized && !SongBrowserTweaks.IsOldVersion)
+                            SongBrowserTweaks.FiltersApplied();
                         return;
                     }
 
@@ -418,24 +498,33 @@ namespace EnhancedSearchAndFilters.UI
                 }
             }
 
-            BeatmapLevelPack levelPack = new BeatmapLevelPack("", FilteredSongsPackName, _levelsViewController.levelPack.coverImage, new BeatmapLevelCollection(levels));
-            _levelsViewController.SetData(levelPack);
+            BeatmapLevelPack levelPack = new BeatmapLevelPack("", FilteredSongsPackName, LevelsViewController.levelPack.coverImage, new BeatmapLevelCollection(levels));
+            LevelsViewController.SetData(levelPack);
 
             if (!SongBrowserTweaks.ModLoaded)
             {
                 FilterButton.SetButtonText("Filter\n(Applied)");
                 FilterButton.SetButtonTextSize(2.3f);
             }
+            else if (SongBrowserTweaks.Initialized && !SongBrowserTweaks.IsOldVersion)
+            {
+                // this statement shouldn't trigger in any normal circumstances, only when the above checks fail
+                SongBrowserTweaks.FiltersApplied();
+            }
         }
 
-        private void FiltersUnapplied()
+        private void FilterViewControllerFiltersUnapplied()
         {
-            _levelsViewController.SetData(_lastPack);
+            LevelsViewController.SetData(_lastPack);
 
             if (!SongBrowserTweaks.ModLoaded)
             {
                 FilterButton.SetButtonText("Filter");
                 FilterButton.SetButtonTextSize(3f);
+            }
+            else if (SongBrowserTweaks.Initialized && !SongBrowserTweaks.IsOldVersion)
+            {
+                SongBrowserTweaks.FiltersUnapplied();
             }
         }
     }
