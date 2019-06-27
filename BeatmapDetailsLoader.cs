@@ -139,6 +139,11 @@ namespace EnhancedSearchAndFilters
 
         public void SaveCacheToFile()
         {
+            // remove WIP levels from cache (don't save them, since they're likely to change often and
+            // we don't delete any entries in the cache, it may cause the cache to balloon in size
+            foreach (var wipLevel in Loader.CustomWIPLevels.Values)
+                _cache.TryRemove(wipLevel.levelID, out var unused);
+
             BeatmapDetails.SaveBeatmapDetailsToCache(CachedBeatmapDetailsFilePath, _cache.Values.ToList());
         }
 
@@ -159,7 +164,7 @@ namespace EnhancedSearchAndFilters
         /// Loads the beatmap details of a list of IPreviewBeatmapLevels.
         /// </summary>
         /// <param name="levels">A list of IPreviewBeatmaps.</param>
-        /// <param name="update">A function that will run every 0.5s that gets the number of beatmaps currently loaded.</param>
+        /// <param name="update">A function that will run every 0.1s that gets the number of beatmaps currently loaded.</param>
         /// <param name="onFinish">The function that is called when the details of all beatmaps are retrieved.</param>
         public void LoadBeatmaps(IPreviewBeatmapLevel[] levels, Action<int> update = null, Action<BeatmapDetails[]> onFinish = null)
         {
@@ -237,7 +242,6 @@ namespace EnhancedSearchAndFilters
 
             // we don't have to cache OST levels, since they can immediately be cast into IBeatmapLevel objects
             List<IPreviewBeatmapLevel> allLevels = Loader.CustomLevelsCollection.beatmapLevels.ToList();
-            allLevels.AddRange(Loader.WIPLevelsCollection.beatmapLevels.ToList());
 
             List<Task> taskList = new List<Task>(WorkChunkSize);
             int index = 0;
