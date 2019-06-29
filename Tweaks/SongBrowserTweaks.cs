@@ -2,14 +2,14 @@
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
-using IPA.Loader;
+using TMPro;
+using SongCore.OverrideClasses;
 using CustomUI.BeatSaber;
 using CustomUI.Utilities;
 using SongBrowser;
 using SongBrowser.UI;
 using SongBrowser.DataAccess;
 using EnhancedSearchAndFilters.UI;
-using Version = SemVer.Version;
 
 namespace EnhancedSearchAndFilters.Tweaks
 {
@@ -17,6 +17,9 @@ namespace EnhancedSearchAndFilters.Tweaks
     {
         public static bool ModLoaded { get; set; } = false;
         public static bool Initialized { get; private set; } = false;
+        /// <summary>
+        /// Not really used anymore, will be deleted at some point
+        /// </summary>
         public static bool IsOldVersion { get; private set; } = false;
 
         private static object _songBrowserUI = null;
@@ -28,36 +31,12 @@ namespace EnhancedSearchAndFilters.Tweaks
 
             Logger.log.Info("SongBrowser mod found. Attempting to replace button behaviour.");
 
-            Version version;
-#pragma warning disable CS0618 // remove PluginManager.Plugin is obsolete warning
-            var ipaMod = PluginManager.Plugins.FirstOrDefault(x => x.Name == "Song Browser");
-#pragma warning restore CS0618
-            var bsipaMod = PluginManager.AllPlugins.FirstOrDefault(x => x.Metadata.Id == "SongBrowser" || x.Metadata.Name == "Song Browser");
-            if (ipaMod != null)
-            {
-                version = new Version(ipaMod.Version);
-            }
-            else if (bsipaMod != null)
-            {
-                version = bsipaMod.Metadata.Version;
-            }
-            else
-            {
-                Logger.log.Warn("Unable to find the version of the SongBrowser mod.");
-                return false;
-            }
-
-            if (version.Major <= 5 && version.Minor < 2)
-                return OldVersionInit();
-            else if (version.Major >= 5 && version.Minor >= 2)
-                return NewVersionInit();
-
-            // there's no way it should get here, unless i'm a bad programmer
-            return false;
+            return NewVersionInit();
         }
 
         /// <summary>
-        /// Adapt this mod to SongBrowser before the 5.2.0 update.
+        /// Adapt this mod to SongBrowser before the 5.2.0 update. 
+        /// Legacy code, will remove this at some point.
         /// </summary>
         /// <returns>A boolean indicating whether the tweaks were done correctly.</returns>
         private static bool OldVersionInit()
@@ -84,6 +63,7 @@ namespace EnhancedSearchAndFilters.Tweaks
 
             cancelSortButton.onClick.AddListener(SongListUI.Instance.ClearButtonPressed);
 
+            CreateIconFilterButton();
             SongListUI.Instance.SearchButton = searchButton;
             SongListUI.Instance.ClearButton = cancelSortButton;
 
@@ -206,21 +186,67 @@ namespace EnhancedSearchAndFilters.Tweaks
             return true;
         }
 
+        /// <summary>
+        /// Alternative filter button intended to sit alongside the SongBrowser mod's filter buttons.
+        /// </summary>
+        private static void CreateIconFilterButton()
+        {
+            if (SongListUI.Instance.FilterButton != null || SongListUI.Instance.ButtonParentViewController == null)
+                return;
+
+            // modify button design to fit with other SongBrowser icon buttons
+            const float iconSize = 2.5f;
+            const float iconScale = 1f;
+            Vector2 buttonPos = new Vector2(52.625f, 37.25f);
+            Vector2 buttonSize = new Vector2(5f, 5f);
+
+            var filterButton = SongListUI.Instance.ButtonParentViewController.CreateUIButton("PracticeButton", buttonPos, buttonSize, SongListUI.Instance.FilterButtonPressed);
+            UnityEngine.Object.Destroy(filterButton.GetComponentInChildren<TextMeshProUGUI>(true));
+
+            Sprite filterIcon = UIUtilities.LoadSpriteFromResources("EnhancedSearchAndFilters.Assets.filter.png");
+            Image icon = filterButton.GetComponentsInChildren<Image>(true).First(x => x.name == "Icon");
+
+            HorizontalLayoutGroup hgroup = icon.rectTransform.parent.GetComponent<HorizontalLayoutGroup>();
+            hgroup.padding = new RectOffset(1, 1, 0, 0);
+
+            icon.sprite = filterIcon;
+            icon.rectTransform.sizeDelta = new Vector2(iconSize, iconSize);
+            icon.rectTransform.localScale = new Vector2(iconScale, iconScale);
+
+            SongListUI.Instance.FilterButton = filterButton;
+
+            Logger.log.Debug("Created icon filter button.");
+        }
+
+        /// <summary>
+        /// Used to refresh the UI for SongBrowser after our filter has been applied.
+        /// </summary>
         public static void FiltersApplied()
         {
             if (!ModLoaded || !Initialized || IsOldVersion)
                 return;
+            _FiltersApplied();
+        }
 
+        private static void _FiltersApplied()
+        {
             (_songBrowserUI as SongBrowserUI).Model.Settings.filterMode = SongFilterMode.Custom;
             SongListUI.Instance.ClearButton.SetButtonText("Other");
             (_songBrowserUI as SongBrowserUI).RefreshSongUI(false);
         }
 
+        /// <summary>
+        /// Resets the UI for SongBrowser after our filter has been unapplied.
+        /// </summary>
         public static void FiltersUnapplied()
         {
             if (!ModLoaded || !Initialized || IsOldVersion)
                 return;
+            _FiltersUnapplied();
+        }
 
+        private static void _FiltersUnapplied()
+        {
             (_songBrowserUI as SongBrowserUI).CancelFilter();
             (_songBrowserUI as SongBrowserUI).RefreshSongUI();
         }
@@ -232,6 +258,72 @@ namespace EnhancedSearchAndFilters.Tweaks
 
             // UIState is always reset to Main, so we need to disable the filter button
             SongListUI.Instance.FilterButton.gameObject.SetActive(false);
+        }
+
+        /// <summary>
+        /// Set the levels shown by the LevelsPackLevelsViewController.
+        /// </summary>
+        /// <param name="levels">Array of levels to set in the view controller.</param>
+        /// <returns>A boolean representing whether this was successful.</returns>
+        public static bool SetFilteredSongs(IPreviewBeatmapLevel[] levels)
+        {
+            if (!ModLoaded)
+                return false;
+
+            // SongBrowser does some weird checks when sorting that we have to accomodate for
+            if (levels.Any())
+            {
+                var levelsViewController = SongListUI.Instance.LevelsViewController;
+
+                if (levels[0] is CustomPreviewBeatmapLevel)
+                {
+                    SongCoreCustomBeatmapLevelPack customLevelPack = new SongCoreCustomBeatmapLevelPack("", SongListUI.FilteredSongsPackName, levelsViewController.levelPack.coverImage, new CustomBeatmapLevelCollection(levels.Cast<CustomPreviewBeatmapLevel>().ToArray()));
+                    levelsViewController.SetData(customLevelPack);
+
+                    if (SongBrowserTweaks.Initialized && !SongBrowserTweaks.IsOldVersion)
+                        SongBrowserTweaks._FiltersApplied();
+                    return true;
+                }
+                else if (levels[0] is BeatmapLevelSO)
+                {
+                    BeatmapLevelCollectionSO levelCollection = ScriptableObject.CreateInstance<BeatmapLevelCollectionSO>();
+                    levelCollection.SetPrivateField("_beatmapLevels", levels.Cast<BeatmapLevelSO>().ToArray());
+
+                    BeatmapLevelPackSO beatmapLevelPack = ScriptableObject.CreateInstance<BeatmapLevelPackSO>();
+                    beatmapLevelPack.SetPrivateField("_packID", "");
+                    beatmapLevelPack.SetPrivateField("_packName", SongListUI.FilteredSongsPackName);
+                    beatmapLevelPack.SetPrivateField("_coverImage", levelsViewController.levelPack.coverImage);
+                    beatmapLevelPack.SetPrivateField("_beatmapLevelCollection", levelCollection);
+
+                    levelsViewController.SetData(beatmapLevelPack);
+
+                    if (SongBrowserTweaks.Initialized && !SongBrowserTweaks.IsOldVersion)
+                        SongBrowserTweaks._FiltersApplied();
+                    return true;
+                }
+                else if (levels[0] is PreviewBeatmapLevelSO)
+                {
+                    PreviewBeatmapLevelCollectionSO levelCollection = ScriptableObject.CreateInstance<PreviewBeatmapLevelCollectionSO>();
+                    levelCollection.SetPrivateField("_beatmapLevels", levels.Cast<PreviewBeatmapLevelSO>().ToArray());
+
+                    PreviewBeatmapLevelPackSO previewLevelPack = ScriptableObject.CreateInstance<PreviewBeatmapLevelPackSO>();
+                    previewLevelPack.SetPrivateField("_packID", "");
+                    previewLevelPack.SetPrivateField("_packName", SongListUI.FilteredSongsPackName);
+                    previewLevelPack.SetPrivateField("_coverImage", levelsViewController.levelPack.coverImage);
+                    previewLevelPack.SetPrivateField("_previewBeatmapLevelCollection", levelCollection);
+
+                    levelsViewController.SetData(previewLevelPack);
+
+                    if (SongBrowserTweaks.Initialized && !SongBrowserTweaks.IsOldVersion)
+                        SongBrowserTweaks._FiltersApplied();
+                    return true;
+                }
+
+                Logger.log.Warn("Filtered song list could not be cast to any type used by SongBrowser's sort feature. Sorting this filtered song list will probably not work.");
+                // fallback to default implementation
+            }
+
+            return false;
         }
     }
 }

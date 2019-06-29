@@ -44,7 +44,7 @@ namespace EnhancedSearchAndFilters.UI
         private static readonly Vector2 DefaultFilterButtonPosition = new Vector2(30f, 35.5f);
         private static readonly Vector2 DefaultClearButtonPosition = new Vector2(48f, 35.5f);
         private static readonly Vector2 DefaultButtonSize = new Vector2(18f, 6f);
-        private const string FilteredSongsPackName = "Filtered Songs";
+        public const string FilteredSongsPackName = "Filtered Songs";
 
         private static SongListUI _instance;
 
@@ -144,12 +144,7 @@ namespace EnhancedSearchAndFilters.UI
             for (tries = 10; tries > 0; --tries)
             {
                 if (SongBrowserTweaks.Init())
-                {
-                    if (SongBrowserTweaks.IsOldVersion)
-                        CreateIconFilterButton();
-
                     break;
-                }
 
                 yield return new WaitForSeconds(0.5f);
             }
@@ -209,8 +204,7 @@ namespace EnhancedSearchAndFilters.UI
             {
                 UnapplyFilters();
 
-                if (SongBrowserTweaks.ModLoaded && SongBrowserTweaks.Initialized && !SongBrowserTweaks.IsOldVersion)
-                    SongBrowserTweaks.FiltersUnapplied();
+                SongBrowserTweaks.FiltersUnapplied();
             }
 
             _freePlayFlowCoordinator = null;
@@ -227,36 +221,6 @@ namespace EnhancedSearchAndFilters.UI
             SearchButton.name = "EnhancedSearchButton";
 
             Logger.log.Debug("Created search button.");
-        }
-
-        /// <summary>
-        /// Alternative filter button intended to sit alongside the SongBrowser mod's filter buttons.
-        /// </summary>
-        public void CreateIconFilterButton()
-        {
-            if (FilterButton != null || ButtonParentViewController == null)
-                return;
-
-            // modify button design to fit with other SongBrowser icon buttons
-            const float iconSize = 2.5f;
-            const float iconScale = 1f;
-            Vector2 buttonPos = new Vector2(52.625f, 37.25f);
-            Vector2 buttonSize = new Vector2(5f, 5f);
-
-            FilterButton = ButtonParentViewController.CreateUIButton("PracticeButton", buttonPos, buttonSize, FilterButtonPressed);
-            Destroy(FilterButton.GetComponentInChildren<TextMeshProUGUI>(true));
-
-            Sprite filterIcon = UIUtilities.LoadSpriteFromResources("EnhancedSearchAndFilters.Assets.filter.png");
-            Image icon = FilterButton.GetComponentsInChildren<Image>(true).First(x => x.name == "Icon");
-
-            HorizontalLayoutGroup hgroup = icon.rectTransform.parent.GetComponent<HorizontalLayoutGroup>();
-            hgroup.padding = new RectOffset(1, 1, 0, 0);
-
-            icon.sprite = filterIcon;
-            icon.rectTransform.sizeDelta = new Vector2(iconSize, iconSize);
-            icon.rectTransform.localScale = new Vector2(iconScale, iconScale);
-
-            Logger.log.Debug("Created icon filter button.");
         }
 
         public void CreateFilterButton(Vector2 anchoredPosition, Vector2 sizeDelta, string buttonTemplate = "CancelButton")
@@ -444,59 +408,8 @@ namespace EnhancedSearchAndFilters.UI
 
         private void FilterViewControllerSetFilteredSongs(IPreviewBeatmapLevel[] levels)
         {
-            // SongBrowser does some weird checks when sorting that we have to accomodate for
-            if (SongBrowserTweaks.ModLoaded)
-            {
-                if (levels.Any())
-                {
-                    if (levels[0] is CustomPreviewBeatmapLevel)
-                    {
-                        SongCoreCustomBeatmapLevelPack customLevelPack = new SongCoreCustomBeatmapLevelPack("", FilteredSongsPackName, LevelsViewController.levelPack.coverImage, new CustomBeatmapLevelCollection(levels.Cast<CustomPreviewBeatmapLevel>().ToArray()));
-                        LevelsViewController.SetData(customLevelPack);
-
-                        if (SongBrowserTweaks.Initialized && !SongBrowserTweaks.IsOldVersion)
-                            SongBrowserTweaks.FiltersApplied();
-                        return;
-                    }
-                    else if (levels[0] is BeatmapLevelSO)
-                    {
-                        BeatmapLevelCollectionSO levelCollection = ScriptableObject.CreateInstance<BeatmapLevelCollectionSO>();
-                        levelCollection.SetPrivateField("_beatmapLevels", levels.Cast<BeatmapLevelSO>().ToArray());
-
-                        BeatmapLevelPackSO beatmapLevelPack = ScriptableObject.CreateInstance<BeatmapLevelPackSO>();
-                        beatmapLevelPack.SetPrivateField("_packID", "");
-                        beatmapLevelPack.SetPrivateField("_packName", FilteredSongsPackName);
-                        beatmapLevelPack.SetPrivateField("_coverImage", LevelsViewController.levelPack.coverImage);
-                        beatmapLevelPack.SetPrivateField("_beatmapLevelCollection", levelCollection);
-
-                        LevelsViewController.SetData(beatmapLevelPack);
-
-                        if (SongBrowserTweaks.Initialized && !SongBrowserTweaks.IsOldVersion)
-                            SongBrowserTweaks.FiltersApplied();
-                        return;
-                    }
-                    else if (levels[0] is PreviewBeatmapLevelSO)
-                    {
-                        PreviewBeatmapLevelCollectionSO levelCollection = ScriptableObject.CreateInstance<PreviewBeatmapLevelCollectionSO>();
-                        levelCollection.SetPrivateField("_beatmapLevels", levels.Cast<PreviewBeatmapLevelSO>().ToArray());
-
-                        PreviewBeatmapLevelPackSO previewLevelPack = ScriptableObject.CreateInstance<PreviewBeatmapLevelPackSO>();
-                        previewLevelPack.SetPrivateField("_packID", "");
-                        previewLevelPack.SetPrivateField("_packName", FilteredSongsPackName);
-                        previewLevelPack.SetPrivateField("_coverImage", LevelsViewController.levelPack.coverImage);
-                        previewLevelPack.SetPrivateField("_previewBeatmapLevelCollection", levelCollection);
-
-                        LevelsViewController.SetData(previewLevelPack);
-
-                        if (SongBrowserTweaks.Initialized && !SongBrowserTweaks.IsOldVersion)
-                            SongBrowserTweaks.FiltersApplied();
-                        return;
-                    }
-
-                    Logger.log.Warn("Filtered song list could not be cast to any type used by SongBrowser's sort feature. Sorting this filtered song list will probably not work.");
-                    // fallback to default implementation below
-                }
-            }
+            if (SongBrowserTweaks.SetFilteredSongs(levels))
+                return;
 
             BeatmapLevelPack levelPack = new BeatmapLevelPack("", FilteredSongsPackName, LevelsViewController.levelPack.coverImage, new BeatmapLevelCollection(levels));
             LevelsViewController.SetData(levelPack);
@@ -506,9 +419,9 @@ namespace EnhancedSearchAndFilters.UI
                 FilterButton.SetButtonText("Filter\n(Applied)");
                 FilterButton.SetButtonTextSize(2.3f);
             }
-            else if (SongBrowserTweaks.Initialized && !SongBrowserTweaks.IsOldVersion)
+            else
             {
-                // this statement shouldn't trigger in any normal circumstances, only when the above checks fail
+                // this statement shouldn't trigger in any normal circumstances, only when the SongBrowserTweaks.SetFilteredSongs() fails
                 SongBrowserTweaks.FiltersApplied();
             }
         }
@@ -522,7 +435,7 @@ namespace EnhancedSearchAndFilters.UI
                 FilterButton.SetButtonText("Filter");
                 FilterButton.SetButtonTextSize(3f);
             }
-            else if (SongBrowserTweaks.Initialized && !SongBrowserTweaks.IsOldVersion)
+            else
             {
                 SongBrowserTweaks.FiltersUnapplied();
             }
