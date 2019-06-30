@@ -35,7 +35,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         {
             if (firstActivation)
             {
-                StandardLevelDetailView reference = Resources.FindObjectsOfTypeAll<StandardLevelDetailView>().First(x => x.name == "LevelDetail");
+                var referenceViewController = Resources.FindObjectsOfTypeAll<StandardLevelDetailViewController>().First();
+                StandardLevelDetailView reference = referenceViewController.GetPrivateField<StandardLevelDetailView>("_standardLevelDetailView");
                 RectTransform referenceParent = reference.transform.parent as RectTransform;
 
                 this.rectTransform.anchorMin = referenceParent.anchorMin;
