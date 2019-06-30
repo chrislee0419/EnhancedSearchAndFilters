@@ -322,9 +322,9 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 SelectButtonPressed?.Invoke(_level);
             });
 
-            Destroy(_standardLevelDetailView.GetComponentInChildren<BeatmapDifficultySegmentedControlController>().gameObject);
-            Destroy(_standardLevelDetailView.GetComponentInChildren<BeatmapCharacteristicSegmentedControlController>().gameObject);
-            Destroy(_standardLevelDetailView.practiceButton.gameObject);
+            Destroy(_standardLevelDetailView.GetComponentInChildren<BeatmapDifficultySegmentedControlController>()?.gameObject);
+            Destroy(_standardLevelDetailView.GetComponentInChildren<BeatmapCharacteristicSegmentedControlController>()?.gameObject);
+            Destroy(_standardLevelDetailView.practiceButton?.gameObject);
 
             // transform: PlayButton -> PlayButtons -> PlayContainer
             _detailsText = BeatSaberUI.CreateText(selectButton.transform.parent.parent as RectTransform, "", Vector2.zero);
