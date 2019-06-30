@@ -19,6 +19,8 @@ namespace EnhancedSearchAndFilters
         public void OnApplicationStart()
         {
             BSEvents.menuSceneLoadedFresh += OnMenuSceneLoadedFresh;
+            Loader.DeletingSong += SongCoreLoaderDeletingSong;
+            Loader.LoadingStartedEvent += SongCoreLoaderLoadingStarted;
             Loader.SongsLoadedEvent += SongCoreLoaderFinishedLoading;
         }
 
@@ -31,7 +33,6 @@ namespace EnhancedSearchAndFilters
 
         public void OnFixedUpdate()
         {
-
         }
 
         public void OnUpdate()
@@ -56,10 +57,27 @@ namespace EnhancedSearchAndFilters
 
             UI.SongListUI.Instance.OnMenuSceneLoadedFresh();
         }
+        public void SongCoreLoaderDeletingSong()
+        {
+            BeatmapDetailsLoader.Instance.CancelPopulatingCache();
+            Loader.OnLevelPacksRefreshed += SongCoreLoaderOnLevelPacksRefreshed;
+        }
+
+        public void SongCoreLoaderOnLevelPacksRefreshed()
+        {
+            Loader.OnLevelPacksRefreshed -= SongCoreLoaderOnLevelPacksRefreshed;
+            BeatmapDetailsLoader.Instance.StartPopulatingCache();
+        }
+
+        public void SongCoreLoaderLoadingStarted(Loader loader)
+        {
+            BeatmapDetailsLoader.Instance.CancelPopulatingCache();
+        }
 
         public void SongCoreLoaderFinishedLoading(Loader loader, Dictionary<string, CustomPreviewBeatmapLevel> beatmaps)
         {
-            BeatmapDetailsLoader.Instance.StartPopulatingCache();
+            // force load, since there might be new songs that can be cached
+            BeatmapDetailsLoader.Instance.StartPopulatingCache(true);
         }
 
         public void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode)
