@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
@@ -6,6 +7,7 @@ using TMPro;
 using HMUI;
 using CustomUI.BeatSaber;
 using CustomUI.Utilities;
+using UEImage = UnityEngine.UI.Image;
 
 namespace EnhancedSearchAndFilters.UI.ViewControllers
 {
@@ -16,20 +18,49 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
         private IPreviewBeatmapLevel[] _beatmapLevels = new IPreviewBeatmapLevel[0];
 
+        private LevelListTableCell _tableCellInstance;
+
+        public new string reuseIdentifier = "SearchListTableCell";
+
         protected override void DidActivate(bool firstActivation, ActivationType activationType)
         {
             base.DidActivate(firstActivation, activationType);
 
             if (firstActivation)
             {
+                _tableCellInstance = Resources.FindObjectsOfTypeAll<LevelListTableCell>().First(x => (x.name == "LevelListTableCell"));
+
+                this.DidSelectRowEvent += RowSelected;
+            }
+
+            UpdateSize();
+        }
+
+        public void UpdateSize()
+        {
+            if (!this.isActivated)
+                return;
+
+            var container = (this.transform.Find("CustomListContainer") as RectTransform);
+            if (PluginConfig.CompactSearchMode)
+            {
+                this.rectTransform.anchorMin = new Vector2(0.5f, 0f);
+                this.rectTransform.anchorMax = new Vector2(0.5f, 1f);
+                this.rectTransform.sizeDelta = new Vector2(55f, 0f);
+                this.rectTransform.pivot = new Vector2(0.45f, 0.5f);
+
+                container.sizeDelta = new Vector2(50f, 0f);
+            }
+            else
+            {
                 // make the list view narrower and with a slight rightward bias
                 // to fit details view controller and back button
                 this.rectTransform.anchorMin = new Vector2(0.5f, 0f);
                 this.rectTransform.anchorMax = new Vector2(0.5f, 1f);
-                this.rectTransform.sizeDelta = new Vector2(74f, 0f);
-                this.rectTransform.pivot = new Vector2(0.4f, 0.5f);
+                this.rectTransform.sizeDelta = new Vector2(70f, 0f);
+                this.rectTransform.pivot = new Vector2(0.45f, 0.5f);
 
-                this.DidSelectRowEvent += RowSelected;
+                container.sizeDelta = new Vector2(60f, 0f);
             }
         }
 
@@ -45,9 +76,39 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             SongSelected?.Invoke(_beatmapLevels[row]);
         }
 
+        /// <summary>
+        /// Used when the "Display Keyboard" button on the SongDetailsViewController is pressed, 
+        /// so the player will be able to select the same song and have the details show up.
+        /// </summary>
+        public void DeselectSong()
+        {
+            if (this.isActivated)
+                _customListTableView.ClearSelection();
+        }
+
         public override TableCell CellForIdx(int idx)
         {
-            LevelListTableCell tableCell = GetTableCell();
+            // adapted from CustomUI's CustomListViewController
+            LevelListTableCell tableCell = (LevelListTableCell)_customListTableView.DequeueReusableCellForIdentifier(reuseIdentifier);
+
+            if (!tableCell)
+            {
+                tableCell = Instantiate(_tableCellInstance);
+
+                // force text to take up full width (minus cover image)
+                var cellText = tableCell.GetPrivateField<TextMeshProUGUI>("_songNameText");
+                cellText.rectTransform.sizeDelta += new Vector2(14f, 0f);
+                cellText.rectTransform.anchoredPosition += new Vector2(7f, 0f);
+                cellText = tableCell.GetPrivateField<TextMeshProUGUI>("_authorText");
+                cellText.rectTransform.sizeDelta += new Vector2(12f, 0f);
+                cellText.rectTransform.anchoredPosition += new Vector2(6f, 0f);
+
+                foreach (UEImage i in tableCell.GetPrivateField<UEImage[]>("_beatmapCharacteristicImages"))
+                    i.enabled = false;
+                tableCell.SetPrivateField("_beatmapCharacteristicAlphas", new float[0]);
+                tableCell.SetPrivateField("_beatmapCharacteristicImages", new UEImage[0]);
+                tableCell.reuseIdentifier = reuseIdentifier;
+            }
 
             IPreviewBeatmapLevel level = _beatmapLevels[idx];
 
@@ -75,15 +136,10 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         private async void SetBaseGameCoverImageAsync(TableCell tableCell, IPreviewBeatmapLevel level)
         {
             RawImage coverImage = tableCell.GetPrivateField<RawImage>("_coverRawImage");
-            CancellationToken token = new CancellationToken();
 
-            try
-            {
-                Texture2D texture = await level.GetCoverImageTexture2DAsync(token);
-                coverImage.texture = texture;
-                coverImage.color = Color.white;
-            }
-            catch (OperationCanceledException) { }
+            Texture2D texture = await level.GetCoverImageTexture2DAsync(CancellationToken.None);
+            coverImage.texture = texture;
+            coverImage.color = Color.white;
         }
 
         public override int NumberOfCells()

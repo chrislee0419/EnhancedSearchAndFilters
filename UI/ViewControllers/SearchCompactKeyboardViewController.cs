@@ -3,18 +3,18 @@ using System.Linq;
 using UnityEngine;
 using TMPro;
 using VRUI;
-using EnhancedSearchAndFilters.UI.Components;
 using CustomUI.BeatSaber;
+using EnhancedSearchAndFilters.UI.Components;
 
 namespace EnhancedSearchAndFilters.UI.ViewControllers
 {
-    class SearchKeyboardViewController : VRUIViewController
+    class SearchCompactKeyboardViewController : VRUIViewController
     {
         public event Action<char> TextKeyPressed;
         public event Action DeleteButtonPressed;
         public event Action ClearButtonPressed;
 
-        private SearchKeyboard _keyboard;
+        private CompactSearchKeyboard _keyboard;
         private TextMeshProUGUI _textDisplayComponent;
         private string _searchText;
         private const string _placeholderText = "Search...";
@@ -23,10 +23,23 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         {
             if (firstActivation)
             {
-                var keyboardGO = Instantiate(Resources.FindObjectsOfTypeAll<UIKeyboard>().First(x => x.name != "CustomUIKeyboard"), this.rectTransform, false).gameObject;
+                this.rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+                this.rectTransform.anchorMax = this.rectTransform.anchorMin;
+                this.rectTransform.pivot = this.rectTransform.anchorMin;
+                this.rectTransform.anchoredPosition = Vector2.zero;
+                this.rectTransform.sizeDelta = new Vector2(80f, 70f);
+
+                var keyboardGO = Instantiate(Resources.FindObjectsOfTypeAll<UIKeyboard>().First(x => x.name != "CustomUIKeyboard" && x.name != "EnhancedSearchKeyboard"), this.transform, false).gameObject;
                 Destroy(keyboardGO.GetComponent<UIKeyboard>());
-                _keyboard = keyboardGO.AddComponent<SearchKeyboard>();
+                _keyboard = keyboardGO.AddComponent<CompactSearchKeyboard>();
                 keyboardGO.name = "EnhancedSearchKeyboard";
+
+                var rt = _keyboard.transform as RectTransform;
+                rt.anchorMin = Vector2.zero;
+                rt.anchorMax = Vector2.one;
+                rt.pivot = new Vector2(0.5f, 0.5f);
+                rt.anchoredPosition = new Vector2(5f, 5f);
+                rt.sizeDelta = Vector2.zero;
 
                 _keyboard.TextKeyPressed += delegate (char key)
                 {
@@ -57,8 +70,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                     ClearButtonPressed?.Invoke();
                 };
 
-                _textDisplayComponent = BeatSaberUI.CreateText(this.rectTransform, "", new Vector2(0f, 26f), new Vector2(4f, 4f));
-                _textDisplayComponent.fontSize = 8f;
+                _textDisplayComponent = BeatSaberUI.CreateText(this.rectTransform, "", new Vector2(5f, 26f), new Vector2(4f, 4f));
+                _textDisplayComponent.fontSize = 6f;
                 _textDisplayComponent.alignment = TextAlignmentOptions.Center;
                 _textDisplayComponent.enableWordWrapping = false;
             }

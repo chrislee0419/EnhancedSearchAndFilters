@@ -14,11 +14,13 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
     class SongDetailsViewController : VRUIViewController
     {
         public Action<IPreviewBeatmapLevel> SelectButtonPressed;
+        public Action CompactKeyboardButtonPressed;
 
         private StandardLevelDetailView _standardLevelDetailView;
         private LevelParamsPanel _levelParamsPanel;
         private TextMeshProUGUI _songNameText;
         private TextMeshProUGUI _detailsText;
+        private Button _compactKeyboardButton;
 
         private static readonly string[] _difficultyStrings = new string[] { "Easy", "Normal", "Hard", "Expert", "Expert+" };
         private static readonly Color _checkmarkColor = new Color(0.8f, 1f, 0.8f);
@@ -42,7 +44,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 this.rectTransform.anchorMin = referenceParent.anchorMin;
                 this.rectTransform.anchorMax = referenceParent.anchorMax;
                 this.rectTransform.anchoredPosition = Vector2.zero;
-                this.rectTransform.sizeDelta = referenceParent.sizeDelta;
+                this.rectTransform.sizeDelta = new Vector2(80f, 0f);
 
                 _standardLevelDetailView = Instantiate(reference, this.transform, false);
                 _standardLevelDetailView.gameObject.SetActive(true);
@@ -66,6 +68,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 // stats panel gets disabled when in party mode, so re-enable it here just in case
                 RectTransform statsPanel = _standardLevelDetailView.GetComponentsInChildren<RectTransform>(true).First(x => x.name == "Stats");
                 statsPanel.gameObject.SetActive(true);
+                _compactKeyboardButton.gameObject.SetActive(PluginConfig.CompactSearchMode);
 
                 // strings get reset, so they have to be reapplied
                 foreach (var str in _difficultyStrings)
@@ -321,6 +324,17 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             {
                 SelectButtonPressed?.Invoke(_level);
             });
+
+            _compactKeyboardButton = Instantiate(selectButton, selectButton.transform.parent, false);
+            _compactKeyboardButton.SetButtonText("DISPLAY\nKEYBOARD");
+            _compactKeyboardButton.SetButtonTextSize(3f);
+            (_compactKeyboardButton.transform as RectTransform).sizeDelta += new Vector2(-15f, 0);
+            _compactKeyboardButton.onClick.RemoveAllListeners();
+            _compactKeyboardButton.onClick.AddListener(delegate ()
+            {
+                CompactKeyboardButtonPressed?.Invoke();
+            });
+            _compactKeyboardButton.gameObject.SetActive(PluginConfig.CompactSearchMode);
 
             Destroy(_standardLevelDetailView.GetComponentInChildren<BeatmapDifficultySegmentedControlController>()?.gameObject);
             Destroy(_standardLevelDetailView.GetComponentInChildren<BeatmapCharacteristicSegmentedControlController>()?.gameObject);

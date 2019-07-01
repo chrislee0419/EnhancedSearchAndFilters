@@ -76,6 +76,22 @@ namespace EnhancedSearchAndFilters
         public const SearchableSongFields SongFieldsToSearchDefaultValue = SearchableSongFields.All;
 
         /// <summary>
+        /// Use the compact, single-screen keyboard in the search screen.
+        /// </summary>
+        static public bool CompactSearchMode
+        {
+            get
+            {
+                return config.GetBool("EnhancedSearchAndFilters", "CompactSearchMode", CompactSearchModeDefaultValue, true);
+            }
+            set
+            {
+                config.SetBool("EnhancedSearchAndFilters", "CompactSearchMode", value);
+            }
+        }
+        public const bool CompactSearchModeDefaultValue = false;
+
+        /// <summary>
         /// The number of songs to search through in one frame. This setting is not exposed in the UI and can only be edited in the config.
         /// </summary>
         static public int MaxSongsToSearchInOneFrame

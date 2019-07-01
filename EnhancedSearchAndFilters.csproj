@@ -121,8 +121,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tweaks\BeatSaverDownloaderTweaks.cs" />
     <Compile Include="UI\Utilities.cs" />
+    <Compile Include="UI\Components\CompactSearchKeyboard.cs" />
     <Compile Include="UI\ViewControllers\FilterListViewController.cs" />
     <Compile Include="UI\ViewControllers\FilterViewController.cs" />
+    <Compile Include="UI\ViewControllers\SearchCompactKeyboardViewController.cs" />
     <Compile Include="UI\ViewControllers\SearchKeyboardViewController.cs" />
     <Compile Include="UI\ViewControllers\SearchOptionsViewController.cs" />
     <Compile Include="UI\ViewControllers\SearchResultsNavigationController.cs" />

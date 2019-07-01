@@ -16,11 +16,13 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         BoolViewController _stripSymbolsSetting;
         BoolViewController _splitQuerySetting;
         ListViewController _songFieldsSetting;
+        BoolViewController _compactModeSetting;
 
         private int _maxResultsShownStagingValue;
         private bool _stripSymbolsStagingValue;
         private bool _splitQueryStagingValue;
         private SearchableSongFields _songFieldsStagingValue;
+        private bool _compactModeStagingValue;
 
         public Action SearchOptionsChanged;
 
@@ -39,6 +41,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _stripSymbolsStagingValue = PluginConfig.StripSymbols;
             _splitQueryStagingValue = PluginConfig.SplitQueryByWords;
             _songFieldsStagingValue = PluginConfig.SongFieldsToSearch;
+            _compactModeStagingValue = PluginConfig.CompactSearchMode;
 
             if (firstActivation)
             {
@@ -132,6 +135,19 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 _stripSymbolsSetting.Init();
                 _stripSymbolsSetting.applyImmediately = true;
 
+                _compactModeSetting = _submenu.AddBool("Use Compact Mode",
+                    "Removes the keyboard on the right screen, replacing it with a smaller keyboard on the center screen.");
+                _compactModeSetting.GetValue += () => _compactModeStagingValue;
+                _compactModeSetting.SetValue += delegate (bool value)
+                {
+                    _compactModeStagingValue = value;
+                    _resetButton.interactable = true;
+                    _applyButton.interactable = true;
+                };
+                SetSettingElementPosition(_compactModeSetting.transform as RectTransform);
+                _compactModeSetting.Init();
+                _compactModeSetting.applyImmediately = true;
+
                 _defaultButton = BeatSaberUI.CreateUIButton(this.rectTransform, "CancelButton",
                     new Vector2(-37f, -32f), new Vector2(36f, 10f),
                     DefaultButtonPressed, "Use Defaults");
@@ -176,6 +192,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _stripSymbolsSetting.Init();
             _splitQuerySetting.Init();
             _songFieldsSetting.Init();
+            _compactModeSetting.Init();
         }
 
         private void DefaultButtonPressed()
@@ -184,6 +201,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _stripSymbolsStagingValue = PluginConfig.StripSymbolsDefaultValue;
             _splitQueryStagingValue = PluginConfig.SplitQueryByWordsDefaultValue;
             _songFieldsStagingValue = PluginConfig.SongFieldsToSearchDefaultValue;
+            _compactModeStagingValue = PluginConfig.CompactSearchModeDefaultValue;
 
             RefreshUI();
 
@@ -197,6 +215,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _stripSymbolsStagingValue = PluginConfig.StripSymbols;
             _splitQueryStagingValue = PluginConfig.SplitQueryByWords;
             _songFieldsStagingValue = PluginConfig.SongFieldsToSearch;
+            _compactModeStagingValue = PluginConfig.CompactSearchMode;
 
             RefreshUI();
 
@@ -209,6 +228,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             PluginConfig.StripSymbols = _stripSymbolsStagingValue;
             PluginConfig.SplitQueryByWords = _splitQueryStagingValue;
             PluginConfig.SongFieldsToSearch = _songFieldsStagingValue;
+            PluginConfig.CompactSearchMode = _compactModeStagingValue;
 
             _resetButton.interactable = false;
             _applyButton.interactable = false;

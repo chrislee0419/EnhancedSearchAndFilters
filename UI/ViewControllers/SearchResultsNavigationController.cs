@@ -21,6 +21,16 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         private const string _headerText = "Search Results";
         private const string _placeholderResultsText = "Use the keyboard on the right screen\nto search for a song.\n\n---->";
 
+        private static readonly Vector2 ResultsTextDefaultAnchoredPosition = Vector2.zero;
+        private static readonly Vector2 ResultsTextDefaultSizeDelta = new Vector2(120f, 40f);
+        private const float ResultsTextDefaultFontSize = 6f;
+        private static readonly Vector2 LoadingSpinnerDefaultAnchoredPosition = Vector2.zero;
+
+        private static readonly Vector2 ResultsTextCompactAnchoredPosition = new Vector2(-35f, 0f);
+        private static readonly Vector2 ResultsTextCompactSizeDelta = new Vector2(50f, 40f);
+        private const float ResultsTextCompactFontSize = 5f;
+        private static readonly Vector2 LoadingSpinnerCompactAnchoredPosition = new Vector2(-35f, 0f);
+
         protected override void DidActivate(bool firstActivation, ActivationType activationType)
         {
             if (firstActivation)
@@ -32,22 +42,23 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                     .First(x => x.name == "HeaderPanel" && x.parent.name == "PlayerSettingsViewController"), this.rectTransform);
                 _header = headerRectTransform.gameObject;
 
-                _resultsText = BeatSaberUI.CreateText(this.rectTransform, _placeholderResultsText, Vector2.zero, new Vector2(120f, 60f));
+                _resultsText = BeatSaberUI.CreateText(this.rectTransform, _placeholderResultsText, Vector2.zero, Vector2.zero);
                 _resultsText.alignment = TextAlignmentOptions.Center;
                 _resultsText.enableWordWrapping = true;
-                _resultsText.fontSize = 6f;
                 _forceButton = BeatSaberUI.CreateUIButton(this.rectTransform, "CancelButton", new Vector2(59f, -32f), new Vector2(36f, 10f), () => ForceShowButtonPressed?.Invoke(), "Force Show Results");
             }
             else
             {
                 _resultsText.text = _placeholderResultsText;
-                _resultsText.fontSize = 8f;
+                _resultsText.fontSize = 6f;
             }
 
+            AdjustElements();
+
             _loadingSpinner.SetActive(false);
-            _resultsText.gameObject.SetActive(true);
+            _resultsText.gameObject.SetActive(!PluginConfig.CompactSearchMode);
             _forceButton.gameObject.SetActive(false);
-            SetHeaderActive(true);
+            SetHeaderActive(!PluginConfig.CompactSearchMode);
         }
 
         public void ShowLoadingSpinner()
@@ -55,7 +66,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _resultsText.gameObject.SetActive(false);
             _forceButton.gameObject.SetActive(false);
 
-            SetHeaderActive(true);
+            SetHeaderActive(!PluginConfig.CompactSearchMode);
             _loadingSpinner.SetActive(true);
         }
 
@@ -78,9 +89,10 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _resultsText.text = $"<color={color}>{searchResultsList.Count()} out of {searchSpaceSize}</color> beatmaps\n" +
                 $"contain the text \"<color=#11FF11>{searchQuery}</color>\"";
             _resultsText.gameObject.SetActive(true);
+
             _forceButton.interactable = searchResultsList.Any() ? true : false;
             _forceButton.gameObject.SetActive(true);
-            SetHeaderActive(true);
+            SetHeaderActive(!PluginConfig.CompactSearchMode);
         }
 
         public void HideUIElements()
@@ -100,6 +112,29 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             {
                 TextMeshProUGUI titleText = _header.GetComponentInChildren<TextMeshProUGUI>(true);
                 titleText.text = _headerText;
+            }
+        }
+
+        /// <summary>
+        /// Used to adjust elements after changing to or from compact mode.
+        /// </summary>
+        public void AdjustElements()
+        {
+            if (PluginConfig.CompactSearchMode)
+            {
+                _resultsText.rectTransform.anchoredPosition = ResultsTextCompactAnchoredPosition;
+                _resultsText.rectTransform.sizeDelta = ResultsTextCompactSizeDelta;
+                _resultsText.fontSize = ResultsTextCompactFontSize;
+
+                (_loadingSpinner.transform as RectTransform).anchoredPosition = LoadingSpinnerCompactAnchoredPosition;
+            }
+            else
+            {
+                _resultsText.rectTransform.anchoredPosition = ResultsTextDefaultAnchoredPosition;
+                _resultsText.rectTransform.sizeDelta = ResultsTextDefaultSizeDelta;
+                _resultsText.fontSize = ResultsTextDefaultFontSize;
+
+                (_loadingSpinner.transform as RectTransform).anchoredPosition = LoadingSpinnerDefaultAnchoredPosition;
             }
         }
     }
