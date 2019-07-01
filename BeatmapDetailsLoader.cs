@@ -137,14 +137,23 @@ namespace EnhancedSearchAndFilters
                 _cache.TryAdd(detail.LevelID, detail);
         }
 
+        /// <summary>
+        /// Save the cached BeatmapDetails objects to a JSON file located at CachedBeatmapDetailsFilePath.
+        /// </summary>
         public void SaveCacheToFile()
         {
+            List<BeatmapDetails> cache = _cache.Values.ToList();
+
             // remove WIP levels from cache (don't save them, since they're likely to change often and
             // we don't delete any entries in the cache, it may cause the cache to balloon in size
-            foreach (var wipLevel in Loader.CustomWIPLevels.Values)
-                _cache.TryRemove(wipLevel.levelID, out var unused);
+            var wipLevels = Loader.CustomWIPLevels.Values.Select(x => x.levelID);
+            cache = cache.Where(c => !wipLevels.Any(wip => wip == c.LevelID)).ToList();
 
-            BeatmapDetails.SaveBeatmapDetailsToCache(CachedBeatmapDetailsFilePath, _cache.Values.ToList());
+            // remove beatmaps that are not loaded
+            var customLevels = Loader.CustomLevels.Values.Select(x => x.levelID);
+            cache = cache.Where(c => customLevels.Any(level => level == c.LevelID)).ToList();
+
+            BeatmapDetails.SaveBeatmapDetailsToCache(CachedBeatmapDetailsFilePath, cache);
         }
 
         /// <summary>
