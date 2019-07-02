@@ -84,7 +84,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
         public void SetText(string text)
         {
-            _searchText = text;
+            _searchText = text.ToUpper();
             _textDisplayComponent.text = string.IsNullOrEmpty(text) ? _placeholderText : text.ToUpper();
         }
 
