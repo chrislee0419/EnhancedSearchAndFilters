@@ -2,6 +2,8 @@
 
 A mod that helps you find the songs you want to play quicker! Includes a more option rich search screen and song filtering. The latest version of this mod can be found [here](https://github.com/chrislee0419/EnhancedSearchAndFilters/releases).
 
+If you have any suggestions or found any bugs, you can report it [here](https://github.com/chrislee0419/EnhancedSearchAndFilters/issues) or through Discord at `chris#9068`.
+
 ## Features
 
 - Search
