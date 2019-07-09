@@ -6,9 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using CustomUI.BeatSaber;
 using CustomUI.Utilities;
-using TMPro;
 using VRUI;
-using SongCore.OverrideClasses;
 using TableView = HMUI.TableView;
 using EnhancedSearchAndFilters.Tweaks;
 using EnhancedSearchAndFilters.UI.FlowCoordinators;
@@ -295,7 +293,7 @@ namespace EnhancedSearchAndFilters.UI
                 FilterButton.SetButtonText("Filter");
                 FilterButton.SetButtonTextSize(3f);
             }
-            else if (SongBrowserTweaks.Initialized && !SongBrowserTweaks.IsOldVersion && !songBrowserFilterSelected)
+            else if (SongBrowserTweaks.Initialized && !songBrowserFilterSelected)
             {
                 LevelsViewController.SetData(_lastPack);
             }
@@ -359,7 +357,7 @@ namespace EnhancedSearchAndFilters.UI
             if (levelPack.packName != FilteredSongsPackName)
                 _lastPack = levelPack;
 
-            if (SongBrowserTweaks.ModLoaded && SongBrowserTweaks.Initialized && !SongBrowserTweaks.IsOldVersion)
+            if (SongBrowserTweaks.ModLoaded && SongBrowserTweaks.Initialized)
             {
                 // on the new version of SongBrowser, selecting the same level pack should have no changes to what is shown
                 // unless it is an OST song pack (which we then clear the filter)

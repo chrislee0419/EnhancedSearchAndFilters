@@ -29,7 +29,7 @@ namespace EnhancedSearchAndFilters.Tweaks
             if (!ModLoaded)
                 return false;
 
-            Logger.log.Info("BeatSaverDownloader mod found. Attempting to replace Search button behaviour.");
+            Logger.log.Info("Attempting to initialize BeatSaverDownloader tweaks.");
 
             // acquire all UI elements first, before modifying
             List<Button> buttonList;

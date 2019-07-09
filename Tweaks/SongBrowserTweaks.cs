@@ -2,7 +2,6 @@
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 using SongCore.OverrideClasses;
 using CustomUI.BeatSaber;
 using CustomUI.Utilities;
@@ -17,10 +16,6 @@ namespace EnhancedSearchAndFilters.Tweaks
     {
         public static bool ModLoaded { get; set; } = false;
         public static bool Initialized { get; private set; } = false;
-        /// <summary>
-        /// Not really used anymore, will be deleted at some point
-        /// </summary>
-        public static bool IsOldVersion { get; private set; } = false;
 
         private static object _songBrowserUI = null;
 
@@ -29,65 +24,24 @@ namespace EnhancedSearchAndFilters.Tweaks
             if (!ModLoaded)
                 return false;
 
-            Logger.log.Info("SongBrowser mod found. Attempting to replace button behaviour.");
+            Logger.log.Info("Attempting to initialize SongBrowser tweaks.");
 
-            return NewVersionInit();
-        }
-
-        /// <summary>
-        /// Adapt this mod to SongBrowser before the 5.2.0 update. 
-        /// Legacy code, will remove this at some point.
-        /// </summary>
-        /// <returns>A boolean indicating whether the tweaks were done correctly.</returns>
-        private static bool OldVersionInit()
-        {
-            // acquire all the UI elements we need to change before modifying
-            Button searchButton;
-            Button cancelSortButton;
-            try
-            {
-                var buttonParentViewController = SongListUI.Instance.ButtonParentViewController;
-
-                searchButton = buttonParentViewController.GetComponentsInChildren<Button>(true).First(x => x.name == "FilterSearchButton");
-                // cancel sort button is found using x position (will need to be changed if button position changes)
-                cancelSortButton = buttonParentViewController.GetComponentsInChildren<Button>(true).First(x => x.name == "CustomUIButton" && (x.transform as RectTransform).anchoredPosition.x == 17.5f);
-            }
-            catch (InvalidOperationException)
-            {
-                Logger.log.Debug("Unable to find the buttons created by SongBrowser");
-                return false;
-            }
-
-            searchButton.onClick.RemoveAllListeners();
-            searchButton.onClick.AddListener(SongListUI.Instance.SearchButtonPressed);
-
-            cancelSortButton.onClick.AddListener(SongListUI.Instance.ClearButtonPressed);
-
-            CreateIconFilterButton();
-            SongListUI.Instance.SearchButton = searchButton;
-            SongListUI.Instance.ClearButton = cancelSortButton;
-
-            Initialized = true;
-            IsOldVersion = true;
-            Logger.log.Info("Modified SongBrowser's search and clear sort buttons");
-            return true;
+            return _Init();
         }
 
         /// <summary>
         /// Adapt this mod to SongBrowser version 5.2.0 and onwards.
         /// </summary>
         /// <returns>A boolean indicating whether the tweaks were done correctly.</returns>
-        private static bool NewVersionInit()
+        private static bool _Init()
         {
             // acquire all the UI elements we need to change before modifying
-
             Button xButton;
             Button filterByButton;
             Button clearFilterButton;
 
             Button searchButton;
-            Button playlistButton;
-            Button favoritesButton;
+            Button[] filterButtons;
 
             var levelsViewController = SongListUI.Instance.LevelsViewController;
             try
@@ -95,8 +49,7 @@ namespace EnhancedSearchAndFilters.Tweaks
                 _songBrowserUI = Resources.FindObjectsOfTypeAll<SongBrowserUI>().First();
 
                 searchButton = levelsViewController.GetComponentsInChildren<Button>(true).First(x => x.name == "FilterSearchButton");
-                playlistButton = levelsViewController.GetComponentsInChildren<Button>(true).First(x => x.name == "FilterPlaylistButton");
-                favoritesButton = levelsViewController.GetComponentsInChildren<Button>(true).First(x => x.name == "FilterFavoritesButton");
+                filterButtons = levelsViewController.GetComponentsInChildren<Button>(true).Where(x => x.name.StartsWith("Filter") && x.name.EndsWith("Button")).ToArray();
 
                 // these buttons are found using their respective x positions (will need to be changed if button position changes)
                 xButton = levelsViewController.GetComponentsInChildren<Button>(true).First(x => x.name == "CustomUIButton" && (x.transform as RectTransform).anchoredPosition.x == -32.5f);
@@ -117,19 +70,21 @@ namespace EnhancedSearchAndFilters.Tweaks
                 SongListUI.Instance.FilterButton.gameObject.SetActive(false);
                 _songBrowserUI.InvokePrivateMethod("RefreshOuterUIState", new object[] { UIState.Main });
             });
-            playlistButton.onClick.AddListener(delegate ()
+
+            foreach (var button in filterButtons)
             {
-                // search button should be hidden already via RefreshOuterUIState
-                SongListUI.Instance.FilterButton.gameObject.SetActive(false);
-                SongListUI.Instance.UnapplyFilters(true);
-            });
-            favoritesButton.onClick.AddListener(delegate ()
-            {
-                // search button should be hidden already via RefreshOuterUIState
-                SongListUI.Instance.FilterButton.gameObject.SetActive(false);
-                SongListUI.Instance.UnapplyFilters(true);
-            });
-            Button filterButton = BeatSaberUI.CreateUIButton(levelsViewController.rectTransform, "ApplyButton", new Vector2(19.25f, 37f), new Vector2(16.75f, 5f),
+                if (button.name == "FilterSearchButton")
+                    continue;
+
+                button.onClick.AddListener(delegate ()
+                {
+                    // search button should be hidden already via RefreshOuterUIState
+                    SongListUI.Instance.FilterButton.gameObject.SetActive(false);
+                    SongListUI.Instance.UnapplyFilters(true);
+                });
+            }
+
+            Button filterButton = BeatSaberUI.CreateUIButton(levelsViewController.rectTransform, "ApplyButton", new Vector2(-18f + (12.75f * filterButtons.Length), 37f), new Vector2(16.75f, 5f),
                 delegate ()
                 {
                     SongListUI.Instance.FilterButtonPressed();
@@ -181,41 +136,8 @@ namespace EnhancedSearchAndFilters.Tweaks
             SongListUI.Instance.ClearButton = clearFilterButton;
 
             Initialized = true;
-            IsOldVersion = false;
             Logger.log.Info("Modified SongBrowser's search, filter, and clear filter buttons");
             return true;
-        }
-
-        /// <summary>
-        /// Alternative filter button intended to sit alongside the SongBrowser mod's filter buttons.
-        /// </summary>
-        private static void CreateIconFilterButton()
-        {
-            if (SongListUI.Instance.FilterButton != null || SongListUI.Instance.ButtonParentViewController == null)
-                return;
-
-            // modify button design to fit with other SongBrowser icon buttons
-            const float iconSize = 2.5f;
-            const float iconScale = 1f;
-            Vector2 buttonPos = new Vector2(52.625f, 37.25f);
-            Vector2 buttonSize = new Vector2(5f, 5f);
-
-            var filterButton = SongListUI.Instance.ButtonParentViewController.CreateUIButton("PracticeButton", buttonPos, buttonSize, SongListUI.Instance.FilterButtonPressed);
-            UnityEngine.Object.Destroy(filterButton.GetComponentInChildren<TextMeshProUGUI>(true));
-
-            Sprite filterIcon = UIUtilities.LoadSpriteFromResources("EnhancedSearchAndFilters.Assets.filter.png");
-            Image icon = filterButton.GetComponentsInChildren<Image>(true).First(x => x.name == "Icon");
-
-            HorizontalLayoutGroup hgroup = icon.rectTransform.parent.GetComponent<HorizontalLayoutGroup>();
-            hgroup.padding = new RectOffset(1, 1, 0, 0);
-
-            icon.sprite = filterIcon;
-            icon.rectTransform.sizeDelta = new Vector2(iconSize, iconSize);
-            icon.rectTransform.localScale = new Vector2(iconScale, iconScale);
-
-            SongListUI.Instance.FilterButton = filterButton;
-
-            Logger.log.Debug("Created icon filter button.");
         }
 
         /// <summary>
@@ -223,7 +145,7 @@ namespace EnhancedSearchAndFilters.Tweaks
         /// </summary>
         public static void FiltersApplied()
         {
-            if (!ModLoaded || !Initialized || IsOldVersion)
+            if (!ModLoaded || !Initialized)
                 return;
             _FiltersApplied();
         }
@@ -240,7 +162,7 @@ namespace EnhancedSearchAndFilters.Tweaks
         /// </summary>
         public static void FiltersUnapplied()
         {
-            if (!ModLoaded || !Initialized || IsOldVersion)
+            if (!ModLoaded || !Initialized)
                 return;
             _FiltersUnapplied();
         }
@@ -253,7 +175,7 @@ namespace EnhancedSearchAndFilters.Tweaks
 
         public static void OnModeSelection()
         {
-            if (!ModLoaded || !Initialized || IsOldVersion)
+            if (!ModLoaded || !Initialized)
                 return;
 
             // UIState is always reset to Main, so we need to disable the filter button
@@ -280,8 +202,8 @@ namespace EnhancedSearchAndFilters.Tweaks
                     SongCoreCustomBeatmapLevelPack customLevelPack = new SongCoreCustomBeatmapLevelPack("", SongListUI.FilteredSongsPackName, levelsViewController.levelPack.coverImage, new CustomBeatmapLevelCollection(levels.Cast<CustomPreviewBeatmapLevel>().ToArray()));
                     levelsViewController.SetData(customLevelPack);
 
-                    if (SongBrowserTweaks.Initialized && !SongBrowserTweaks.IsOldVersion)
-                        SongBrowserTweaks._FiltersApplied();
+                    if (Initialized)
+                        _FiltersApplied();
                     return true;
                 }
                 else if (levels[0] is BeatmapLevelSO)
@@ -297,8 +219,8 @@ namespace EnhancedSearchAndFilters.Tweaks
 
                     levelsViewController.SetData(beatmapLevelPack);
 
-                    if (SongBrowserTweaks.Initialized && !SongBrowserTweaks.IsOldVersion)
-                        SongBrowserTweaks._FiltersApplied();
+                    if (Initialized)
+                        _FiltersApplied();
                     return true;
                 }
                 else if (levels[0] is PreviewBeatmapLevelSO)
@@ -314,8 +236,8 @@ namespace EnhancedSearchAndFilters.Tweaks
 
                     levelsViewController.SetData(previewLevelPack);
 
-                    if (SongBrowserTweaks.Initialized && !SongBrowserTweaks.IsOldVersion)
-                        SongBrowserTweaks._FiltersApplied();
+                    if (Initialized)
+                        _FiltersApplied();
                     return true;
                 }
 
