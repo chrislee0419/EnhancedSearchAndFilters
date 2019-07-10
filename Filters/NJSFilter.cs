@@ -105,8 +105,6 @@ namespace EnhancedSearchAndFilters.Filters
             if (_isInitialized)
                 return;
 
-            SubMenu submenu = new SubMenu((Transform)null);
-
             // difficulties
             var difficultiesContainer = new GameObject("DifficultiesContainer");
             Controls[0] = new FilterControl(difficultiesContainer, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 26f), Vector2.zero,
@@ -129,7 +127,7 @@ namespace EnhancedSearchAndFilters.Filters
 
             // minimum value setting
             float[] values = Enumerable.Range(MinValue, MaxValue).Select(x => (float)x).ToArray();
-            _minViewController = submenu.AddList("Minimum NJS", values, "Filter out songs that have a smaller NJS than this value");
+            _minViewController = Utilities.CreateListViewController("Minimum NJS", values, "Filter out songs that have a smaller NJS than this value");
             _minViewController.GetTextForValue += x => ((int)x).ToString();
             _minViewController.GetValue += () => _minStagingValue;
             _minViewController.SetValue += delegate (float value)
@@ -178,7 +176,7 @@ namespace EnhancedSearchAndFilters.Filters
                 });
 
             // maximum value setting
-            _maxViewController = submenu.AddList("Maximum NJS", values, "Filter out songs that have a larger NJS than this value");
+            _maxViewController = Utilities.CreateListViewController("Maximum NJS", values, "Filter out songs that have a larger NJS than this value");
             _maxViewController.GetTextForValue += x => ((int)x).ToString();
             _maxViewController.GetValue += () => _maxStagingValue;
             _maxViewController.SetValue += delegate (float value)

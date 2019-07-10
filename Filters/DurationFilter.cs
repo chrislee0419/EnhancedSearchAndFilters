@@ -91,8 +91,6 @@ namespace EnhancedSearchAndFilters.Filters
             if (_isInitialized)
                 return;
 
-            SubMenu submenu = new SubMenu((Transform)null);
-
             var togglePrefab = Utilities.GetTogglePrefab();
 
             // title text
@@ -107,7 +105,7 @@ namespace EnhancedSearchAndFilters.Filters
 
             // min view controller
             float[] values = Enumerable.Range(0, (int)((MaxValue - MinValue) / IncrementValue) + 1).Select(x => x * IncrementValue).ToArray();
-            _minViewController = submenu.AddList("Minimum Duration", values, "Filters out songs that are shorter than this value");
+            _minViewController = Utilities.CreateListViewController("Minimum Duration", values, "Filters out songs that are shorter than this value");
             _minViewController.GetTextForValue += x => ConvertFloatToTimeString(x);
             _minViewController.GetValue += () => _minStagingValue;
             _minViewController.SetValue += delegate (float value)
@@ -154,7 +152,7 @@ namespace EnhancedSearchAndFilters.Filters
                 });
 
             // max view controller
-            _maxViewController = submenu.AddList("Maximum Duration", values, "Filters out songs that are longer than this value");
+            _maxViewController = Utilities.CreateListViewController("Maximum Duration", values, "Filters out songs that are longer than this value");
             _maxViewController.GetTextForValue += x => ConvertFloatToTimeString(x);
             _maxViewController.GetValue += () => _maxStagingValue;
             _maxViewController.SetValue += delegate (float value)

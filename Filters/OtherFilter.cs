@@ -81,8 +81,6 @@ namespace EnhancedSearchAndFilters.Filters
             if (_isInitialized)
                 return;
 
-            SubMenu submenu = new SubMenu((Transform)null);
-
             // title text
             var text = BeatSaberUI.CreateText(null, "Other Filters", Vector2.zero, Vector2.zero);
             text.fontSize = 5.5f;
@@ -94,7 +92,7 @@ namespace EnhancedSearchAndFilters.Filters
             Controls[0] = new FilterControl(text.gameObject, new Vector2(0f, 0.95f), new Vector2(0f, 0.95f), new Vector2(0f, 1f), new Vector2(50f, 6f), Vector2.zero);
 
             // one saber view controller
-            _oneSaberViewController = submenu.AddBool("Has One Saber", "Filters out songs that don't have at least one saber map");
+            _oneSaberViewController = Utilities.CreateBoolViewController("Has One Saber", "Filters out songs that don't have at least one saber map");
             _oneSaberViewController.GetValue += () => _oneSaberStagingValue;
             _oneSaberViewController.SetValue += delegate (bool value)
             {
@@ -110,7 +108,7 @@ namespace EnhancedSearchAndFilters.Filters
             Controls[1] = new FilterControl(_oneSaberViewController.gameObject, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 12f), new Vector2(0f, -8f));
 
             // lightshow view controller
-            _lightshowViewController = submenu.AddBool("Has Lightshow", "Filters out songs that don't have a lightshow map");
+            _lightshowViewController = Utilities.CreateBoolViewController("Has Lightshow", "Filters out songs that don't have a lightshow map");
             _lightshowViewController.GetValue += () => _lightshowStagingValue;
             _lightshowViewController.SetValue += delegate (bool value)
             {
@@ -127,7 +125,7 @@ namespace EnhancedSearchAndFilters.Filters
 
             // mapping extensions view controller
             var values = Enumerable.Range(0, 3).Select(x => (float)x).ToArray();
-            _mappingExtensionsViewController = submenu.AddList("Requires Mapping Extensions", values, "Filters out songs that don't require the 'Mapping Extensions' mod");
+            _mappingExtensionsViewController = Utilities.CreateListViewController("Requires Mapping Extensions", values, "Filters out songs that don't require the 'Mapping Extensions' mod");
             _mappingExtensionsViewController.GetTextForValue += delegate (float value)
             {
                 if (value == (float)SongRequirement.Required)

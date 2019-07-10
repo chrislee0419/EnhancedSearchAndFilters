@@ -9,6 +9,8 @@ namespace EnhancedSearchAndFilters.UI
 {
     internal static class Utilities
     {
+        private static SubMenu _submenu = new SubMenu((Transform)null);
+
         /// <summary>
         /// Gets the prefab that should be passed to CreateToggleFromPrefab. 
         /// Should be used like this: 'CreateToggleFromPrefab(prefab.toggle, transform)'. 
@@ -93,6 +95,41 @@ namespace EnhancedSearchAndFilters.UI
             rt.anchoredPosition = Vector2.zero;
 
             return divider;
+        }
+
+        /// <summary>
+        /// Create a BoolViewController outside of the settings menu. 
+        /// NOTE: CustomUI.Settings.SubMenu:AddHooks() can make a call to ApplySettings.
+        /// </summary>
+        /// <param name="name">The text to be displayed for this setting.</param>
+        /// <param name="hintText">The text to be displayed when this settings is hovered over.</param>
+        /// <returns>A new BoolViewController.</returns>
+        public static BoolViewController CreateBoolViewController(string name, string hintText = "")
+        {
+            BoolViewController viewController = _submenu.AddBool(name, hintText);
+
+            // remove this view controller from the global list of CustomSettings, otherwise it'll try to call Init() when we don't need it to
+            SubMenu.needsInit.Remove(viewController);
+
+            return viewController;
+        }
+
+        /// <summary>
+        /// Create a ListViewController outside of the settings menu. 
+        /// NOTE: CustomUI.Settings.SubMenu:AddHooks() can make a call to ApplySettings.
+        /// </summary>
+        /// <param name="name">The text to be displayed for this setting.</param>
+        /// <param name="values">A list of values representing an option in this setting.</param>
+        /// <param name="hintText">The text to be displayed when this settings is hovered over.</param>
+        /// <returns>A new ListViewController.</returns>
+        public static ListViewController CreateListViewController(string name, float[] values, string hintText = "")
+        {
+            ListViewController viewController = _submenu.AddList(name, values, hintText);
+
+            // remove this view controller from the global list of CustomSettings, otherwise it'll try to call Init() when we don't need it to
+            SubMenu.needsInit.Remove(viewController);
+
+            return viewController;
         }
 
         /// <summary>
