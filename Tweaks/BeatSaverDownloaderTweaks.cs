@@ -17,7 +17,7 @@ namespace EnhancedSearchAndFilters.Tweaks
         private static Button _randomButton;
 
         public static bool ModLoaded { get; set; } = false;
-        public static bool Initialized { get; private set; } = false;
+        public static bool Initialized { get; set; } = false;
 
         /// <summary>
         /// Adapts some BeatSaverDownloader buttons to this mod.

@@ -286,7 +286,8 @@ namespace EnhancedSearchAndFilters.UI
         /// <param name="songBrowserFilterSelected">Used only by the SongBrowser mod. Set this to true when another filter (Favorites/Playlist) was selected.</param>
         public void UnapplyFilters(bool songBrowserFilterSelected = false)
         {
-            _filterViewController?.UnapplyFilters(false);
+            if (_filterViewController != null)
+                _filterViewController.UnapplyFilters(false);
 
             if (!SongBrowserTweaks.ModLoaded)
             {
@@ -345,9 +346,12 @@ namespace EnhancedSearchAndFilters.UI
 
         public void ToggleButtonsActive(bool active)
         {
-            SearchButton?.gameObject.SetActive(active);
-            FilterButton?.gameObject.SetActive(active);
-            ClearButton?.gameObject.SetActive(active);
+            if (SearchButton != null)
+                SearchButton.gameObject.SetActive(active);
+            if (FilterButton != null)
+                FilterButton.gameObject.SetActive(active);
+            if (ClearButton != null)
+                ClearButton.gameObject.SetActive(active);
         }
 
         private void LevelPackSelected(LevelPacksViewController viewController, IBeatmapLevelPack levelPack)
@@ -364,7 +368,8 @@ namespace EnhancedSearchAndFilters.UI
                 IPreviewBeatmapLevel[] levels = levelPack.beatmapLevelCollection.beatmapLevels;
                 if (previousPack != levelPack || (levels.Length > 0 && !(levels[0] is CustomPreviewBeatmapLevel)))
                 {
-                    _filterViewController?.UnapplyFilters(false);
+                    if (_filterViewController != null)
+                        _filterViewController.UnapplyFilters(false);
                     SongBrowserTweaks.FiltersUnapplied();
                 }
             }

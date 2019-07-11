@@ -55,6 +55,10 @@ namespace EnhancedSearchAndFilters
             Tweaks.SongBrowserTweaks.ModLoaded = IPAPluginManager.AllPlugins.Any(x => x.Metadata.Id == "SongBrowser" || x.Metadata.Name == "Song Browser") || IPAPluginManager.Plugins.Any(x => x.Name == "Song Browser");
 #pragma warning restore CS0618
 
+            // reset initialization status if settings were applied
+            Tweaks.BeatSaverDownloaderTweaks.Initialized = false;
+            Tweaks.SongBrowserTweaks.Initialized = false;
+
             UI.SongListUI.Instance.OnMenuSceneLoadedFresh();
         }
         public void SongCoreLoaderDeletingSong()
