@@ -14,6 +14,7 @@ namespace EnhancedSearchAndFilters.Filters
     class DurationFilter : IFilter
     {
         public string FilterName { get { return "Song Length"; } }
+        public bool IsAvailable { get { return true; } }
         public FilterStatus Status
         {
             get

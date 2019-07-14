@@ -13,6 +13,7 @@ namespace EnhancedSearchAndFilters.Filters
     class DifficultyFilter : IFilter
     {
         public string FilterName { get { return "Difficulty"; } }
+        public bool IsAvailable { get { return true; } }
         public FilterStatus Status {
             get
             {

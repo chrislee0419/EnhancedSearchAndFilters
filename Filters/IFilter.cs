@@ -7,6 +7,7 @@ namespace EnhancedSearchAndFilters.Filters
     public interface IFilter
     {
         string FilterName { get; }
+        bool IsAvailable { get; }
         FilterStatus Status { get; }
         bool ApplyFilter { get; set; }
         FilterControl[] Controls { get; }

@@ -144,7 +144,10 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             cellText = tableCell.GetPrivateField<TextMeshProUGUI>("_songNameText");
             statusImg = tableCell.GetComponentsInChildren<UEImage>().First(x => x.name == "StatusImage");
 
-            cellText.text = filter.FilterName;
+            if (filter.IsAvailable)
+                cellText.text = filter.FilterName;
+            else
+                cellText.text = $"<color=#FF8888><i>{filter.FilterName}</i></color>";
 
             if (filter.Status == FilterStatus.NotAppliedAndDefault)
                 statusImg.color = DefaultFilterColor;

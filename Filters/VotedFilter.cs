@@ -19,6 +19,7 @@ namespace EnhancedSearchAndFilters.Filters
     class VotedFilter : IFilter
     {
         public string FilterName { get { return "Voted Songs"; } }
+        public bool IsAvailable { get { return Tweaks.BeatSaverDownloaderTweaks.ModLoaded; } }
         public FilterStatus Status
         {
             get
@@ -68,12 +69,10 @@ namespace EnhancedSearchAndFilters.Filters
 
         public event Action SettingChanged;
 
-        private TextMeshProUGUI _noModMessage;
         private Toggle _upvotedToggle;
         private Toggle _noVoteToggle;
         private Toggle _downvotedToggle;
 
-        private bool _isModLoaded = false;
         private bool _isInitialized = false;
 
         private bool _upvotedStagingValue = false;
@@ -90,16 +89,14 @@ namespace EnhancedSearchAndFilters.Filters
             if (_isInitialized)
                 return;
 
-            _isModLoaded = PluginManager.AllPlugins.Any(x => x.Metadata.Id == "BeatSaverDownloader");
-
             // since we're using BeatSaverDownloader's votedSong.json file, we need the mod to be present
-            if (!_isModLoaded)
+            if (!Tweaks.BeatSaverDownloaderTweaks.ModLoaded)
             {
-                _noModMessage = BeatSaberUI.CreateText(null, "<color=#FFAAAA>Sorry!\n\n<size=80%>This filter requires the BeatSaverDownloader mod\n to be installed.</size></color>", Vector2.zero);
-                _noModMessage.alignment = TextAlignmentOptions.Center;
-                _noModMessage.fontSize = 5.5f;
+                var noModMessage = BeatSaberUI.CreateText(null, "<color=#FFAAAA>Sorry!\n\n<size=80%>This filter requires the BeatSaverDownloader mod\n to be installed.</size></color>", Vector2.zero);
+                noModMessage.alignment = TextAlignmentOptions.Center;
+                noModMessage.fontSize = 5.5f;
 
-                Controls[0] = new FilterControl(_noModMessage.gameObject, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(80f, 50f), new Vector2(0f, 10f));
+                Controls[0] = new FilterControl(noModMessage.gameObject, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(80f, 50f), new Vector2(0f, 10f));
             }
             else
             {
@@ -117,7 +114,7 @@ namespace EnhancedSearchAndFilters.Filters
                 unused.color = new Color(0f, 0f, 0f, 0f);
                 unused.material = UIUtilities.NoGlowMaterial;
 
-                var text = BeatSaberUI.CreateText(container.transform as RectTransform, "Keep Songs With These Voted Statuses", Vector2.zero);
+                var text = BeatSaberUI.CreateText(container.transform as RectTransform, "Keep Songs That You Voted", Vector2.zero);
                 text.fontSize = 5.5f;
                 var rt = text.rectTransform;
                 rt.anchorMin = new Vector2(0f, 1f);
@@ -183,7 +180,7 @@ namespace EnhancedSearchAndFilters.Filters
 
         public void SetDefaultValues()
         {
-            if (!_isInitialized || !_isModLoaded)
+            if (!_isInitialized || !Tweaks.BeatSaverDownloaderTweaks.ModLoaded)
                 return;
 
             _upvotedStagingValue = false;
@@ -197,7 +194,7 @@ namespace EnhancedSearchAndFilters.Filters
 
         public void ResetValues()
         {
-            if (!_isInitialized || !_isModLoaded)
+            if (!_isInitialized || !Tweaks.BeatSaverDownloaderTweaks.ModLoaded)
                 return;
 
             _upvotedStagingValue = _upvotedAppliedValue;
@@ -211,7 +208,7 @@ namespace EnhancedSearchAndFilters.Filters
 
         public void FilterSongList(ref List<BeatmapDetails> detailsList)
         {
-            if (!_isInitialized || !_isModLoaded || !File.Exists(votedSongsPath))
+            if (!_isInitialized || !Tweaks.BeatSaverDownloaderTweaks.ModLoaded || !File.Exists(votedSongsPath))
                 return;
 
             // because the player could vote on songs in game, we can't cache the

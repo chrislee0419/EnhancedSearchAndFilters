@@ -15,6 +15,7 @@ namespace EnhancedSearchAndFilters.Filters
     class NJSFilter : IFilter
     {
         public string FilterName { get { return "Note Jump Speed (NJS)"; } }
+        public bool IsAvailable { get { return true; } }
         public FilterStatus Status {
             get
             {

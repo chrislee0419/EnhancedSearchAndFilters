@@ -14,6 +14,7 @@ namespace EnhancedSearchAndFilters.Filters
     class OtherFilter : IFilter
     {
         public string FilterName { get { return "Other"; } }
+        public bool IsAvailable { get { return true; } }
         public FilterStatus Status
         {
             get
