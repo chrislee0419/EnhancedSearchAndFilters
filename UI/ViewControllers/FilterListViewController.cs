@@ -36,34 +36,36 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 _songListTableCellInstance = Resources.FindObjectsOfTypeAll<LevelListTableCell>().First(x => (x.name == "LevelListTableCell"));
             }
 
+            base.includePageButtons = false;
             base.DidActivate(firstActivation, type);
 
             if (firstActivation)
             {
                 RectTransform rt = this._customListTableView.transform as RectTransform;
                 rt.sizeDelta = Vector2.zero;
-                (rt.parent as RectTransform).sizeDelta = new Vector2(50f, 45f);
+                (rt.parent as RectTransform).sizeDelta = new Vector2(50f, 55f);
+                (rt.parent as RectTransform).anchoredPosition += new Vector2(0f, -3f);
 
                 rt = rt.GetComponent<RectMask2D>().rectTransform;
                 rt.anchorMin = Vector2.zero;
                 rt.anchorMax = Vector2.one;
                 rt.sizeDelta = Vector2.zero;
 
-                rt = this._pageUpButton.transform as RectTransform;
-                rt.SetParent(this.transform, false);
-                rt.anchorMin = new Vector2(0.5f, 1f);
-                rt.anchorMax = new Vector2(0.5f, 1f);
-                rt.pivot = new Vector2(0.5f, 0f);       // for whatever reason, the pivot on this button is upside down (rotated 180 degrees? vertically scaled by -1?)
-                rt.sizeDelta = new Vector2(40f, 6f);
-                rt.anchoredPosition = Vector2.zero;
+                //rt = this._pageUpButton.transform as RectTransform;
+                //rt.SetParent(this.transform, false);
+                //rt.anchorMin = new Vector2(0.5f, 1f);
+                //rt.anchorMax = new Vector2(0.5f, 1f);
+                //rt.pivot = new Vector2(0.5f, 0f);       // for whatever reason, the pivot on this button is upside down (rotated 180 degrees? vertically scaled by -1?)
+                //rt.sizeDelta = new Vector2(40f, 6f);
+                //rt.anchoredPosition = Vector2.zero;
 
-                rt = this._pageDownButton.transform as RectTransform;
-                rt.SetParent(this.transform, false);
-                rt.anchorMin = new Vector2(0.5f, 0f);
-                rt.anchorMax = new Vector2(0.5f, 0f);
-                rt.pivot = new Vector2(0.5f, 0f);
-                rt.sizeDelta = new Vector2(40f, 6f);
-                rt.anchoredPosition = Vector2.zero;
+                //rt = this._pageDownButton.transform as RectTransform;
+                //rt.SetParent(this.transform, false);
+                //rt.anchorMin = new Vector2(0.5f, 0f);
+                //rt.anchorMax = new Vector2(0.5f, 0f);
+                //rt.pivot = new Vector2(0.5f, 0f);
+                //rt.sizeDelta = new Vector2(40f, 6f);
+                //rt.anchoredPosition = Vector2.zero;
 
                 this.DidSelectRowEvent += RowSelected;
             }
@@ -83,6 +85,11 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             CurrentRow = idx;
 
             FilterSelected?.Invoke(FilterList[oldIdx], FilterList[idx]);
+        }
+
+        public override float CellSize()
+        {
+            return 8f;
         }
 
         public override TableCell CellForIdx(int idx)

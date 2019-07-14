@@ -113,7 +113,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 rt.anchorMax = new Vector2(0f, 1f);
                 rt.pivot = new Vector2(0f, 1f);
                 rt.sizeDelta = new Vector2(6f, 6f);
-                rt.anchoredPosition = new Vector2(3f, -5f);
+                rt.anchoredPosition = new Vector2(3f, -2.5f);
                 BeatSaberUI.AddHintText(rt, "Filter Color Legend\n" + 
                     "<color=#FF5555>Red</color> - Not applied\n" +
                     "<color=#FFFF55>Yellow</color> - Not applied, but has changes\n" +
@@ -158,9 +158,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
                 _listViewController.FilterList[0].Init();
                 foreach (var control in _listViewController.FilterList[0].Controls)
-                {
                     control.Init(_settingsRectTransform);
-                }
 
                 // divider sprite
                 Image divider = new GameObject("WhiteDivider").AddComponent<Image>();
