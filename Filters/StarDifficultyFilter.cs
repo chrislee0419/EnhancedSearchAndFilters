@@ -1,8 +1,9 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 using CustomUI.BeatSaber;
 using CustomUI.Settings;
 using EnhancedSearchAndFilters.UI;
@@ -10,10 +11,10 @@ using Object = UnityEngine.Object;
 
 namespace EnhancedSearchAndFilters.Filters
 {
-    class DurationFilter : IFilter
+    class StarDifficultyFilter : IFilter
     {
-        public string FilterName { get { return "Song Length"; } }
-        public bool IsAvailable { get { return true; } }
+        public string FilterName { get { return "Star Rating"; } }
+        public bool IsAvailable { get { return Tweaks.SongDataCoreTweaks.ModLoaded; } }
         public FilterStatus Status
         {
             get
@@ -23,7 +24,8 @@ namespace EnhancedSearchAndFilters.Filters
                     if (_minEnabledAppliedValue != _minEnabledStagingValue ||
                         _maxEnabledAppliedValue != _maxEnabledStagingValue ||
                         _minAppliedValue != _minStagingValue ||
-                        _maxAppliedValue != _maxStagingValue)
+                        _maxAppliedValue != _maxStagingValue ||
+                        _includeUnratedAppliedValue != _includeUnratedStagingValue)
                         return FilterStatus.AppliedAndChanged;
                     else
                         return FilterStatus.Applied;
@@ -52,6 +54,7 @@ namespace EnhancedSearchAndFilters.Filters
                     _maxEnabledAppliedValue = _maxEnabledStagingValue;
                     _minAppliedValue = _minStagingValue;
                     _maxAppliedValue = _maxStagingValue;
+                    _includeUnratedAppliedValue = _includeUnratedStagingValue;
                 }
                 else
                 {
@@ -59,15 +62,17 @@ namespace EnhancedSearchAndFilters.Filters
                     _maxEnabledAppliedValue = false;
                     _minAppliedValue = DefaultMaxValue;
                     _maxAppliedValue = _maxStagingValue;
+                    _includeUnratedAppliedValue = false;
                 }
             }
         }
-        public FilterControl[] Controls { get; private set; } = new FilterControl[3];
+        public FilterControl[] Controls { get; private set; } = new FilterControl[4];
 
         public event Action SettingChanged;
 
         private ListViewController _minViewController;
         private ListViewController _maxViewController;
+        private BoolViewController _includeUnratedViewController;
 
         private bool _isInitialized = false;
 
@@ -75,26 +80,43 @@ namespace EnhancedSearchAndFilters.Filters
         private bool _maxEnabledStagingValue = false;
         private float _minStagingValue = DefaultMinValue;
         private float _maxStagingValue = DefaultMaxValue;
+        private bool _includeUnratedStagingValue = false;
         private bool _minEnabledAppliedValue = false;
         private bool _maxEnabledAppliedValue = false;
         private float _minAppliedValue = DefaultMinValue;
         private float _maxAppliedValue = DefaultMaxValue;
+        private bool _includeUnratedAppliedValue = false;
 
-        private const float DefaultMinValue = 60f;
-        private const float DefaultMaxValue = 120f;
+        private const float DefaultMinValue = 3f;
+        private const float DefaultMaxValue = 5f;
         private const float MinValue = 0f;
-        private const float MaxValue = 1800f;       // 30 minutes
-        private const float IncrementValue = 15f;
+        private const float MaxValue = 40f;
+        private const float IncrementValue = 0.25f;
 
         public void Init()
         {
             if (_isInitialized)
                 return;
 
+            // we're using SongDataCore's ScoreSaber data storage to find out the star rating
+            if (!Tweaks.SongDataCoreTweaks.ModLoaded)
+            {
+                Controls = new FilterControl[1];
+
+                var noModMessage = BeatSaberUI.CreateText(null, "<color=#FFAAAA>Sorry!\n\n<size=80%>This filter requires the SongDataCore mod to be\n installed.</size></color>", Vector2.zero);
+                noModMessage.alignment = TextAlignmentOptions.Center;
+                noModMessage.fontSize = 5.5f;
+
+                Controls[0] = new FilterControl(noModMessage.gameObject, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(80f, 50f), new Vector2(0f, 10f));
+
+                _isInitialized = true;
+                return;
+            }
+
             var togglePrefab = Utilities.GetTogglePrefab();
 
             // title text
-            var text = BeatSaberUI.CreateText(null, "Keep Songs Between Some Length", Vector2.zero, Vector2.zero);
+            var text = BeatSaberUI.CreateText(null, "Keep Songs Between Some Star Rating", Vector2.zero, Vector2.zero);
             text.fontSize = 5.5f;
             var rt = text.rectTransform;
             rt.anchorMin = new Vector2(0f, 1f);
@@ -105,8 +127,8 @@ namespace EnhancedSearchAndFilters.Filters
 
             // min view controller
             float[] values = Enumerable.Range((int)MinValue, (int)((MaxValue - MinValue) / IncrementValue) + 1).Select(x => x * IncrementValue).ToArray();
-            _minViewController = Utilities.CreateListViewController("Minimum Duration", values, "Filters out songs that are shorter than this value");
-            _minViewController.GetTextForValue += x => ConvertFloatToTimeString(x);
+            _minViewController = Utilities.CreateListViewController("Minimum Star Rating", values, "Filters out songs that have a lesser star difficulty rating than this value");
+            _minViewController.GetTextForValue += x => x.ToString("0.00");
             _minViewController.GetValue += () => _minStagingValue;
             _minViewController.SetValue += delegate (float value)
             {
@@ -152,8 +174,8 @@ namespace EnhancedSearchAndFilters.Filters
                 });
 
             // max view controller
-            _maxViewController = Utilities.CreateListViewController("Maximum Duration", values, "Filters out songs that are longer than this value");
-            _maxViewController.GetTextForValue += x => ConvertFloatToTimeString(x);
+            _maxViewController = Utilities.CreateListViewController("Maximum Star Rating", values, "Filters out songs that have a greater star difficulty rating than this value");
+            _maxViewController.GetTextForValue += x => x.ToString("0.00");
             _maxViewController.GetValue += () => _maxStagingValue;
             _maxViewController.SetValue += delegate (float value)
             {
@@ -188,23 +210,35 @@ namespace EnhancedSearchAndFilters.Filters
             });
 
             Utilities.MoveListViewControllerElements(_maxViewController);
+            Utilities.CreateHorizontalDivider(_maxViewController.transform);
 
             Controls[2] = new FilterControl(_maxViewController.gameObject, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 12f), new Vector2(0f, -20f),
                 delegate ()
                 {
                     // disabling buttons needs to be done after the view controller is enabled to override the interactable assignments of ListSettingsController:OnEnable()
                     _maxViewController.GetComponentsInChildren<Button>().First(x => x.name == "DecButton").interactable = _maxEnabledStagingValue && (!_minEnabledStagingValue || _maxStagingValue > _minStagingValue) && _maxStagingValue > MinValue;
-                    _maxViewController.GetComponentsInChildren<Button>().First(x => x.name == "IncButton").interactable = _maxEnabledStagingValue  && _maxStagingValue < MaxValue;
+                    _maxViewController.GetComponentsInChildren<Button>().First(x => x.name == "IncButton").interactable = _maxEnabledStagingValue && _maxStagingValue < MaxValue;
                 });
+
+            // include unrated songs toggle
+            _includeUnratedViewController = Utilities.CreateBoolViewController("Include Unrated Songs", "Do not filter out songs that do not have a star rating provided by ScoreSaber");
+            _includeUnratedViewController.GetValue += () => _includeUnratedStagingValue;
+            _includeUnratedViewController.SetValue += delegate (bool value)
+            {
+                _includeUnratedStagingValue = value;
+
+                SettingChanged?.Invoke();
+            };
+            _includeUnratedViewController.Init();
+            _includeUnratedViewController.applyImmediately = true;
+
+            Utilities.MoveIncDecViewControllerElements(_includeUnratedViewController);
+
+            Controls[3] = new FilterControl(_includeUnratedViewController.gameObject, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 12f), new Vector2(0f, -32f));
 
             Object.Destroy(togglePrefab);
 
             _isInitialized = true;
-        }
-
-        private string ConvertFloatToTimeString(float duration)
-        {
-            return TimeSpan.FromSeconds(duration).ToString("m':'ss");
         }
 
         private void RefreshUI(bool init = true, bool refreshValue = false)
@@ -216,15 +250,18 @@ namespace EnhancedSearchAndFilters.Filters
                     // disable applyImmediately temporarily, otherwise Init() triggers a call to SetValue, which also calls RefreshUI()
                     _minViewController.applyImmediately = false;
                     _maxViewController.applyImmediately = false;
+                    _includeUnratedViewController.applyImmediately = false;
                 }
 
                 _minViewController.Init();
                 _maxViewController.Init();
+                _includeUnratedViewController.Init();
 
                 if (!refreshValue)
                 {
                     _minViewController.applyImmediately = true;
                     _maxViewController.applyImmediately = true;
+                    _includeUnratedViewController.applyImmediately = true;
                 }
             }
 
@@ -237,13 +274,14 @@ namespace EnhancedSearchAndFilters.Filters
 
         public void SetDefaultValues()
         {
-            if (!_isInitialized)
+            if (!_isInitialized || !Tweaks.SongDataCoreTweaks.ModLoaded)
                 return;
 
             _minEnabledStagingValue = false;
             _maxEnabledStagingValue = false;
             _minStagingValue = DefaultMinValue;
             _maxStagingValue = DefaultMaxValue;
+            _includeUnratedStagingValue = false;
 
             _minViewController.GetComponentInChildren<Toggle>().isOn = false;
             _maxViewController.GetComponentInChildren<Toggle>().isOn = false;
@@ -252,13 +290,14 @@ namespace EnhancedSearchAndFilters.Filters
 
         public void ResetValues()
         {
-            if (!_isInitialized)
+            if (!_isInitialized || !Tweaks.SongDataCoreTweaks.ModLoaded)
                 return;
 
             _minEnabledStagingValue = _minEnabledAppliedValue;
             _maxEnabledStagingValue = _maxEnabledAppliedValue;
             _minStagingValue = _minAppliedValue;
             _maxStagingValue = _maxAppliedValue;
+            _includeUnratedStagingValue = _includeUnratedAppliedValue;
 
             _minViewController.GetComponentInChildren<Toggle>().isOn = _minEnabledAppliedValue;
             _maxViewController.GetComponentInChildren<Toggle>().isOn = _maxEnabledAppliedValue;
@@ -267,16 +306,19 @@ namespace EnhancedSearchAndFilters.Filters
 
         public void FilterSongList(ref List<BeatmapDetails> detailsList)
         {
-            if (!_isInitialized || (!_minEnabledAppliedValue && !_maxEnabledAppliedValue))
+            if (!_isInitialized || !Tweaks.SongDataCoreTweaks.ModLoaded || (!_minEnabledAppliedValue && !_maxEnabledAppliedValue))
                 return;
 
             for (int i = 0; i < detailsList.Count;)
             {
-                if ((_minEnabledAppliedValue && detailsList[i].SongDuration < _minAppliedValue) ||
-                    (_maxEnabledAppliedValue && detailsList[i].SongDuration > _maxAppliedValue))
-                    detailsList.RemoveAt(i);
-                else
+                var tuples = Tweaks.SongDataCoreTweaks.GetStarDifficultyRating(detailsList[i].LevelID);
+
+                if (tuples?.Any(x => (x.Item2 >= _minAppliedValue || !_minEnabledAppliedValue) && (x.Item2 <= _maxAppliedValue || !_maxEnabledAppliedValue)) == true)
                     ++i;
+                else if (_includeUnratedAppliedValue && tuples == null)
+                    ++i;
+                else
+                    detailsList.RemoveAt(i);
             }
         }
     }

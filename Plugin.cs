@@ -6,6 +6,7 @@ using IPALogger = IPA.Logging.Logger;
 using IPAPluginManager = IPA.Loader.PluginManager;
 using SongCore;
 using CustomUI.Utilities;
+using EnhancedSearchAndFilters.Tweaks;
 
 namespace EnhancedSearchAndFilters
 {
@@ -51,13 +52,14 @@ namespace EnhancedSearchAndFilters
         private void OnMenuSceneLoadedFresh()
         {
 #pragma warning disable CS0618 // remove PluginManager.Plugins is obsolete warning
-            Tweaks.BeatSaverDownloaderTweaks.ModLoaded = IPAPluginManager.AllPlugins.Any(x => x.Metadata.Id == "BeatSaverDownloader") || IPAPluginManager.Plugins.Any(x => x.Name == "BeatSaver Downloader");
-            Tweaks.SongBrowserTweaks.ModLoaded = IPAPluginManager.AllPlugins.Any(x => x.Metadata.Id == "SongBrowser" || x.Metadata.Name == "Song Browser") || IPAPluginManager.Plugins.Any(x => x.Name == "Song Browser");
+            BeatSaverDownloaderTweaks.ModLoaded = IPAPluginManager.GetPluginFromId("BeatSaverDownloader") != null || IPAPluginManager.GetPlugin("BeatSaver Downloader") != null;
+            SongBrowserTweaks.ModLoaded = IPAPluginManager.GetPluginFromId("SongBrowser") != null || IPAPluginManager.GetPlugin("Song Browser") != null || IPAPluginManager.Plugins.Any(x => x.Name == "Song Browser");
+            SongDataCoreTweaks.ModLoaded = IPAPluginManager.GetPluginFromId("SongDataCore") != null;
 #pragma warning restore CS0618
 
             // reset initialization status if settings were applied
-            Tweaks.BeatSaverDownloaderTweaks.Initialized = false;
-            Tweaks.SongBrowserTweaks.Initialized = false;
+            BeatSaverDownloaderTweaks.Initialized = false;
+            SongBrowserTweaks.Initialized = false;
 
             UI.SongListUI.Instance.OnMenuSceneLoadedFresh();
         }

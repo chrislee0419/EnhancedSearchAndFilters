@@ -59,6 +59,10 @@
     <Reference Include="SongCore">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Plugins\SongCore.dll</HintPath>
     </Reference>
+    <Reference Include="SongDataCore, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Plugins\SongDataCore.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Threading.Tasks.Extensions, Version=4.1.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -106,12 +110,15 @@
     <Compile Include="Filters\IFilter.cs" />
     <Compile Include="Filters\NJSFilter.cs" />
     <Compile Include="Filters\OtherFilter.cs" />
+    <Compile Include="Filters\PPFilter.cs" />
+    <Compile Include="Filters\StarDifficultyFilter.cs" />
     <Compile Include="Filters\VotedFilter.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="PluginConfig.cs" />
     <Compile Include="SearchBehaviour.cs" />
     <Compile Include="Tweaks\SongBrowserTweaks.cs" />
+    <Compile Include="Tweaks\SongDataCoreTweaks.cs" />
     <Compile Include="UI\Components\SearchKeyboard.cs" />
     <Compile Include="UI\FlowCoordinators\SearchFlowCoordinator.cs" />
     <Compile Include="UI\SongListUI.cs" />

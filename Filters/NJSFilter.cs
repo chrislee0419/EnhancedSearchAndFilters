@@ -121,7 +121,6 @@ namespace EnhancedSearchAndFilters.Filters
 
             var divider = Utilities.CreateHorizontalDivider(difficultiesContainer.transform);
             divider.color = new Color(1f, 1f, 1f, 0.4f);
-            divider.material = UIUtilities.NoGlowMaterial;
             divider.rectTransform.sizeDelta = new Vector2(0f, 0.2f);
 
             CreateDifficultyToggles(difficultiesContainer.transform);

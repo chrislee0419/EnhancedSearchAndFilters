@@ -146,10 +146,12 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 _settingsRectTransform.sizeDelta = new Vector2(90f, 60f);
                 _settingsRectTransform.anchoredPosition = new Vector2(-5f, -5f);
 
-                // TODO: add filters to the filter list
+                // add filters to the filter list here
                 _listViewController.FilterList.Add(new DifficultyFilter());
                 _listViewController.FilterList.Add(new DurationFilter());
                 _listViewController.FilterList.Add(new NJSFilter());
+                _listViewController.FilterList.Add(new PPFilter());
+                _listViewController.FilterList.Add(new StarDifficultyFilter());
                 _listViewController.FilterList.Add(new VotedFilter());
                 _listViewController.FilterList.Add(new OtherFilter());
 
