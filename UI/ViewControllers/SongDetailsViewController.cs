@@ -101,13 +101,13 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                     delegate (IBeatmapLevel beatmapLevel)
                     {
                         if (beatmapLevel != null)
-                            SetOtherSongDetails(beatmapLevel.beatmapLevelData);
+                            SetOtherSongDetails(beatmapLevel);
                     });
 #pragma warning restore CS4014
             }
             else if (level is IBeatmapLevel)
             {
-                SetOtherSongDetails((level as IBeatmapLevel).beatmapLevelData, false);
+                SetOtherSongDetails((level as IBeatmapLevel), false);
             }
             else
             {
@@ -125,8 +125,9 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         /// Sets the duration and difficulty icons on the UI.
         /// </summary>
         /// <param name="difficultySets"></param>
-        private void SetOtherSongDetails(IBeatmapLevelData beatmapLevelData, bool setDuration=true)
+        private void SetOtherSongDetails(IBeatmapLevel beatmapLevel, bool setDuration=true)
         {
+            IBeatmapLevelData beatmapLevelData = beatmapLevel.beatmapLevelData;
             bool hasLightshow = false;
 
             if (setDuration && beatmapLevelData.audioClip != null)
@@ -148,6 +149,18 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
                 SetDifficultyIcons(dbs.difficultyBeatmaps, ref hasLightshow);
             }
+
+            if (Tweaks.SongDataCoreTweaks.IsRanked(beatmapLevel.levelID, out var ppList))
+            {
+                if (ppList.Length == 1)
+                    _detailsText.text += $": Is Ranked ({ppList[0].ToString("0")}pp)\n";
+                else
+                    _detailsText.text += $": Is Ranked ({ppList.Min().ToString("0")}pp to {ppList.Max().ToString("0")}pp)\n";
+            }
+
+            // on the off chance that the details text will contain one of everything, we'll need to reduce the size of the text so it doesn't overlap with the buttons
+            if (_detailsText.text.Count(x => x == '\n') > 3)
+                _detailsText.text = "<size=85%>" + _detailsText.text + "</size>";
         }
 
         private void SetDifficultyIcons(IDifficultyBeatmap[] difficulties, ref bool hasLightshow)
@@ -341,11 +354,10 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             Destroy(_standardLevelDetailView.practiceButton?.gameObject);
 
             // transform: PlayButton -> PlayButtons -> PlayContainer
-            _detailsText = BeatSaberUI.CreateText(selectButton.transform.parent.parent as RectTransform, "", Vector2.zero);
+            _detailsText = BeatSaberUI.CreateText(selectButton.transform.parent.parent as RectTransform, "", new Vector2(0f, -2f));
             _detailsText.rectTransform.anchorMin = new Vector2(0.5f, 1f);
             _detailsText.rectTransform.anchorMax = new Vector2(0.5f, 1f);
             _detailsText.rectTransform.pivot = new Vector2(0.5f, 1f);
-            _detailsText.rectTransform.anchoredPosition = new Vector2(0f, -2f);
             _detailsText.fontSize = 4f;
         }
     }
