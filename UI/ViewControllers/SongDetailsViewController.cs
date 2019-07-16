@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,6 +7,7 @@ using TMPro;
 using VRUI;
 using CustomUI.BeatSaber;
 using CustomUI.Utilities;
+using EnhancedSearchAndFilters.SongData;
 
 namespace EnhancedSearchAndFilters.UI.ViewControllers
 {

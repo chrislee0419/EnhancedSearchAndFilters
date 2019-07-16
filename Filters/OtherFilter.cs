@@ -8,6 +8,7 @@ using SongCore.Utilities;
 using CustomUI.BeatSaber;
 using CustomUI.Settings;
 using EnhancedSearchAndFilters.UI;
+using EnhancedSearchAndFilters.SongData;
 
 namespace EnhancedSearchAndFilters.Filters
 {

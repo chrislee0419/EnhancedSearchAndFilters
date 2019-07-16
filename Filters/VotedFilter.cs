@@ -2,16 +2,15 @@
 using System.IO;
 using System.Text;
 using System.Collections.Generic;
-using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using IPA.Loader;
 using CustomUI.BeatSaber;
 using CustomUI.Utilities;
 using EnhancedSearchAndFilters.UI;
+using EnhancedSearchAndFilters.SongData;
 using Object = UnityEngine.Object;
 
 namespace EnhancedSearchAndFilters.Filters

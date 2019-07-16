@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using CustomUI.BeatSaber;
 using CustomUI.Settings;
 using EnhancedSearchAndFilters.UI;
+using EnhancedSearchAndFilters.SongData;
 using Object = UnityEngine.Object;
 
 namespace EnhancedSearchAndFilters.Filters

@@ -7,6 +7,7 @@ using IPAPluginManager = IPA.Loader.PluginManager;
 using SongCore;
 using CustomUI.Utilities;
 using EnhancedSearchAndFilters.Tweaks;
+using EnhancedSearchAndFilters.SongData;
 
 namespace EnhancedSearchAndFilters
 {
@@ -82,7 +83,19 @@ namespace EnhancedSearchAndFilters
 
         public void SongCoreLoaderFinishedLoading(Loader loader, Dictionary<string, CustomPreviewBeatmapLevel> beatmaps)
         {
+            if (SongDataCoreTweaks.ModLoaded && !SongDataCoreTweaks.IsBeatSaverDataAvailable)
+            {
+                SongDataCoreTweaks.InstallOnDataLoadedHandlers(SongDataCoreBeatSaverDataFinishedLoading, null);
+                return;
+            }
+
             // force load, since there might be new songs that can be cached
+            BeatmapDetailsLoader.Instance.StartPopulatingCache(true);
+        }
+
+        public void SongDataCoreBeatSaverDataFinishedLoading()
+        {
+            SongDataCoreTweaks.RemoveOnDataLoadedHandlers(SongDataCoreBeatSaverDataFinishedLoading, null);
             BeatmapDetailsLoader.Instance.StartPopulatingCache(true);
         }
 

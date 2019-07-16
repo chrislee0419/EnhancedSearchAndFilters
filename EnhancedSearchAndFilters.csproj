@@ -103,8 +103,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BeatmapDetailsLoader.cs" />
-    <Compile Include="BeatmapDetails.cs" />
+    <Compile Include="SongData\BeatmapDetailsLoader.cs" />
+    <Compile Include="SongData\BeatmapDetails.cs" />
     <Compile Include="Filters\DifficultyFilter.cs" />
     <Compile Include="Filters\DurationFilter.cs" />
     <Compile Include="Filters\IFilter.cs" />

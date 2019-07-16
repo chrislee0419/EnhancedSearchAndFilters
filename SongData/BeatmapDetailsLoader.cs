@@ -10,7 +10,7 @@ using UnityEngine;
 using SongCore;
 using CustomUI.Utilities;
 
-namespace EnhancedSearchAndFilters
+namespace EnhancedSearchAndFilters.SongData
 {
     class BeatmapDetailsLoader : MonoBehaviour
     {
@@ -299,10 +299,29 @@ namespace EnhancedSearchAndFilters
 
                 for (int i = 0; i < WorkChunkSize && index < allLevels.Count; ++index)
                 {
-                    if (!_cache.ContainsKey(allLevels[index].levelID) || _cache[allLevels[index].levelID].SongDuration == 0f)
+                    string levelID = allLevels[index].levelID;
+                    if (!_cache.ContainsKey(levelID) || _cache[levelID].SongDuration == 0f)
                     {
-                        taskList.Add(CacheCustomBeatmapDetailsAsync(allLevels[index] as CustomPreviewBeatmapLevel));
-                        ++i;
+                        if (Tweaks.SongDataCoreTweaks.GetBeatmapDetails(levelID, out var beatmapDetails))
+                        {
+                            // load the beatmap details manually if some data from BeatSaver is incomplete
+                            if (beatmapDetails.DifficultyBeatmapSets.Any(set => set.DifficultyBeatmaps.Any(diff => diff.NoteJumpMovementSpeed == 0)))
+                            {
+                                Logger.log.Debug($"BeatmapDetails object generated for '{beatmapDetails.SongName}' from BeatSaver data has some incomplete fields. \n" +
+                                    "Discarding and regenerating BeatmapDetails object from locally stored information instead.");
+                                taskList.Add(CacheCustomBeatmapDetailsAsync(allLevels[index] as CustomPreviewBeatmapLevel));
+                                ++i;
+                            }
+                            else
+                            {
+                                _cache[levelID] = beatmapDetails;
+                            }
+                        }
+                        else
+                        {
+                            taskList.Add(CacheCustomBeatmapDetailsAsync(allLevels[index] as CustomPreviewBeatmapLevel));
+                            ++i;
+                        }
                     }
                 }
 
@@ -338,8 +357,26 @@ namespace EnhancedSearchAndFilters
                     }
                     else if (level is CustomPreviewBeatmapLevel)
                     {
-                        taskList.Add(GetCustomBeatmapDetailsAsync(level as CustomPreviewBeatmapLevel, index));
-                        ++i;
+                        if (Tweaks.SongDataCoreTweaks.GetBeatmapDetails(level.levelID, out var beatmapDetails))
+                        {
+                            // load the beatmap details manually if some data from BeatSaver is incomplete
+                            if (beatmapDetails.DifficultyBeatmapSets.Any(set => set.DifficultyBeatmaps.Any(diff => diff.NoteJumpMovementSpeed == 0)))
+                            {
+                                Logger.log.Debug($"BeatmapDetails object generated for '{beatmapDetails.SongName}' from BeatSaver data has some incomplete fields. \n" +
+                                    "Discarding and regenerating BeatmapDetails object from locally stored information instead.");
+                                taskList.Add(GetCustomBeatmapDetailsAsync(level as CustomPreviewBeatmapLevel, index));
+                                ++i;
+                            }
+                            else
+                            {
+                                _loadedLevelsUnsorted.Add(new Tuple<int, BeatmapDetails>(index, beatmapDetails));
+                            }
+                        }
+                        else
+                        {
+                            taskList.Add(GetCustomBeatmapDetailsAsync(level as CustomPreviewBeatmapLevel, index));
+                            ++i;
+                        }
                     }
                     else
                     {

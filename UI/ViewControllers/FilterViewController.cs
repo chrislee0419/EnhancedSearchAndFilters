@@ -9,6 +9,7 @@ using VRUI;
 using CustomUI.BeatSaber;
 using CustomUI.Utilities;
 using EnhancedSearchAndFilters.Filters;
+using EnhancedSearchAndFilters.SongData;
 
 namespace EnhancedSearchAndFilters.UI.ViewControllers
 {

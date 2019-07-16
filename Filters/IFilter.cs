@@ -19,7 +19,7 @@ namespace EnhancedSearchAndFilters.Filters
         void SetDefaultValues();
         void ResetValues();
 
-        void FilterSongList(ref List<BeatmapDetails> detailsList);
+        void FilterSongList(ref List<SongData.BeatmapDetails> detailsList);
     }
 
     public enum FilterStatus

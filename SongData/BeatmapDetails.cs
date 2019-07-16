@@ -1,12 +1,11 @@
 ﻿using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 
-namespace EnhancedSearchAndFilters
+namespace EnhancedSearchAndFilters.SongData
 {
     [Serializable]
     public class BeatmapDetails
@@ -77,7 +76,11 @@ namespace EnhancedSearchAndFilters
                 }
                 catch (FileNotFoundException)
                 {
-                    Logger.log.Info($"Cache file could not be found in the path: \n\t'{path}'");
+                    Logger.log.Info($"Cache file could not be found in the path: '{path}'");
+                }
+                catch (JsonSerializationException)
+                {
+                    Logger.log.Warn("Unable to deserialize cache file. Could be an older version of the cache file (will be replaced after the in-memory cache is rebuilt).");
                 }
                 catch (Exception e)
                 {
