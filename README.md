@@ -2,7 +2,7 @@
 
 A mod that helps you find the songs you want to play quicker! Includes a more option rich search screen and song filtering. The latest version of this mod can be found [here](https://github.com/chrislee0419/EnhancedSearchAndFilters/releases).
 
-If you have any suggestions or found any bugs, you can report it [here](https://github.com/chrislee0419/EnhancedSearchAndFilters/issues) or through Discord at `chris#9068`.
+_**If you have any suggestions or found any bugs**_, please report it [here](https://github.com/chrislee0419/EnhancedSearchAndFilters/issues) or through Discord at `chris#9068`.
 
 ## Features
 
@@ -16,10 +16,11 @@ If you have any suggestions or found any bugs, you can report it [here](https://
        - Or alternatively, symbols can be typed in yourself when trying to find a song with lots of symbols in the title!
 - Filter
      - Limit song length, difficulties, and NJS on the song list.
-     - Find songs you have voted for (needs BeatSaverDownloader)
+     - Find songs you have voted on (needs BeatSaverDownloader).
      - One Saber, Lightshow, and Mapping Extensions-required songs can be easily found!
+     - Find ranked songs (needs SongDataCore).
 - Mod compatibility
-     - Compatible with BeatSaverDownloader and SongBrowser.
+     - Compatible with BeatSaverDownloader, SongBrowser, and SongDataCore.
 
 ## Dependencies
 
