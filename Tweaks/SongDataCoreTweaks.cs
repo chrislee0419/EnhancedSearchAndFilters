@@ -10,12 +10,6 @@ namespace EnhancedSearchAndFilters.Tweaks
     internal static class SongDataCoreTweaks
     {
         public static bool ModLoaded { get; set; } = false;
-        public static bool IsBeatSaverDataAvailable { get { return ModLoaded ? _IsBeatSaverDataAvailable() : false; } }
-
-        private static bool _IsBeatSaverDataAvailable()
-        {
-            return SongDataCorePlugin.BeatSaver.IsDataAvailable();
-        }
 
         /// <summary>
         /// Provide action delegates to the 'OnDataFinishedProcessing' events for each data source handled by SongDataCore.
