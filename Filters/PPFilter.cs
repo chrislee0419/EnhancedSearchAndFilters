@@ -204,7 +204,7 @@ namespace EnhancedSearchAndFilters.Filters
             _minViewController.applyImmediately = true;
 
             rt = _minViewController.transform as RectTransform;
-            rt.parent = _container.transform;
+            rt.SetParent(_container.transform);
             rt.anchorMin = new Vector2(0f, 1f);
             rt.anchorMax = Vector2.one;
             rt.pivot = new Vector2(0.5f, 1f);
@@ -254,7 +254,7 @@ namespace EnhancedSearchAndFilters.Filters
             _maxViewController.applyImmediately = true;
 
             rt = _maxViewController.transform as RectTransform;
-            rt.parent = _container.transform;
+            rt.SetParent(_container.transform);
             rt.anchorMin = new Vector2(0f, 1f);
             rt.anchorMax = Vector2.one;
             rt.pivot = new Vector2(0.5f, 1f);
