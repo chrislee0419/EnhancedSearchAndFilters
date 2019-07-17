@@ -149,6 +149,9 @@ namespace EnhancedSearchAndFilters.Filters
                     _container.SetActive(true);
                     _minEnabledStagingValue = _minEnabledAppliedValue;
                     _maxEnabledStagingValue = _maxEnabledAppliedValue;
+
+                    _minViewController.transform.Find("MinValueToggle").GetComponent<Toggle>().isOn = _minEnabledStagingValue;
+                    _maxViewController.transform.Find("MaxValueToggle").GetComponent<Toggle>().isOn = _maxEnabledStagingValue;
                 }
                 else
                 {
@@ -292,7 +295,11 @@ namespace EnhancedSearchAndFilters.Filters
                     _minViewController.applyImmediately = false;
                     _maxViewController.applyImmediately = false;
                 }
+                // ranked view controller should never have its value refreshed, since it doesn't have an enable toggle
+                // and refreshing modifies the enable toggles for the other view controllers
+                _rankedViewController.applyImmediately = false;
 
+                _rankedViewController.Init();
                 _minViewController.Init();
                 _maxViewController.Init();
 
@@ -301,6 +308,7 @@ namespace EnhancedSearchAndFilters.Filters
                     _minViewController.applyImmediately = true;
                     _maxViewController.applyImmediately = true;
                 }
+                _rankedViewController.applyImmediately = true;
             }
 
             // reset button state
@@ -321,6 +329,7 @@ namespace EnhancedSearchAndFilters.Filters
             _minStagingValue = DefaultMinValue;
             _maxStagingValue = DefaultMaxValue;
 
+            _container.SetActive(false);
             _minViewController.GetComponentInChildren<Toggle>().isOn = false;
             _maxViewController.GetComponentInChildren<Toggle>().isOn = false;
             RefreshUI();
@@ -337,6 +346,7 @@ namespace EnhancedSearchAndFilters.Filters
             _minStagingValue = _minAppliedValue;
             _maxStagingValue = _maxAppliedValue;
 
+            _container.SetActive(_rankedStagingValue == RankFilterOption.Ranked);
             _minViewController.GetComponentInChildren<Toggle>().isOn = _minEnabledAppliedValue;
             _maxViewController.GetComponentInChildren<Toggle>().isOn = _maxEnabledAppliedValue;
             RefreshUI();
