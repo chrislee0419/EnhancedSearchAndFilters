@@ -94,7 +94,7 @@ namespace EnhancedSearchAndFilters.Filters
             Controls[0] = new FilterControl(text.gameObject, new Vector2(0f, 0.95f), new Vector2(0f, 0.95f), new Vector2(0f, 1f), new Vector2(50f, 6f), Vector2.zero);
 
             // one saber view controller
-            _oneSaberViewController = Utilities.CreateBoolViewController("Has One Saber", "Filters out songs that don't have at least one saber map");
+            _oneSaberViewController = Utilities.CreateBoolViewController("Has One Saber Mode", "Filters out songs that don't have at least one saber map");
             _oneSaberViewController.GetValue += () => _oneSaberStagingValue;
             _oneSaberViewController.SetValue += delegate (bool value)
             {
@@ -110,7 +110,7 @@ namespace EnhancedSearchAndFilters.Filters
             Controls[1] = new FilterControl(_oneSaberViewController.gameObject, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 12f), new Vector2(0f, -8f));
 
             // lightshow view controller
-            _lightshowViewController = Utilities.CreateBoolViewController("Has Lightshow", "Filters out songs that don't have a lightshow map");
+            _lightshowViewController = Utilities.CreateBoolViewController("Has Lightshow Mode", "Filters out songs that don't have a lightshow map");
             _lightshowViewController.GetValue += () => _lightshowStagingValue;
             _lightshowViewController.SetValue += delegate (bool value)
             {

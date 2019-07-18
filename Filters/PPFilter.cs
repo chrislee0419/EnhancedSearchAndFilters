@@ -15,7 +15,7 @@ namespace EnhancedSearchAndFilters.Filters
 {
     class PPFilter : IFilter
     {
-        public string FilterName { get { return "PP"; } }
+        public string FilterName { get { return "Ranked Songs (PP)"; } }
         public bool IsAvailable { get { return Tweaks.SongDataCoreTweaks.ModLoaded; } }
         public FilterStatus Status
         {
