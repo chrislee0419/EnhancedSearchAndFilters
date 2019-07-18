@@ -208,7 +208,7 @@ namespace EnhancedSearchAndFilters.SongData
                     _loadingTokenSource = null;
                     IsLoading = false;
 
-                    if (IsCaching)
+                    if (IsCaching || !SongsAreCached)
                         StartPopulatingCache();
 
                     onFinish?.Invoke(_loadedLevels.ToArray());
@@ -265,7 +265,7 @@ namespace EnhancedSearchAndFilters.SongData
             _loadingTokenSource = null;
             _loadingTask = null;
 
-            if (IsCaching)
+            if (IsCaching || !SongsAreCached)
                 StartPopulatingCache();
         }
 
