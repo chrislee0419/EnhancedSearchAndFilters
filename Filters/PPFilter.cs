@@ -235,7 +235,7 @@ namespace EnhancedSearchAndFilters.Filters
             Utilities.CreateHorizontalDivider(_minViewController.transform);
 
             // max view controller
-            _maxViewController = Utilities.CreateListViewController("Minimum PP", values, "Filters out ranked songs that award less PP that this value");
+            _maxViewController = Utilities.CreateListViewController("Maximum PP", values, "Filters out ranked songs that award more PP that this value");
             _maxViewController.GetTextForValue += x => x.ToString();
             _maxViewController.GetValue += () => _maxStagingValue;
             _maxViewController.SetValue += delegate (float value)
