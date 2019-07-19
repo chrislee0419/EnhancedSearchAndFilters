@@ -329,6 +329,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         private void ModifySelectionElements()
         {
             Button selectButton = _standardLevelDetailView.playButton;
+            selectButton.name = "SearchSelectSongButton";
             selectButton.SetButtonText("SELECT SONG");
             selectButton.interactable = true;
             (selectButton.transform as RectTransform).sizeDelta += new Vector2(10f, 0);
@@ -340,6 +341,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             });
 
             _compactKeyboardButton = Instantiate(selectButton, selectButton.transform.parent, false);
+            _compactKeyboardButton.name = "SearchDisplayKeyboardButton";
             _compactKeyboardButton.SetButtonText("DISPLAY\nKEYBOARD");
             _compactKeyboardButton.SetButtonTextSize(3f);
             (_compactKeyboardButton.transform as RectTransform).sizeDelta += new Vector2(-15f, 0);
