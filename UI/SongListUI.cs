@@ -250,34 +250,9 @@ namespace EnhancedSearchAndFilters.UI
         /// <summary>
         /// Used by SongBrowserTweaks to apply an existing filter onto another set of beatmaps.
         /// </summary>
-        public IPreviewBeatmapLevel[] ApplyFilters(IPreviewBeatmapLevel[] levels)
+        public List<IPreviewBeatmapLevel> ApplyFiltersForSongBrowser(IPreviewBeatmapLevel[] levels)
         {
-            // the behaviour here is going to be a bit odd, since SongBrowser overwrites a level pack's levels
-
-            // we can't filter OST songs, otherwise SongBrowser will overwrite the pack, losing songs for the play session
-            if (_filterViewController == null || (levels.Length > 0 && !(levels[0] is CustomPreviewBeatmapLevel)))
-            {
-                _filterViewController?.UnapplyFilters(false);
-                SongBrowserTweaks.FiltersUnapplied();
-                return levels;
-            }
-
-            // get the levels again here after refreshing, otherwise, we'll break the filtering
-            SongCore.Loader.Instance.RefreshLevelPacks();
-            var levelPacksViewController = Resources.FindObjectsOfTypeAll<LevelPacksViewController>().First();
-            levels = levelPacksViewController.GetPrivateField<IBeatmapLevelPackCollection>("_levelPackCollection").beatmapLevelPacks[levelPacksViewController.selectedPackNum].beatmapLevelCollection.beatmapLevels;
-
-            // store all unbought dlc (we can't filter them now, otherwise they'll get obliterated by the overwrite)
-            List<IPreviewBeatmapLevel> unboughtDLCLevels = new List<IPreviewBeatmapLevel>(levels.Length);
-            foreach (var level in levels)
-            {
-                if (!(level is IBeatmapLevel) && !(level is CustomPreviewBeatmapLevel))
-                    unboughtDLCLevels.Add(level);
-            }
-
-            var filteredLevels = _filterViewController.ApplyFilters(levels);
-            filteredLevels.AddRange(unboughtDLCLevels);
-            return filteredLevels.ToArray();
+            return _filterViewController.ApplyFiltersForSongBrowser(levels);
         }
 
         /// <summary>
@@ -411,22 +386,15 @@ namespace EnhancedSearchAndFilters.UI
 
         private void FilterViewControllerSetFilteredSongs(IPreviewBeatmapLevel[] levels)
         {
-            if (SongBrowserTweaks.SetFilteredSongs(levels))
+            // filter application should be handled by FilterViewController calling stuff in SongBrowserTweaks
+            if (SongBrowserTweaks.Initialized)
                 return;
 
             BeatmapLevelPack levelPack = new BeatmapLevelPack("", FilteredSongsPackName, LevelsViewController.levelPack.coverImage, new BeatmapLevelCollection(levels));
             LevelsViewController.SetData(levelPack);
 
-            if (!SongBrowserTweaks.ModLoaded)
-            {
-                FilterButton.SetButtonText("Filter\n(Applied)");
-                FilterButton.SetButtonTextSize(2.3f);
-            }
-            else
-            {
-                // this statement shouldn't trigger in any normal circumstances, only when the SongBrowserTweaks.SetFilteredSongs() fails
-                SongBrowserTweaks.FiltersApplied();
-            }
+            FilterButton.SetButtonText("Filter\n(Applied)");
+            FilterButton.SetButtonTextSize(2.3f);
         }
 
         private void FilterViewControllerFiltersUnapplied()

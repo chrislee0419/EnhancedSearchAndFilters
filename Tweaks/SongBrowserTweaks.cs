@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
@@ -30,7 +31,7 @@ namespace EnhancedSearchAndFilters.Tweaks
         }
 
         /// <summary>
-        /// Adapt this mod to SongBrowser version 5.2.0 and onwards.
+        /// Adapt this mod to SongBrowser version 5.4.0 and onwards.
         /// </summary>
         /// <returns>A boolean indicating whether the tweaks were done correctly.</returns>
         private static bool _Init()
@@ -119,8 +120,7 @@ namespace EnhancedSearchAndFilters.Tweaks
             // custom filter handler when the same level pack is selected
             SongBrowserModel.CustomFilterHandler = delegate (IBeatmapLevelPack levelPack)
             {
-                IPreviewBeatmapLevel[] filteredSongs = SongListUI.Instance.ApplyFilters(levelPack.beatmapLevelCollection.beatmapLevels);
-                return filteredSongs.ToList();
+                return SongListUI.Instance.ApplyFiltersForSongBrowser(levelPack.beatmapLevelCollection.beatmapLevels);
             };
 
             // on first load, SongBrowser uses the previously applied settings
@@ -128,6 +128,7 @@ namespace EnhancedSearchAndFilters.Tweaks
             if ((_songBrowserUI as SongBrowserUI).Model.Settings.filterMode == SongFilterMode.Custom)
             {
                 (_songBrowserUI as SongBrowserUI).CancelFilter();
+                (_songBrowserUI as SongBrowserUI).ProcessSongList();
                 (_songBrowserUI as SongBrowserUI).RefreshSongUI();
             }
 
@@ -141,20 +142,27 @@ namespace EnhancedSearchAndFilters.Tweaks
         }
 
         /// <summary>
-        /// Used to refresh the UI for SongBrowser after our filter has been applied.
+        /// Used to apply the filter and refresh the UI for SongBrowser.
         /// </summary>
-        public static void FiltersApplied()
+        /// <returns>A boolean representing whether filters have been applied successfully.</returns>
+        public static bool FiltersApplied()
         {
             if (!ModLoaded || !Initialized)
-                return;
-            _FiltersApplied();
+                return false;
+            return _FiltersApplied();
         }
 
-        private static void _FiltersApplied()
+        private static bool _FiltersApplied()
         {
+            // unapply any existing filters first
+            (_songBrowserUI as SongBrowserUI).CancelFilter();
+
             (_songBrowserUI as SongBrowserUI).Model.Settings.filterMode = SongFilterMode.Custom;
             SongListUI.Instance.ClearButton.SetButtonText("Other");
-            (_songBrowserUI as SongBrowserUI).RefreshSongUI(false);
+            (_songBrowserUI as SongBrowserUI).ProcessSongList();
+            (_songBrowserUI as SongBrowserUI).RefreshSongUI();
+
+            return true;
         }
 
         /// <summary>
@@ -180,72 +188,6 @@ namespace EnhancedSearchAndFilters.Tweaks
 
             // UIState is always reset to Main, so we need to disable the filter button
             SongListUI.Instance.FilterButton.gameObject.SetActive(false);
-        }
-
-        /// <summary>
-        /// Set the levels shown by the LevelsPackLevelsViewController.
-        /// </summary>
-        /// <param name="levels">Array of levels to set in the view controller.</param>
-        /// <returns>A boolean representing whether this was successful.</returns>
-        public static bool SetFilteredSongs(IPreviewBeatmapLevel[] levels)
-        {
-            if (!ModLoaded)
-                return false;
-
-            // SongBrowser does some weird checks when sorting that we have to accomodate for
-            if (levels.Any())
-            {
-                var levelsViewController = SongListUI.Instance.LevelsViewController;
-
-                if (levels[0] is CustomPreviewBeatmapLevel)
-                {
-                    SongCoreCustomBeatmapLevelPack customLevelPack = new SongCoreCustomBeatmapLevelPack("", SongListUI.FilteredSongsPackName, levelsViewController.levelPack.coverImage, new CustomBeatmapLevelCollection(levels.Cast<CustomPreviewBeatmapLevel>().ToArray()));
-                    levelsViewController.SetData(customLevelPack);
-
-                    if (Initialized)
-                        _FiltersApplied();
-                    return true;
-                }
-                else if (levels[0] is BeatmapLevelSO)
-                {
-                    BeatmapLevelCollectionSO levelCollection = ScriptableObject.CreateInstance<BeatmapLevelCollectionSO>();
-                    levelCollection.SetPrivateField("_beatmapLevels", levels.Cast<BeatmapLevelSO>().ToArray());
-
-                    BeatmapLevelPackSO beatmapLevelPack = ScriptableObject.CreateInstance<BeatmapLevelPackSO>();
-                    beatmapLevelPack.SetPrivateField("_packID", "");
-                    beatmapLevelPack.SetPrivateField("_packName", SongListUI.FilteredSongsPackName);
-                    beatmapLevelPack.SetPrivateField("_coverImage", levelsViewController.levelPack.coverImage);
-                    beatmapLevelPack.SetPrivateField("_beatmapLevelCollection", levelCollection);
-
-                    levelsViewController.SetData(beatmapLevelPack);
-
-                    if (Initialized)
-                        _FiltersApplied();
-                    return true;
-                }
-                else if (levels[0] is PreviewBeatmapLevelSO)
-                {
-                    PreviewBeatmapLevelCollectionSO levelCollection = ScriptableObject.CreateInstance<PreviewBeatmapLevelCollectionSO>();
-                    levelCollection.SetPrivateField("_beatmapLevels", levels.Cast<PreviewBeatmapLevelSO>().ToArray());
-
-                    PreviewBeatmapLevelPackSO previewLevelPack = ScriptableObject.CreateInstance<PreviewBeatmapLevelPackSO>();
-                    previewLevelPack.SetPrivateField("_packID", "");
-                    previewLevelPack.SetPrivateField("_packName", SongListUI.FilteredSongsPackName);
-                    previewLevelPack.SetPrivateField("_coverImage", levelsViewController.levelPack.coverImage);
-                    previewLevelPack.SetPrivateField("_previewBeatmapLevelCollection", levelCollection);
-
-                    levelsViewController.SetData(previewLevelPack);
-
-                    if (Initialized)
-                        _FiltersApplied();
-                    return true;
-                }
-
-                Logger.log.Warn("Filtered song list could not be cast to any type used by SongBrowser's sort feature. Sorting this filtered song list will probably not work.");
-                // fallback to default implementation
-            }
-
-            return false;
         }
     }
 }

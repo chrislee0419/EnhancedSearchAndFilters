@@ -285,15 +285,15 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         }
 
         /// <summary>
-        /// Intended to be used outside of this view controller, with filters already applied. Primarily an adaptation to SongBrowser mod.
+        /// Filter application logic intended for use by SongBrowser. Since SongBrowser will create its own BeatmapLevelPack, we need to provide it with the filtered levels here.
         /// </summary>
         /// <param name="levels">Array of levels to filter</param>
         /// <returns>The filtered list of beatmaps.</returns>
-        public List<IPreviewBeatmapLevel> ApplyFilters(IPreviewBeatmapLevel[] levels)
+        public List<IPreviewBeatmapLevel> ApplyFiltersForSongBrowser(IPreviewBeatmapLevel[] levels)
         {
             if (_listViewController == null)
                 return levels.ToList();
-            Logger.log.Debug($"Using filter from outside FilterViewController, starting with {levels.Length} songs");
+            Logger.log.Debug($"Providing SongBrowser with a list of filtered songs. Starting with {levels.Length} songs");
 
             BeatmapDetails[] detailsList = BeatmapDetailsLoader.Instance.LoadBeatmapsInstant(levels);
 
@@ -419,7 +419,9 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
             _resetButton.interactable = false;
 
-            Logger.log.Debug($"Using filter, starting with {_beatmapDetails.Count} songs");
+            if (!Tweaks.SongBrowserTweaks.Initialized)
+                Logger.log.Debug($"Using filter, starting with {_beatmapDetails.Count} songs");
+
             List<BeatmapDetails> filteredLevels = new List<BeatmapDetails>(_beatmapDetails.Keys);
             bool hasApplied = false;
             foreach (var filter in _listViewController.FilterList)
@@ -428,11 +430,15 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
                 if (filter.Status == FilterStatus.Applied)
                 {
-                    filter.FilterSongList(ref filteredLevels);
+                    // when SongBrowser is loaded, we will apply the filter after the call to SongBrowserUI:ProcessSongList()
+                    if (!Tweaks.SongBrowserTweaks.Initialized)
+                        filter.FilterSongList(ref filteredLevels);
                     hasApplied = true;
                 }
             }
-            Logger.log.Debug($"Filter completed, {filteredLevels.Count} songs left");
+
+            if (!Tweaks.SongBrowserTweaks.Initialized)
+                Logger.log.Debug($"Filter completed, {filteredLevels.Count} songs left");
 
             if (hasApplied)
             {
@@ -444,11 +450,17 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
                 IsFilterApplied = true;
 
-                _infoText.text = $"{filteredLevels.Count} out of {_beatmapDetails.Count} songs found";
+                if (Tweaks.SongBrowserTweaks.ModLoaded && Tweaks.SongBrowserTweaks.Initialized)
+                    _infoText.text = "Filter applied";
+                else
+                    _infoText.text = $"{filteredLevels.Count} out of {_beatmapDetails.Count} songs found";
                 _infoText.gameObject.SetActive(true);
                 StartCoroutine(HideInfoText());
 
-                LevelsModified?.Invoke(_beatmapDetails.Where(x => filteredLevels.Contains(x.Key)).Select(x => x.Value).ToArray());
+                // SongBrowser will create its own BeatmapLevelPack when it gets our filtered levels via:
+                // ProcessSongList() -> CustomFilterHandler() -> ApplyFiltersForSongBrowser() -> ApplyFilters()
+                if (!Tweaks.SongBrowserTweaks.FiltersApplied())
+                    LevelsModified?.Invoke(_beatmapDetails.Where(x => filteredLevels.Contains(x.Key)).Select(x => x.Value).ToArray());
             }
             else
             {
