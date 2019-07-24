@@ -178,7 +178,7 @@ namespace EnhancedSearchAndFilters.Filters
             Controls[2] = new FilterControl(_container, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 24f), new Vector2(0f, -20f),
                 delegate ()
                 {
-                    _container.SetActive(_rankedStagingValue != RankFilterOption.Off);
+                    _container.SetActive(_rankedStagingValue == RankFilterOption.Ranked);
                 });
 
             var togglePrefab = Utilities.GetTogglePrefab();
