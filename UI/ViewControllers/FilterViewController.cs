@@ -551,7 +551,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             ++_coroutinesActive;
             yield return new WaitForSeconds(10f);
 
-            if ((--_coroutinesActive) == 0 && _infoText.text.Contains("songs found"))
+            if ((--_coroutinesActive) == 0 && (_infoText.text.Contains("songs found") || _infoText.text.Contains("Filter applied")))
                 _infoText.gameObject.SetActive(false);
         }
     }
