@@ -71,7 +71,6 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 _resetButton = BeatSaberUI.CreateUIButton(this.rectTransform, "CancelButton", HandleResetButtonPressed, "Reset");
                 _resetButton.ToggleWordWrapping(false);
                 _resetButton.SetButtonTextSize(3f);
-                _resetButton.interactable = false;
                 rt = _resetButton.transform as RectTransform;
                 rt.anchorMax = new Vector2(1f, 0f);
                 rt.anchorMin = new Vector2(1f, 0f);
@@ -83,7 +82,6 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 _applyButton = BeatSaberUI.CreateUIButton(this.rectTransform, "CancelButton", HandleApplyButtonPressed, "Apply");
                 _applyButton.ToggleWordWrapping(false);
                 _applyButton.SetButtonTextSize(4f);
-                _applyButton.interactable = false;
                 rt = _applyButton.transform as RectTransform;
                 rt.anchorMax = new Vector2(1f, 0f);
                 rt.anchorMin = new Vector2(1f, 0f);
@@ -95,7 +93,6 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 _unapplyButton = BeatSaberUI.CreateUIButton(this.rectTransform, "CancelButton", HandleUnapplyButtonPressed, "Unapply");
                 _unapplyButton.ToggleWordWrapping(false);
                 _unapplyButton.SetButtonTextSize(4f);
-                _unapplyButton.interactable = false;
                 rt = _unapplyButton.transform as RectTransform;
                 rt.anchorMax = new Vector2(1f, 0f);
                 rt.anchorMin = new Vector2(1f, 0f);
@@ -192,6 +189,12 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 _infoText.fontSize = 3.5f;
             }
 
+            // all buttons (except back) should not be interactable when loading beatmap details
+            _clearButton.interactable = false;
+            _resetButton.interactable = false;
+            _applyButton.interactable = false;
+            _unapplyButton.interactable = false;
+
             var originalLevels = _levels;
 
             _loadingSpinner.gameObject.SetActive(true);
@@ -231,6 +234,27 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                     _loadingSpinner.SetActive(false);
                     _loadingText.gameObject.SetActive(false);
                     _infoText.gameObject.SetActive(false);
+
+                    _clearButton.interactable = true;
+                    bool anyChanges = _listViewController.FilterList.Any(x => x.Status == FilterStatus.AppliedAndChanged || x.Status == FilterStatus.NotAppliedAndChanged);
+                    if (_listViewController.FilterList.Any(x => x.Status == FilterStatus.Applied) && !anyChanges)
+                    {
+                        _resetButton.interactable = false;
+                        _applyButton.interactable = false;
+                        _unapplyButton.interactable = true;
+
+                        _applyButton.gameObject.SetActive(false);
+                        _unapplyButton.gameObject.SetActive(true);
+                    }
+                    else
+                    {
+                        _resetButton.interactable = anyChanges;
+                        _applyButton.interactable = anyChanges;
+                        _unapplyButton.interactable = false;
+
+                        _applyButton.gameObject.SetActive(true);
+                        _unapplyButton.gameObject.SetActive(false);
+                    }
 
                     _listViewController.__Activate(ActivationType.NotAddedToHierarchy);
                     _listViewController.SetUserInteraction(true);
@@ -354,8 +378,6 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             if (BeatmapDetailsLoader.Instance.IsLoading)
                 return;
 
-            _resetButton.interactable = true;
-
             bool hasChanged = false;
             foreach (var filter in _listViewController.FilterList)
             {
@@ -369,6 +391,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _unapplyButton.gameObject.SetActive(false);
 
             // if nothing needs to be changed, it implies that everything is default
+            _resetButton.interactable = hasChanged;
             _applyButton.interactable = hasChanged;
             _unapplyButton.interactable = false;
 
