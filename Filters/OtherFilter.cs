@@ -209,7 +209,7 @@ namespace EnhancedSearchAndFilters.Filters
                 {
                     detailsList.RemoveAt(i);
                 }
-                else if (_oneSaberAppliedValue && !beatmap.DifficultyBeatmapSets.Any(diffSet => diffSet.CharacteristicName == "LEVEL_ONE_SABER"))
+                else if (_oneSaberAppliedValue && !beatmap.DifficultyBeatmapSets.Any(diffSet => diffSet.CharacteristicName == "OneSaber"))
                 {
                     detailsList.RemoveAt(i);
                 }
