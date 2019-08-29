@@ -12,11 +12,13 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
     {
         public Action BackButtonPressed;
         public Action ForceShowButtonPressed;
+        public Action LastSearchButtonPressed;
 
         private GameObject _header;
         private GameObject _loadingSpinner;
         private TextMeshProUGUI _resultsText;
         private Button _forceButton;
+        private Button _lastSearchButton;
 
         private const string _headerText = "Search Results";
         private const string _placeholderResultsText = "Use the keyboard on the right screen\nto search for a song.\n\n---->";
@@ -46,6 +48,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 _resultsText.alignment = TextAlignmentOptions.Center;
                 _resultsText.enableWordWrapping = true;
                 _forceButton = BeatSaberUI.CreateUIButton(this.rectTransform, "CancelButton", new Vector2(59f, -32f), new Vector2(36f, 10f), () => ForceShowButtonPressed?.Invoke(), "Force Show Results");
+                _lastSearchButton = BeatSaberUI.CreateUIButton(this.rectTransform, "CancelButton", new Vector2(59f, -32f), new Vector2(36f, 10f), () => LastSearchButtonPressed?.Invoke(), "Redo Last Search");
             }
             else
             {
@@ -58,6 +61,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _loadingSpinner.SetActive(false);
             _resultsText.gameObject.SetActive(!PluginConfig.CompactSearchMode);
             _forceButton.gameObject.SetActive(false);
+            _lastSearchButton.gameObject.SetActive(false);
             SetHeaderActive(!PluginConfig.CompactSearchMode);
         }
 
@@ -65,6 +69,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         {
             _resultsText.gameObject.SetActive(false);
             _forceButton.gameObject.SetActive(false);
+            _lastSearchButton.gameObject.SetActive(false);
 
             SetHeaderActive(!PluginConfig.CompactSearchMode);
             _loadingSpinner.SetActive(true);
@@ -74,6 +79,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         {
             _loadingSpinner.SetActive(false);
             _forceButton.gameObject.SetActive(false);
+            _lastSearchButton.gameObject.SetActive(false);
 
             _resultsText.text = _placeholderResultsText;
             _resultsText.gameObject.SetActive(true);
@@ -101,6 +107,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _loadingSpinner.SetActive(false);
             _resultsText.gameObject.SetActive(false);
             _forceButton.gameObject.SetActive(false);
+            _lastSearchButton.gameObject.SetActive(false);
         }
 
         private void SetHeaderActive(bool active)
@@ -136,6 +143,14 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
                 (_loadingSpinner.transform as RectTransform).anchoredPosition = LoadingSpinnerDefaultAnchoredPosition;
             }
+        }
+
+        /// <summary>
+        /// Should only be used when there was a non-empty search before.
+        /// </summary>
+        public void ShowLastSearchButton(bool show = true)
+        {
+            _lastSearchButton.gameObject.SetActive(show);
         }
     }
 }

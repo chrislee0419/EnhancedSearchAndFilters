@@ -20,6 +20,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
         private SearchCompactKeyboardViewController _searchCompactKeyboardViewController;
 
         private string _searchQuery = "";
+        private string _lastSearchQuery = "";
         private IPreviewBeatmapLevel[] _levelsSearchSpace;
 
         protected override void DidActivate(bool firstActivation, ActivationType activationType)
@@ -37,6 +38,8 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 
                 _searchResultsNavigationController.BackButtonPressed += delegate ()
                 {
+                    _lastSearchQuery = _searchQuery;
+
                     SearchBehaviour.Instance.StopSearch();
                     _searchResultsListViewController.UpdateSongs(new IPreviewBeatmapLevel[0]);
                     PopAllViewControllersFromNavigationController(true);
@@ -45,6 +48,25 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                 _searchResultsNavigationController.ForceShowButtonPressed += delegate ()
                 {
                     ShowSearchResult(SearchBehaviour.Instance.CachedResult, true);
+                };
+                _searchResultsNavigationController.LastSearchButtonPressed += delegate ()
+                {
+                    _searchResultsNavigationController.ShowLastSearchButton(false);
+
+                    if (string.IsNullOrEmpty(_lastSearchQuery))
+                        return;
+
+                    PopAllViewControllersFromNavigationController();
+                    _searchResultsNavigationController.ShowLoadingSpinner();
+                    _searchResultsListViewController.UpdateSongs(new IPreviewBeatmapLevel[0]);
+
+                    _searchQuery = _lastSearchQuery;
+
+                    if (PluginConfig.CompactSearchMode)
+                        _searchCompactKeyboardViewController.SetText(_searchQuery);
+                    else
+                        _searchKeyboardViewController.SetText(_searchQuery);
+                    SearchBehaviour.Instance.StartNewSearch(_levelsSearchSpace, _searchQuery, SearchCompleted);
                 };
                 _searchResultsListViewController.SongSelected += delegate (IPreviewBeatmapLevel level)
                 {
@@ -56,6 +78,8 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                 };
                 _songDetailsViewController.SelectButtonPressed += delegate (IPreviewBeatmapLevel level)
                 {
+                    _lastSearchQuery = _searchQuery;
+
                     SearchBehaviour.Instance.StopSearch();
                     _searchResultsListViewController.UpdateSongs(new IPreviewBeatmapLevel[0]);
                     PopAllViewControllersFromNavigationController(true);
@@ -123,6 +147,9 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                 SetRightScreenViewController(_searchKeyboardViewController);
                 _searchResultsNavigationController.ShowPlaceholderText();
             }
+
+            if (!string.IsNullOrEmpty(_lastSearchQuery))
+                _searchResultsNavigationController.ShowLastSearchButton();
         }
 
         private void KeyboardTextKeyPressed(char key)
