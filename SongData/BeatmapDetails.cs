@@ -65,37 +65,6 @@ namespace EnhancedSearchAndFilters.SongData
             SongDuration = songDuration;
             DifficultyBeatmapSets = difficultyBeatmapSets;
         }
-
-        public static async Task<List<BeatmapDetails>> GetBeatmapDetailsFromCacheAsync(string path)
-        {
-            Task<List<BeatmapDetails>> t = Task.Run(delegate ()
-            {
-                try
-                {
-                    return JsonConvert.DeserializeObject<List<BeatmapDetails>>(File.ReadAllText(path));
-                }
-                catch (FileNotFoundException)
-                {
-                    Logger.log.Info($"Cache file could not be found in the path: '{path}'");
-                }
-                catch (JsonSerializationException)
-                {
-                    Logger.log.Warn("Unable to deserialize cache file. Could be an older version of the cache file (will be replaced after the in-memory cache is rebuilt).");
-                }
-                catch (Exception e)
-                {
-                    Logger.log.Warn(e);
-                }
-                return new List<BeatmapDetails>();
-            });
-
-            return await t.ConfigureAwait(false);
-        }
-
-        public static void SaveBeatmapDetailsToCache(string path, List<BeatmapDetails> beatmapDetailsList)
-        {
-            File.WriteAllText(path, JsonConvert.SerializeObject(beatmapDetailsList));
-        }
     }
 
     [Serializable]

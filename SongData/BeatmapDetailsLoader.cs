@@ -132,7 +132,7 @@ namespace EnhancedSearchAndFilters.SongData
 
         public async Task PopulateCacheFromFile()
         {
-            var detailsList = await BeatmapDetails.GetBeatmapDetailsFromCacheAsync(CachedBeatmapDetailsFilePath);
+            var detailsList = await BeatmapDetailsCache.GetBeatmapDetailsFromCacheAsync(CachedBeatmapDetailsFilePath);
             foreach (var detail in detailsList)
                 _cache.TryAdd(detail.LevelID, detail);
         }
@@ -153,7 +153,7 @@ namespace EnhancedSearchAndFilters.SongData
             var customLevels = Loader.CustomLevels.Values.Select(x => x.levelID);
             cache = cache.Where(c => customLevels.Any(level => level == c.LevelID)).ToList();
 
-            BeatmapDetails.SaveBeatmapDetailsToCache(CachedBeatmapDetailsFilePath, cache);
+            BeatmapDetailsCache.SaveBeatmapDetailsToCache(CachedBeatmapDetailsFilePath, cache);
         }
 
         /// <summary>
