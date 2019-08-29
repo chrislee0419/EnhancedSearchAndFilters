@@ -142,9 +142,9 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             foreach (var dbs in beatmapLevelData.difficultyBeatmapSets)
             {
                 // the colon character looks like a bullet in-game (for whatever reason), so we use that here
-                if (dbs.beatmapCharacteristic.characteristicName == "LEVEL_ONE_SABER")
+                if (dbs.beatmapCharacteristic.serializedName == "LEVEL_ONE_SABER")
                     _detailsText.text += ": Has 'One Saber' mode\n";
-                else if (dbs.beatmapCharacteristic.characteristicName == "LEVEL_NO_ARROWS")
+                else if (dbs.beatmapCharacteristic.serializedName == "LEVEL_NO_ARROWS")
                     _detailsText.text += ": Has 'No Arrows' mode\n";
 
                 SetDifficultyIcons(dbs.difficultyBeatmaps, ref hasLightshow);

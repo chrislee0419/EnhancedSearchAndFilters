@@ -92,7 +92,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             return 8f;
         }
 
-        public override TableCell CellForIdx(int idx)
+        public override TableCell CellForIdx(TableView tablewView, int idx)
         {
             // adapted from CustomUI's CustomListViewController
             LevelListTableCell tableCell = (LevelListTableCell)_customListTableView.DequeueReusableCellForIdentifier(reuseIdentifier);

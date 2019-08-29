@@ -40,7 +40,7 @@ namespace EnhancedSearchAndFilters.SongData
             DifficultyBeatmapSets = new SimplifiedDifficultyBeatmapSet[levelDifficultyBeatmapSets.Count()];
             for (int i = 0; i < levelDifficultyBeatmapSets.Count(); ++i)
             {
-                DifficultyBeatmapSets[i].CharacteristicName = levelDifficultyBeatmapSets[i].beatmapCharacteristic.characteristicName;
+                DifficultyBeatmapSets[i].CharacteristicName = levelDifficultyBeatmapSets[i].beatmapCharacteristic.serializedName;
 
                 var levelDifficultyBeatmaps = levelDifficultyBeatmapSets[i].difficultyBeatmaps;
                 DifficultyBeatmapSets[i].DifficultyBeatmaps = new SimplifiedDifficultyBeatmap[levelDifficultyBeatmaps.Length];

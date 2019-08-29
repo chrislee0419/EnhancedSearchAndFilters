@@ -86,7 +86,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 _customListTableView.ClearSelection();
         }
 
-        public override TableCell CellForIdx(int idx)
+        public override TableCell CellForIdx(TableView tableView, int idx)
         {
             // adapted from CustomUI's CustomListViewController
             LevelListTableCell tableCell = (LevelListTableCell)_customListTableView.DequeueReusableCellForIdentifier(reuseIdentifier);

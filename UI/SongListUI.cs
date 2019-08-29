@@ -8,6 +8,7 @@ using CustomUI.BeatSaber;
 using CustomUI.Utilities;
 using VRUI;
 using TableView = HMUI.TableView;
+using TableViewScroller = HMUI.TableViewScroller;
 using EnhancedSearchAndFilters.Tweaks;
 using EnhancedSearchAndFilters.UI.FlowCoordinators;
 using EnhancedSearchAndFilters.UI.ViewControllers;
@@ -377,7 +378,7 @@ namespace EnhancedSearchAndFilters.UI
                 if (_levelsTableViewContainer.GetPrivateField<bool>("_showLevelPackHeader"))
                     ++row;
 
-                _levelsTableView.ScrollToCellWithIdx(row, TableView.ScrollPositionType.Beginning, false);
+                _levelsTableView.ScrollToCellWithIdx(row, TableViewScroller.ScrollPositionType.Beginning, false);
                 _levelsTableView.SelectCellWithIdx(row);
             }
 
