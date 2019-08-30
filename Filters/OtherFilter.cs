@@ -230,7 +230,7 @@ namespace EnhancedSearchAndFilters.Filters
                         continue;
                     }
 
-                    bool required = songData._difficulties.Any(x => x.additionalDifficultyData._requirements.Any(y => y == "Mapping Extensions"));
+                    bool required = songData._difficulties?.Any(x => x.additionalDifficultyData?._requirements?.Any(y => y == "Mapping Extensions") == true) == true;
                     if ((_mappingExtensionsAppliedValue == SongRequirement.Required && !required) ||
                         (_mappingExtensionsAppliedValue == SongRequirement.NotRequired && required))
                     {
