@@ -68,9 +68,9 @@ namespace EnhancedSearchAndFilters.Tweaks
             _randomButton.transform.SetParent(parentViewController.transform, false);
             (searchButton.transform as RectTransform).sizeDelta = newButtonSize;
             (_sortButton.transform as RectTransform).sizeDelta = newButtonSize;
-            (searchButton.transform as RectTransform).anchoredPosition = new Vector2(-52f, 36.5f);
-            (_sortButton.transform as RectTransform).anchoredPosition = new Vector2(14f, 36.5f);
-            (_randomButton.transform as RectTransform).anchoredPosition = new Vector2(36f, 36.5f);
+            (searchButton.transform as RectTransform).anchoredPosition = new Vector2(-52f, 36.75f);
+            (_sortButton.transform as RectTransform).anchoredPosition = new Vector2(-32f, 36.75f);
+            (_randomButton.transform as RectTransform).anchoredPosition = new Vector2(26f, 36.75f);
             _sortButton.onClick.RemoveAllListeners();
             _sortButton.onClick.AddListener(() =>
             {

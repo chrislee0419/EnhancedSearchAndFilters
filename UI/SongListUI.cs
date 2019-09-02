@@ -4,11 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 using CustomUI.BeatSaber;
 using CustomUI.Utilities;
 using VRUI;
 using TableView = HMUI.TableView;
 using TableViewScroller = HMUI.TableViewScroller;
+using NoTransitionsButton = HMUI.NoTransitionsButton;
 using EnhancedSearchAndFilters.Tweaks;
 using EnhancedSearchAndFilters.UI.FlowCoordinators;
 using EnhancedSearchAndFilters.UI.ViewControllers;
@@ -43,6 +45,10 @@ namespace EnhancedSearchAndFilters.UI
         private static readonly Vector2 DefaultFilterButtonPosition = new Vector2(30f, 35.5f);
         private static readonly Vector2 DefaultClearButtonPosition = new Vector2(48f, 35.5f);
         private static readonly Vector2 DefaultButtonSize = new Vector2(18f, 6f);
+        private const string FilterButtonText = "<color=#FFFFCC>Filter</color>";
+        private const string FilterButtonHighlightedText = "<color=#333300>Filter</color>";
+        private const string FilterButtonAppliedText = "<color=#CCFFCC>Filter\n(Applied)</color>";
+        private const string FilterButtonHighlightedAppliedText = "<color=#003300>Filter\n(Applied)</color>";
         public const string FilteredSongsPackName = "Filtered Songs";
 
         private static SongListUI _instance;
@@ -162,14 +168,14 @@ namespace EnhancedSearchAndFilters.UI
             Logger.log.Info("BeatSaverDownloader mod found. Attempting to replace button behaviour and positions.");
 
             int tries;
-            Vector2 newButtonSize = new Vector2(22f, 6f);
+            Vector2 newButtonSize = new Vector2(20f, 6f);
 
             for (tries = 10; tries > 0; --tries)
             {
                 if (BeatSaverDownloaderTweaks.Init(newButtonSize))
                 {
-                    CreateFilterButton(new Vector2(-30f, 36.5f), newButtonSize, "CreditsButton");
-                    CreateClearButton(new Vector2(-8f, 36.5f), newButtonSize, "CreditsButton");
+                    CreateFilterButton(new Vector2(-12f, 36.75f), newButtonSize, "CreditsButton");
+                    CreateClearButton(new Vector2(8f, 36.75f), newButtonSize, "CreditsButton");
 
                     break;
                 }
@@ -227,10 +233,22 @@ namespace EnhancedSearchAndFilters.UI
             if (FilterButton != null || ButtonParentViewController == null)
                 return;
 
-            FilterButton = ButtonParentViewController.CreateUIButton(buttonTemplate, anchoredPosition, sizeDelta, FilterButtonPressed, "Filter");
+            FilterButton = ButtonParentViewController.CreateUIButton(buttonTemplate, anchoredPosition, sizeDelta, FilterButtonPressed, FilterButtonText);
             FilterButton.SetButtonTextSize(3f);
             FilterButton.ToggleWordWrapping(false);
             FilterButton.name = "EnhancedFilterButton";
+
+            // change colour of text
+            (FilterButton as NoTransitionsButton).selectionStateDidChangeEvent += delegate (NoTransitionsButton.SelectionState selectionState)
+            {
+                var filterApplied = _filterViewController?.IsFilterApplied ?? false;
+                var text = FilterButton.GetComponentInChildren<TextMeshProUGUI>();
+
+                if (selectionState == NoTransitionsButton.SelectionState.Highlighted)
+                    text.text = filterApplied ? FilterButtonHighlightedAppliedText : FilterButtonHighlightedText;
+                else
+                    text.text = filterApplied ? FilterButtonAppliedText : FilterButtonText;
+            };
 
             Logger.log.Debug("Created filter button.");
         }
@@ -394,7 +412,7 @@ namespace EnhancedSearchAndFilters.UI
             BeatmapLevelPack levelPack = new BeatmapLevelPack("", FilteredSongsPackName, LevelsViewController.levelPack.coverImage, new BeatmapLevelCollection(levels));
             LevelsViewController.SetData(levelPack);
 
-            FilterButton.SetButtonText("Filter\n(Applied)");
+            FilterButton.SetButtonText(FilterButtonAppliedText);
             FilterButton.SetButtonTextSize(2.3f);
         }
 
@@ -404,7 +422,7 @@ namespace EnhancedSearchAndFilters.UI
 
             if (!SongBrowserTweaks.ModLoaded)
             {
-                FilterButton.SetButtonText("Filter");
+                FilterButton.SetButtonText(FilterButtonText);
                 FilterButton.SetButtonTextSize(3f);
             }
             else
