@@ -40,7 +40,7 @@ namespace EnhancedSearchAndFilters
                 config.SetBool("EnhancedSearchAndFilters", "StripSymbolsFromSearch", value);
             }
         }
-        public const bool StripSymbolsDefaultValue = false;
+        public const bool StripSymbolsDefaultValue = true;
 
         /// <summary>
         /// Determine whether to query each word independently (A word is any cluster of characters separated by a space)
