@@ -123,6 +123,7 @@
     <Compile Include="Search\SearchBehaviour.cs" />
     <Compile Include="Tweaks\SongBrowserTweaks.cs" />
     <Compile Include="Tweaks\SongDataCoreTweaks.cs" />
+    <Compile Include="UI\Components\PredictionBar.cs" />
     <Compile Include="UI\Components\SearchKeyboard.cs" />
     <Compile Include="UI\FlowCoordinators\SearchFlowCoordinator.cs" />
     <Compile Include="UI\SongListUI.cs" />

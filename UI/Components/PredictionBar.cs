@@ -1,0 +1,106 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+using WordPredictionEngine = EnhancedSearchAndFilters.Search.WordPredictionEngine;
+
+namespace EnhancedSearchAndFilters.UI.Components
+{
+    class PredictionBar : MonoBehaviour
+    {
+        public event Action<string> PredictionPressed;
+
+        private bool _initialized = false;
+
+        private Button _buttonPrefab;
+        private Transform _parent;
+        private float _fontSize;
+        private float _yPos;
+        private float _xStartPos;
+        private float _xEndPos;
+
+        private List<Button> _predictionButtons = new List<Button>();
+
+        private void Awake()
+        {
+            _buttonPrefab = Resources.FindObjectsOfTypeAll<Button>().First(x => x.name == "CancelButton");
+        }
+
+        public void Initialize(Transform parent, float fontSize, float yPosition, float xPositionStart, float xPositionEnd)
+        {
+            _parent = parent;
+            _fontSize = fontSize;
+            _yPos = yPosition;
+            _xStartPos = xPositionStart;
+            _xEndPos = xPositionEnd;
+
+            _initialized = true;
+        }
+
+        public void ClearAndSetPredictionButtons(string searchText)
+        {
+            if (!_initialized)
+                return;
+
+            ClearPredictionButtons();
+
+            if (string.IsNullOrEmpty(searchText))
+                return;
+
+            // create new buttons
+            Button btn = null;
+            float currentX = 0f;
+            var predictions = WordPredictionEngine.Instance.GetWordsWithPrefix(searchText);
+            for (int i = 0; i < predictions.Count && currentX < _xEndPos - _xStartPos; ++i)
+            {
+                var word = predictions[i];
+
+                btn = Instantiate(_buttonPrefab, _parent, false);
+                var rt = (btn.transform as RectTransform);
+                rt.anchorMin = new Vector2(0.5f, 0.5f);
+                rt.anchorMax = new Vector2(0.5f, 0.5f);
+                rt.pivot = new Vector2(0f, 0.5f);
+                btn.GetComponentsInChildren<HorizontalLayoutGroup>().First(x => x.name == "Content").padding = new RectOffset(0, 0, 0, 0);
+                btn.GetComponentsInChildren<Image>().FirstOrDefault(x => x.name == "Stroke").color = new Color(0.6f, 0.6f, 0.8f);
+
+                btn.onClick.RemoveAllListeners();
+                btn.onClick.AddListener(delegate ()
+                {
+                    PredictionPressed?.Invoke(word);
+                });
+
+                var text = btn.GetComponentInChildren<TextMeshProUGUI>();
+                text.fontSize = _fontSize;
+                text.text = word.ToUpper();
+                text.enableWordWrapping = false;
+
+                var width = text.preferredWidth + 8f;
+                rt.sizeDelta = new Vector2(width, 7f);
+                rt.anchoredPosition = new Vector2(_xStartPos + currentX, _yPos);
+
+                currentX += width + 1.5f;
+                _predictionButtons.Add(btn);
+            }
+
+            // remove the last button created, since it goes past the end of the screen
+            // we have to do this here, since we don't know the width of the strings to be displayed before button creation
+            if (btn != null && currentX >= _xEndPos - _xStartPos)
+            {
+                _predictionButtons.Remove(btn);
+                Destroy(btn.gameObject);
+            }
+        }
+
+        public void ClearPredictionButtons()
+        {
+            if (!_initialized)
+                return;
+
+            foreach (var oldButton in _predictionButtons)
+                Destroy(oldButton.gameObject);
+            _predictionButtons.Clear();
+        }
+    }
+}
