@@ -24,6 +24,10 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
         private string _lastSearchQuery = "";
         private IPreviewBeatmapLevel[] _levelsSearchSpace;
 
+        // prevents the UI messing up when the user presses the back button very soon after activating the search screen
+        // it's a bit of a bandaid, but i'll fix it once i find the root cause
+        private bool _readyForDeactivation = false;
+
         protected override void DidActivate(bool firstActivation, ActivationType activationType)
         {
             if (firstActivation && activationType == ActivationType.AddedToHierarchy)
@@ -39,6 +43,9 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 
                 _searchResultsNavigationController.BackButtonPressed += delegate ()
                 {
+                    if (!_readyForDeactivation)
+                        return;
+
                     _lastSearchQuery = _searchQuery;
 
                     SearchBehaviour.Instance.StopSearch();
@@ -115,6 +122,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             else
             {
                 _searchQuery = "";
+                _readyForDeactivation = false;
             }
 
         }
@@ -142,7 +150,10 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             {
                 PushViewControllerToNavigationController(_searchResultsNavigationController, _searchResultsListViewController, delegate ()
                 {
-                    PushViewControllerToNavigationController(_searchResultsNavigationController, _searchCompactKeyboardViewController);
+                    PushViewControllerToNavigationController(_searchResultsNavigationController, _searchCompactKeyboardViewController, delegate ()
+                    {
+                        _readyForDeactivation = true;
+                    });
                 }, true);
 
                 SetRightScreenViewController(null);
@@ -151,6 +162,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             {
                 SetRightScreenViewController(_searchKeyboardViewController);
                 _searchResultsNavigationController.ShowPlaceholderText();
+                _readyForDeactivation = true;
             }
 
             if (!string.IsNullOrEmpty(_lastSearchQuery))
