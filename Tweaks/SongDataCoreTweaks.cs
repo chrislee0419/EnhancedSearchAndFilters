@@ -96,11 +96,11 @@ namespace EnhancedSearchAndFilters.Tweaks
                     string actualCharacteristicName = null;
 
                     if (loadedCharacteristicName == "standard")
-                        actualCharacteristicName = "LEVEL_STANDARD";
+                        actualCharacteristicName = "Standard";
                     else if (loadedCharacteristicName == "onesaber")
-                        actualCharacteristicName = "LEVEL_ONE_SABER";
+                        actualCharacteristicName = "OneSaber";
                     else if (loadedCharacteristicName == "noarrows")
-                        actualCharacteristicName = "LEVEL_NO_ARROWS";
+                        actualCharacteristicName = "NoArrows";
                     else
                         actualCharacteristicName = characteristicSetPair.Value.name;    // currently, only the 'Lightshow' and 'Lawless' custom characteristics should be possible
 
