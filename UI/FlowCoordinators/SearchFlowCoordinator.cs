@@ -1,6 +1,7 @@
 ﻿using System;
 using VRUI;
 using EnhancedSearchAndFilters.UI.ViewControllers;
+using EnhancedSearchAndFilters.Search;
 using CustomUI.BeatSaber;
 using CustomUI.Utilities;
 
@@ -102,10 +103,12 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                 _searchKeyboardViewController.TextKeyPressed += KeyboardTextKeyPressed;
                 _searchKeyboardViewController.DeleteButtonPressed += KeyboardDeleteButtonPressed;
                 _searchKeyboardViewController.ClearButtonPressed += KeyboardClearButtonPressed;
+                _searchKeyboardViewController.PredictionPressed += KeyboardPredictionPressed;
 
                 _searchCompactKeyboardViewController.TextKeyPressed += KeyboardTextKeyPressed;
                 _searchCompactKeyboardViewController.DeleteButtonPressed += KeyboardDeleteButtonPressed;
                 _searchCompactKeyboardViewController.ClearButtonPressed += KeyboardClearButtonPressed;
+                _searchCompactKeyboardViewController.PredictionPressed += KeyboardPredictionPressed;
 
                 ProvideInitialViewControllers(_searchResultsNavigationController, _searchOptionsViewController, PluginConfig.CompactSearchMode ? null : _searchKeyboardViewController);
             }
@@ -122,11 +125,13 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
         /// </summary>
         /// <param name="parentFlowCoordinator">The flow coordinator that will be immediately higher in the hierarchy that will present this flow coordinator.</param>
         /// <param name="levels">The list of levels that will be used as the search space.</param>
-        public void Activate(FlowCoordinator parentFlowCoordinator, IPreviewBeatmapLevel[] levels)
+        public void Activate(FlowCoordinator parentFlowCoordinator, IBeatmapLevelPack levelPack)
         {
-            _levelsSearchSpace = levels;
+            _levelsSearchSpace = levelPack.beatmapLevelCollection.beatmapLevels;
             Action onFinish = PushInitialViewControllersToNavigationController;
             parentFlowCoordinator.InvokePrivateMethod("PresentFlowCoordinator", new object[] { this, onFinish, false, false });
+
+            WordPredictionEngine.Instance.SetActiveWordStorageFromLevelPack(levelPack);
         }
 
         public void PushInitialViewControllersToNavigationController()
@@ -221,8 +226,26 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             else
             {
                 PopAllViewControllersFromNavigationController();
+                _searchResultsListViewController.UpdateSongs(new IPreviewBeatmapLevel[0]);
                 _searchResultsNavigationController.ShowPlaceholderText();
             }
+        }
+
+        private void KeyboardPredictionPressed(string query)
+        {
+            _searchQuery = query;
+
+            PopAllViewControllersFromNavigationController();
+            _searchResultsNavigationController.ShowLoadingSpinner();
+
+            // clear list, just in case the user forced the results to show
+            if (PluginConfig.CompactSearchMode)
+                _searchResultsListViewController.UpdateSongs(new IPreviewBeatmapLevel[0]);
+
+            if (_searchQuery.Length == 1)
+                SearchBehaviour.Instance.StartNewSearch(_levelsSearchSpace, _searchQuery, SearchCompleted);
+            else
+                SearchBehaviour.Instance.StartSearchOnExistingList(_searchQuery, SearchCompleted);
         }
 
         private void OptionsChanged()

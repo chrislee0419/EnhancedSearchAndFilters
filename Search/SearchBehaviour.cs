@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
-namespace EnhancedSearchAndFilters
+namespace EnhancedSearchAndFilters.Search
 {
     class SearchBehaviour : MonoBehaviour
     {

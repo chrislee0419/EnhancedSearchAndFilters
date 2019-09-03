@@ -103,6 +103,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Search\Trie.cs" />
+    <Compile Include="Search\WordCountStorage.cs" />
+    <Compile Include="Search\WordPredictionEngine.cs" />
     <Compile Include="SongData\BeatmapDetailsCache.cs" />
     <Compile Include="SongData\BeatmapDetailsLoader.cs" />
     <Compile Include="SongData\BeatmapDetails.cs" />
@@ -117,7 +120,7 @@
     <Compile Include="Plugin.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="PluginConfig.cs" />
-    <Compile Include="SearchBehaviour.cs" />
+    <Compile Include="Search\SearchBehaviour.cs" />
     <Compile Include="Tweaks\SongBrowserTweaks.cs" />
     <Compile Include="Tweaks\SongDataCoreTweaks.cs" />
     <Compile Include="UI\Components\SearchKeyboard.cs" />

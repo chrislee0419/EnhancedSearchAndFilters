@@ -304,8 +304,8 @@ namespace EnhancedSearchAndFilters.UI
             }
 
             // TODO?: toggle to search every level pack instead of just the current?
-            IPreviewBeatmapLevel[] levels = LevelsViewController.GetPrivateField<IBeatmapLevelPack>("_levelPack").beatmapLevelCollection.beatmapLevels;
-            _searchFlowCoordinator.Activate(_freePlayFlowCoordinator, levels);
+            IBeatmapLevelPack levelPack = LevelsViewController.GetPrivateField<IBeatmapLevelPack>("_levelPack");
+            _searchFlowCoordinator.Activate(_freePlayFlowCoordinator, levelPack);
 
             Logger.log.Debug("'Search' button pressed.");
         }

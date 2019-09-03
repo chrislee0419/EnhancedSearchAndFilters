@@ -8,6 +8,7 @@ using SongCore;
 using CustomUI.Utilities;
 using EnhancedSearchAndFilters.Tweaks;
 using EnhancedSearchAndFilters.SongData;
+using WordPredictionEngine = EnhancedSearchAndFilters.Search.WordPredictionEngine;
 
 namespace EnhancedSearchAndFilters
 {
@@ -28,6 +29,8 @@ namespace EnhancedSearchAndFilters
 
         public void OnApplicationQuit()
         {
+            WordPredictionEngine.Instance.CancelTasks();
+
             BeatmapDetailsLoader.Instance.CancelLoading();
             BeatmapDetailsLoader.Instance.CancelPopulatingCache();
             BeatmapDetailsLoader.Instance.SaveCacheToFile();
@@ -39,15 +42,25 @@ namespace EnhancedSearchAndFilters
 
         public void OnUpdate()
         {
-
         }
 
         public void OnActiveSceneChanged(Scene prevScene, Scene nextScene)
         {
-            if (nextScene.name == "MenuCore" && BeatmapDetailsLoader.Instance.IsCaching)
-                BeatmapDetailsLoader.Instance.StartPopulatingCache();
-            if ((prevScene.name == "MenuCore" || nextScene.name == "GameCore") && BeatmapDetailsLoader.Instance.IsCaching)
-                BeatmapDetailsLoader.Instance.PausePopulatingCache();
+            if (nextScene.name == "MenuCore")
+            {
+                WordPredictionEngine.Instance.ResumeTasks();
+
+                if (BeatmapDetailsLoader.Instance.IsCaching)
+                    BeatmapDetailsLoader.Instance.StartPopulatingCache();
+            }
+
+            if (prevScene.name == "MenuCore" || nextScene.name == "GameCore")
+            {
+                WordPredictionEngine.Instance.PauseTasks();
+
+                if (BeatmapDetailsLoader.Instance.IsCaching)
+                    BeatmapDetailsLoader.Instance.PausePopulatingCache();
+            }
         }
 
         private void OnMenuSceneLoadedFresh()
@@ -66,6 +79,7 @@ namespace EnhancedSearchAndFilters
         }
         public void SongCoreLoaderDeletingSong()
         {
+            WordPredictionEngine.Instance.CancelTasks();
             BeatmapDetailsLoader.Instance.CancelPopulatingCache();
             Loader.OnLevelPacksRefreshed += SongCoreLoaderOnLevelPacksRefreshed;
         }
@@ -78,6 +92,7 @@ namespace EnhancedSearchAndFilters
 
         public void SongCoreLoaderLoadingStarted(Loader loader)
         {
+            WordPredictionEngine.Instance.CancelTasks();
             BeatmapDetailsLoader.Instance.CancelPopulatingCache();
         }
 
@@ -89,12 +104,10 @@ namespace EnhancedSearchAndFilters
 
         public void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode)
         {
-
         }
 
         public void OnSceneUnloaded(Scene scene)
         {
-
         }
     }
 }
