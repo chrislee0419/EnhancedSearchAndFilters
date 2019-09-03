@@ -28,7 +28,7 @@ namespace EnhancedSearchAndFilters.Search
             if (!_cache.TryGetValue(levelPack.packName, out var storage))
             {
                 storage = new WordCountStorage(levelPack);
-                _cache[levelPack.packID] = storage;
+                _cache[levelPack.packName] = storage;
             }
 
             _activeWordStorage = storage;
