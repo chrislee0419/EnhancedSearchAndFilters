@@ -285,7 +285,7 @@ namespace EnhancedSearchAndFilters.UI
 
             if (!SongBrowserTweaks.ModLoaded)
             {
-                FilterButton.SetButtonText("Filter");
+                FilterButton.SetButtonText(FilterButtonText);
                 FilterButton.SetButtonTextSize(3f);
             }
             else if (SongBrowserTweaks.Initialized && !songBrowserFilterSelected)
