@@ -23,7 +23,10 @@ namespace EnhancedSearchAndFilters.SongData
 
         public BeatmapDetails(IBeatmapLevel level)
         {
-            LevelID = level.levelID;
+            // remove the directory part of a custom level ID
+            // see BeatmapDetailsLoader:GetLevelID() for more detail on why we do this
+            LevelID = level.levelID.StartsWith("custom_level") ? level.levelID.Substring(0, 53) : level.levelID;
+
             SongName = level.songName;
             BeatsPerMinute = level.beatsPerMinute;
 

@@ -266,19 +266,23 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                         control.EnableControl();
 
                     // if this was the first load, only take the beatmap details objects that correspond to the requested list of levels
+                    IPreviewBeatmapLevel[] requestedLevels;
                     if (PluginConfig.ShowFirstTimeLoadingText)
-                    {
-                        _beatmapDetails = new Dictionary<BeatmapDetails, IPreviewBeatmapLevel>(originalLevels.Length);
-                        Array.ForEach(originalLevels, delegate (IPreviewBeatmapLevel originalLevel)
-                        {
-                            if (originalLevel == null)
-                                return;
-                            _beatmapDetails[levels.First(x => x.LevelID == originalLevel.levelID)] = originalLevel;
-                        });
-                    }
+                        requestedLevels = originalLevels;
                     else
+                        requestedLevels = _levels;
+
+                    _beatmapDetails = new Dictionary<BeatmapDetails, IPreviewBeatmapLevel>(requestedLevels.Length);
+                    foreach (var level in requestedLevels)
                     {
-                        _beatmapDetails = levels.Zip(_levels, (details, beatmap) => new { details, beatmap }).Where(pair => pair.details != null).ToDictionary(item => item.details, (item) => item.beatmap);
+                        // remove the directory part of a custom level ID
+                        // see BeatmapDetailsLoader:GetLevelID() for more detail on why we do this
+                        var levelID = level.levelID.StartsWith("custom_level") ? level.levelID.Substring(0, 53) : level.levelID;
+                        var details = levels.FirstOrDefault(x => x.LevelID == levelID);
+                        if (details == null)
+                            continue;
+
+                        _beatmapDetails[details] = level;
                     }
 
                     PluginConfig.ShowFirstTimeLoadingText = false;
