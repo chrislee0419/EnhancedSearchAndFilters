@@ -278,7 +278,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                         // remove the directory part of a custom level ID
                         // see BeatmapDetailsLoader:GetLevelID() for more detail on why we do this
                         var levelID = level.levelID.StartsWith("custom_level") ? level.levelID.Substring(0, 53) : level.levelID;
-                        var details = levels.FirstOrDefault(x => x.LevelID == levelID);
+                        var details = levels.FirstOrDefault(x => x?.LevelID == levelID);
                         if (details == null)
                             continue;
 
