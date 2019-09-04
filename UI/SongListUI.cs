@@ -46,9 +46,13 @@ namespace EnhancedSearchAndFilters.UI
         private static readonly Vector2 DefaultClearButtonPosition = new Vector2(48f, 35.5f);
         private static readonly Vector2 DefaultButtonSize = new Vector2(18f, 6f);
         private const string FilterButtonText = "<color=#FFFFCC>Filter</color>";
-        private const string FilterButtonHighlightedText = "<color=#333300>Filter</color>";
-        private const string FilterButtonAppliedText = "<color=#CCFFCC>Filter\n(Applied)</color>";
-        private const string FilterButtonHighlightedAppliedText = "<color=#003300>Filter\n(Applied)</color>";
+        private const string FilterButtonHighlightedText = "<color=#444400>Filter</color>";
+        private const string FilterButtonAppliedText = "<color=#DDFFDD>Filter\n(Applied)</color>";
+        private const string FilterButtonHighlightedAppliedText = "<color=#004400>Filter\n(Applied)</color>";
+        private const string ClearFilterButtonText = "<color=#FFFFCC>Clear\nFilters</color>";
+        private const string ClearFilterButtonHighlightedText = "<color=#444400>Clear\nFilters</color>";
+        private const string ClearFilterButtonAppliedText = "<color=#FFDDDD>Clear\nFilters</color>";
+        private const string ClearFilterButtonHighlightedAppliedText = "<color=#440000>Clear\nFilters</color>";
         public const string FilteredSongsPackName = "Filtered Songs";
 
         private static SongListUI _instance;
@@ -263,6 +267,18 @@ namespace EnhancedSearchAndFilters.UI
             ClearButton.ToggleWordWrapping(false);
             ClearButton.name = "EnhancedClearFilterButton";
 
+            // change colour of text
+            (ClearButton as NoTransitionsButton).selectionStateDidChangeEvent += delegate (NoTransitionsButton.SelectionState selectionState)
+            {
+                var filterApplied = _filterViewController?.IsFilterApplied ?? false;
+                var text = ClearButton.GetComponentInChildren<TextMeshProUGUI>();
+
+                if (selectionState == NoTransitionsButton.SelectionState.Highlighted)
+                    text.text = filterApplied ? ClearFilterButtonHighlightedAppliedText : ClearFilterButtonHighlightedText;
+                else
+                    text.text = filterApplied ? ClearFilterButtonAppliedText : ClearFilterButtonText;
+            };
+
             Logger.log.Debug("Created clear filter button.");
         }
 
@@ -275,7 +291,7 @@ namespace EnhancedSearchAndFilters.UI
         }
 
         /// <summary>
-        /// Unapplies the filters in the Filter view controller, but saves their current status.
+        /// Unapplies the filters in the FilterViewController, but saves their current status.
         /// </summary>
         /// <param name="songBrowserFilterSelected">Used only by the SongBrowser mod. Set this to true when another filter (Favorites/Playlist) was selected.</param>
         public void UnapplyFilters(bool songBrowserFilterSelected = false)
@@ -287,6 +303,8 @@ namespace EnhancedSearchAndFilters.UI
             {
                 FilterButton.SetButtonText(FilterButtonText);
                 FilterButton.SetButtonTextSize(3f);
+
+                ClearButton.SetButtonText(ClearFilterButtonText);
             }
             else if (SongBrowserTweaks.Initialized && !songBrowserFilterSelected)
             {
@@ -414,6 +432,8 @@ namespace EnhancedSearchAndFilters.UI
 
             FilterButton.SetButtonText(FilterButtonAppliedText);
             FilterButton.SetButtonTextSize(2.3f);
+
+            ClearButton.SetButtonText(ClearFilterButtonAppliedText);
         }
 
         private void FilterViewControllerFiltersUnapplied()
@@ -424,6 +444,13 @@ namespace EnhancedSearchAndFilters.UI
             {
                 FilterButton.SetButtonText(FilterButtonText);
                 FilterButton.SetButtonTextSize(3f);
+
+                // if the clear button is shown, then that was pressed to clear filters
+                // therefore, it should currently be highlighted
+                if (ClearButton.isActiveAndEnabled)
+                    ClearButton.SetButtonText(ClearFilterButtonHighlightedText);
+                else
+                    ClearButton.SetButtonText(ClearFilterButtonText);
             }
             else
             {
