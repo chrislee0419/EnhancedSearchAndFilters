@@ -63,6 +63,17 @@ namespace EnhancedSearchAndFilters.Search
                 storage.CancelSetup();
         }
 
+        /// <summary>
+        /// Clear all existing WordCountStorage objects. This should be used when songs are refreshed.
+        /// </summary>
+        public void ClearCache()
+        {
+            Logger.log.Info("Clearing word prediction storage cache");
+
+            _cache.Clear();
+            _activeWordStorage = null;
+        }
+
         public List<string> GetWordsWithPrefix(string prefix)
         {
             return _activeWordStorage?.GetWordsWithPrefix(prefix) ?? new List<string>();

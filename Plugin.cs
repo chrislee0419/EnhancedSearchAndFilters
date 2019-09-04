@@ -88,6 +88,8 @@ namespace EnhancedSearchAndFilters
         {
             Loader.OnLevelPacksRefreshed -= SongCoreLoaderOnLevelPacksRefreshed;
             BeatmapDetailsLoader.Instance.StartPopulatingCache();
+
+            WordPredictionEngine.Instance.ClearCache();
         }
 
         public void SongCoreLoaderLoadingStarted(Loader loader)
@@ -100,6 +102,8 @@ namespace EnhancedSearchAndFilters
         {
             // force load, since there might be new songs that can be cached
             BeatmapDetailsLoader.Instance.StartPopulatingCache(true);
+
+            WordPredictionEngine.Instance.ClearCache();
         }
 
         public void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode)
