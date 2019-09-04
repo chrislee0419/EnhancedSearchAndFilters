@@ -9,11 +9,13 @@ _**If you have any suggestions or found any bugs**_, please report it [here](htt
 - Search
      - Auto-refreshing search results
        - Now you don't have to enter the whole title of a song and hope it appears in the search results! You can see what songs match as you're typing in.
-     - Searching for song title, author, and map maker
+     - Search by song title, author, and map maker
        - Never search for artists or map makers? Further refine search results by disabling search for those fields.
      - Symbols
        - Apostrophes, quotations, commas, brackets, etc. can be removed before searching.
        - Or alternatively, symbols can be typed in yourself when trying to find a song with lots of symbols in the title!
+     - Word suggestions
+       - While typing, the mod shows you a list of possible words you're trying to type.
 - Filter
      - Limit song length, difficulties, and NJS on the song list.
      - Find songs you have voted on (needs BeatSaverDownloader).
@@ -30,13 +32,13 @@ _**If you have any suggestions or found any bugs**_, please report it [here](htt
 
 ## Screenshots
 
-![search](https://user-images.githubusercontent.com/14931856/59971425-cf46c000-9530-11e9-9dd9-38dc92a7f05f.PNG)
+![Typing in a search query](Assets/screenshots/incompletesearch.PNG)
 
-![search2](https://user-images.githubusercontent.com/14931856/59971426-cf46c000-9530-11e9-890b-0ae65b3b4afb.PNG)
+![Song details from search result](Assets/screenshots/searchdetails.PNG)
 
-![filter](https://user-images.githubusercontent.com/14931856/60246076-caf10e80-9872-11e9-9cd3-1d92580a0c1a.PNG)
+![Applying the filter](Assets/screenshots/applyingfilter.PNG)
 
-![filter2](https://user-images.githubusercontent.com/14931856/60246075-caf10e80-9872-11e9-891b-98e5e5f0ee9b.PNG)
+![Filtered song list](Assets/screenshots/filteredsongs.PNG)
 
 ## Icon Credits
 
