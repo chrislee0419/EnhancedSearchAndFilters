@@ -171,9 +171,9 @@ namespace EnhancedSearchAndFilters.Filters
 
             // min-max view controller container
             _container = new GameObject("PPFilterContainer");
-            var image = _container.AddComponent<Image>();
-            image.color = new Color(0f, 0f, 0f, 0f);
-            image.material = UIUtilities.NoGlowMaterial;
+            var unused = _container.AddComponent<Image>();
+            unused.color = new Color(0f, 0f, 0f, 0f);
+            unused.material = Utilities.NoGlowMaterial;
 
             Controls[2] = new FilterControl(_container, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 24f), new Vector2(0f, -20f),
                 delegate ()

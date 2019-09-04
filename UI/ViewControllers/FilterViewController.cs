@@ -135,7 +135,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 var containerImage = new GameObject("FilterSettingsContainer").AddComponent<Image>();
                 containerImage.sprite = Sprite.Create(Texture2D.blackTexture, new Rect(0f, 0f, 1f, 1f), Vector2.zero);
                 containerImage.color = new Color(0f, 0f, 0f, 0f);
-                containerImage.material = UIUtilities.NoGlowMaterial;
+                containerImage.material = Utilities.NoGlowMaterial;
                 _settingsRectTransform = containerImage.gameObject.transform as RectTransform;
                 _settingsRectTransform.SetParent(this.transform, false);
                 _settingsRectTransform.anchorMin = Vector2.one;
@@ -164,7 +164,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 Image divider = new GameObject("WhiteDivider").AddComponent<Image>();
                 divider.sprite = Sprite.Create(Texture2D.whiteTexture, new Rect(0f, 0f, 1f, 1f), Vector2.zero);
                 divider.color = Color.white;
-                divider.material = UIUtilities.NoGlowMaterial;
+                divider.material = Utilities.NoGlowMaterial;
                 rt = divider.rectTransform;
                 rt.SetParent(_settingsRectTransform, false);
                 rt.anchorMin = Vector2.zero;

@@ -76,7 +76,7 @@ namespace EnhancedSearchAndFilters.Filters
 
             var unused = container.AddComponent<Image>();
             unused.color = new Color(0f, 0f, 0f, 0f);
-            unused.material = UIUtilities.NoGlowMaterial;
+            unused.material = Utilities.NoGlowMaterial;
 
             var text = BeatSaberUI.CreateText(container.transform as RectTransform, "Keep Songs That Have These Difficulties", Vector2.zero, new Vector2(60f, 6f));
             text.fontSize = 5.5f;

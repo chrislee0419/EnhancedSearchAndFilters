@@ -9,6 +9,21 @@ namespace EnhancedSearchAndFilters.UI
 {
     internal static class Utilities
     {
+        public static Material NoGlowMaterial
+        {
+            get
+            {
+                if (_noGlowMaterial == null)
+                {
+                    _noGlowMaterial = new Material(UIUtilities.NoGlowMaterial);
+                    _noGlowMaterial.color = new Color(1f, 1f, 1f, 1f);
+
+                }
+                return _noGlowMaterial;
+            }
+        }
+        private static Material _noGlowMaterial;
+
         private static SubMenu _submenu = new SubMenu((Transform)null);
 
         /// <summary>
@@ -76,7 +91,7 @@ namespace EnhancedSearchAndFilters.UI
         {
             var divider = new GameObject("Divider").AddComponent<Image>();
             divider.color = new Color(1f, 1f, 1f, 0.15f);
-            divider.material = UIUtilities.NoGlowMaterial;
+            divider.material = NoGlowMaterial;
 
             var rt = divider.rectTransform;
             rt.SetParent(parent);
