@@ -304,7 +304,10 @@ namespace EnhancedSearchAndFilters.UI
                 FilterButton.SetButtonText(FilterButtonText);
                 FilterButton.SetButtonTextSize(3f);
 
-                ClearButton.SetButtonText(ClearFilterButtonText);
+                if ((ClearButton as NoTransitionsButton).selectionState == NoTransitionsButton.SelectionState.Highlighted)
+                    ClearButton.SetButtonText(ClearFilterButtonHighlightedText);
+                else
+                    ClearButton.SetButtonText(ClearFilterButtonText);
             }
             else if (SongBrowserTweaks.Initialized && !songBrowserFilterSelected)
             {
@@ -447,7 +450,7 @@ namespace EnhancedSearchAndFilters.UI
 
                 // if the clear button is shown, then that was pressed to clear filters
                 // therefore, it should currently be highlighted
-                if (ClearButton.isActiveAndEnabled)
+                if ((ClearButton as NoTransitionsButton).selectionState == NoTransitionsButton.SelectionState.Highlighted)
                     ClearButton.SetButtonText(ClearFilterButtonHighlightedText);
                 else
                     ClearButton.SetButtonText(ClearFilterButtonText);
