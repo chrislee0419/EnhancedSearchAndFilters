@@ -92,6 +92,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
             string color = searchResultsList.Count() > 0 ? "#FFFF55" : "#FF2222";
 
+            // NOTE: unsanitized user input (Pog)
             _resultsText.text = $"<color={color}>{searchResultsList.Count()} out of {searchSpaceSize}</color> beatmaps\n" +
                 $"contain the text \"<color=#11FF11>{searchQuery}</color>\"";
             _resultsText.gameObject.SetActive(true);

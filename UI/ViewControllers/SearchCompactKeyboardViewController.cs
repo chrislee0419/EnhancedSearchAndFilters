@@ -37,8 +37,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 _predictionBar.Initialize(this.transform, 3.5f, 19f, -35f, 45f);
                 _predictionBar.PredictionPressed += delegate (string query)
                 {
-                    _searchText = query.ToUpper();
-                    _textDisplayComponent.SetText(_searchText);
+                    _searchText = query;
+                    _textDisplayComponent.SetText(_searchText.ToUpper());
 
                     _predictionBar.ClearAndSetPredictionButtons(_searchText);
 
@@ -59,8 +59,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
                 _keyboard.TextKeyPressed += delegate (char key)
                 {
-                    _searchText += key.ToString().ToUpper();
-                    _textDisplayComponent.text = _searchText;
+                    _searchText += key.ToString();
+                    _textDisplayComponent.text = _searchText.ToUpper();
 
                     _predictionBar.ClearAndSetPredictionButtons(_searchText);
 
@@ -73,7 +73,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
                     if (_searchText.Length > 0)
                     {
-                        _textDisplayComponent.text = _searchText;
+                        _textDisplayComponent.text = _searchText.ToUpper();
                     }
                     else
                     {

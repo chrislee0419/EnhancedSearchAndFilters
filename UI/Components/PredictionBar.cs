@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -41,6 +42,7 @@ namespace EnhancedSearchAndFilters.UI.Components
 
         public void ClearAndSetPredictionButtons(string searchText)
         {
+            // NOTE: searchText should be lower-cased (keyboard sends lowercase characters)
             if (!_initialized)
                 return;
 
@@ -52,7 +54,7 @@ namespace EnhancedSearchAndFilters.UI.Components
             // create new buttons
             Button btn = null;
             float currentX = 0f;
-            var predictions = WordPredictionEngine.Instance.GetWordsWithPrefix(searchText);
+            var predictions = WordPredictionEngine.Instance.GetSuggestedWords(searchText);
             for (int i = 0; i < predictions.Count && currentX < _xEndPos - _xStartPos; ++i)
             {
                 var word = predictions[i];
@@ -68,7 +70,37 @@ namespace EnhancedSearchAndFilters.UI.Components
                 btn.onClick.RemoveAllListeners();
                 btn.onClick.AddListener(delegate ()
                 {
-                    PredictionPressed?.Invoke(word);
+                    if (!char.IsLetterOrDigit(searchText[searchText.Length - 1]) && !(searchText[searchText.Length - 1] == '\''))
+                    {
+                        searchText += word;
+                    }
+                    else
+                    {
+                        var searchTextWords = WordPredictionEngine.RemoveSymbolsRegex.Replace(searchText, " ").Split(new char[] { ' ' });
+
+                        if (searchTextWords.Length == 0)
+                        {
+                            // this should never be able to happen
+                            // implies we got a suggested word from empty search query
+                            searchText = word;
+                        }
+                        else
+                        {
+                            var lastSearchQueryWord = searchTextWords[searchTextWords.Length - 1];
+
+                            if (word != lastSearchQueryWord && word.StartsWith(lastSearchQueryWord))
+                            {
+                                var space = searchTextWords.Length == 1 ? "" : " ";
+                                searchText = searchText.Remove(searchText.Length - lastSearchQueryWord.Length) + space + word;
+                            }
+                            else
+                            {
+                                searchText += " " + word;
+                            }
+                        }
+                    }
+
+                    PredictionPressed?.Invoke(searchText);
                 });
 
                 var text = btn.GetComponentInChildren<TextMeshProUGUI>();

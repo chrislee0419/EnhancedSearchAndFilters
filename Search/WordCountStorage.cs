@@ -2,7 +2,6 @@
 using System.Threading;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace EnhancedSearchAndFilters.Search
 {
@@ -12,13 +11,12 @@ namespace EnhancedSearchAndFilters.Search
         public bool IsReady { get; private set; } = false;
 
         private Trie _trie = new Trie();
-        private Dictionary<string, int> _counts = new Dictionary<string, int>();
+        private Dictionary<string, WordInformation> _words = new Dictionary<string, WordInformation>();
 
         private HMTask _task;
         private ManualResetEvent _manualResetEvent;
         private bool _taskCancelled;
 
-        private static readonly Regex RemoveSymbolsRegex = new Regex("[^a-zA-Z0-9 ']");
         private static readonly char[] SplitStrings = new char[] { ' ' };
 
         public WordCountStorage()
@@ -100,49 +98,112 @@ namespace EnhancedSearchAndFilters.Search
 
         private bool SetWordsFromLevelPack(IBeatmapLevelPack levelPack)
         {
-            List<string> words = new List<string>();
+            // we don't build the _words object immediately only because we want to also add the
+            // counts of other words that are prefixed by a word to the count
+            List<string> allWords = new List<string>();
+            Dictionary<string, Dictionary<string, int>> allWordConnections = new Dictionary<string, Dictionary<string, int>>();
+
             foreach (var level in levelPack.beatmapLevelCollection.beatmapLevels)
             {
                 _manualResetEvent.WaitOne();
                 if (_taskCancelled)
                     return false;
 
-                words.AddRange(GetWordsFromString(level.songName));
-                words.AddRange(GetWordsFromString(level.songSubName));
-                words.AddRange(GetWordsFromString(level.songAuthorName));
-                foreach (var author in GetWordsFromString(level.levelAuthorName))
+                string[][] wordsFromSong = new string[][]
                 {
-                    // since the names of map makers occur very frequently,
-                    // we limit them to only one entry
+                    GetWordsFromString(level.songName),
+                    GetWordsFromString(level.songSubName),
+                    GetWordsFromString(level.songAuthorName)
+                };
+
+                foreach (var wordsFromField in wordsFromSong)
+                {
+                    for (int i = 0; i < wordsFromField.Length; ++i)
+                    {
+                        var currentWord = wordsFromField[i];
+                        allWords.Add(currentWord);
+
+                        if (!allWordConnections.ContainsKey(currentWord))
+                            allWordConnections[currentWord] = new Dictionary<string, int>();
+
+                        if (i + 1 < wordsFromField.Length)
+                        {
+                            var nextWord = wordsFromField[i + 1];
+                            var connections = allWordConnections[currentWord];
+
+                            if (connections.ContainsKey(nextWord))
+                                connections[nextWord] += 1;
+                            else
+                                connections.Add(nextWord, 1);
+                        }
+                    }
+                }
+
+                var authors = GetWordsFromString(level.levelAuthorName);
+                for (int i = 0; i < authors.Length; ++i)
+                {
+                    var author = authors[i];
+
+                    // since the names of map makers occur very frequently, we limit them to only one entry
                     // otherwise, they always show up as the first couple of predictions
-                    if (!words.Contains(author))
-                        words.Add(author);
+                    if (!allWords.Contains(author))
+                        allWords.Add(author);
+
+                    Dictionary<string, int> authorConnections;
+                    if (!allWordConnections.ContainsKey(author))
+                    {
+                        authorConnections = new Dictionary<string, int>();
+                        allWordConnections[author] = authorConnections;
+                    }
+                    else
+                    {
+                        authorConnections = allWordConnections[author];
+                    }
+
+                    // make connections between this mapper and all of the other mappers of this map
+                    foreach (var otherAuthor in authors)
+                    {
+                        if (otherAuthor != author)
+                        {
+                            if (authorConnections.ContainsKey(otherAuthor))
+                                authorConnections[otherAuthor] += 1;
+                            else
+                                authorConnections.Add(otherAuthor, 1);
+                        }
+                    }
                 }
             }
 
             // sort by word length in descending order
-            words.Sort((x, y) => y.Length - x.Length);
+            allWords.Sort((x, y) => y.Length - x.Length);
 
             // add words to the storage
-            foreach (var word in words)
+            foreach (var word in allWords)
             {
                 _manualResetEvent.WaitOne();
                 if (_taskCancelled)
                     return false;
 
-                if (_counts.ContainsKey(word))
+                if (_words.ContainsKey(word))
                 {
-                    _counts[word] += 1;
+                    _words[word].Count += 1;
                     continue;
                 }
 
                 // get count of words that have this word as a prefix
                 int count = 1;
                 foreach (var prefixedWord in _trie.StartsWith(word))
-                    count += _counts[prefixedWord];
+                    count += _words[prefixedWord].Count;
 
                 _trie.AddWord(word);
-                _counts.Add(word, count);
+                _words.Add(
+                    word,
+                    new WordInformation(count,
+                        allWordConnections[word].ToList()
+                        .OrderByDescending(x => x.Value)
+                        .Select(p => p.Key)
+                        .ToList())
+                );
             }
 
             IsReady = true;
@@ -159,12 +220,44 @@ namespace EnhancedSearchAndFilters.Search
             if (!IsReady)
                 return new List<string>();
             else
-                return _trie.StartsWith(prefix.ToLower()).OrderByDescending(s => _counts[s]).ToList();
+                return _trie.StartsWith(prefix.ToLower()).OrderByDescending(s => _words[s].Count).ToList();
+        }
+
+        /// <summary>
+        /// Gets the words that appear after this word, sorted by occurence.
+        /// </summary>
+        /// <param name="word">Find words that appear after this word.</param>
+        /// <returns>A list of words.</returns>
+        public List<string> GetFollowUpWords(string word)
+        {
+            if (!IsReady || !_words.TryGetValue(word.ToLower(), out var wordInfo))
+                return new List<string>();
+
+            return wordInfo.FollowUpWords;
         }
 
         private string[] GetWordsFromString(string s)
         {
-            return RemoveSymbolsRegex.Replace(s.ToLower(), " ").Split(SplitStrings, StringSplitOptions.RemoveEmptyEntries).Where(x => x.Length > 2).ToArray();
+            return WordPredictionEngine.RemoveSymbolsRegex.Replace(s.ToLower(), " ").Split(SplitStrings, StringSplitOptions.RemoveEmptyEntries).Where(x => x.Length > 2).ToArray();
+        }
+    }
+
+    internal class WordInformation
+    {
+        /// <summary>
+        /// Number of occurences of this word in the level pack.
+        /// </summary>
+        public int Count;
+
+        /// <summary>
+        /// Words that come immediately after this word, sorted by the number of occurences.
+        /// </summary>
+        public List<string> FollowUpWords;
+
+        public WordInformation(int count, List<string> followUpWords)
+        {
+            Count = count;
+            FollowUpWords = followUpWords;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace EnhancedSearchAndFilters.Search
 {
@@ -16,6 +17,9 @@ namespace EnhancedSearchAndFilters.Search
                 return _instance;
             }
         }
+
+        // NOTE: this regex keeps apostrophes
+        public static readonly Regex RemoveSymbolsRegex = new Regex("[^a-zA-Z0-9 ']");
 
         private WordCountStorage _activeWordStorage = null;
         private Dictionary<string, WordCountStorage> _cache = new Dictionary<string, WordCountStorage>();
@@ -74,9 +78,30 @@ namespace EnhancedSearchAndFilters.Search
             _activeWordStorage = null;
         }
 
-        public List<string> GetWordsWithPrefix(string prefix)
+        /// <summary>
+        /// Gets a list of suggested words from the active word storage, based on what was typed by the user.
+        /// </summary>
+        /// <param name="searchQuery">The typed search query.</param>
+        /// <returns>A list of suggested words.</returns>
+        public List<string> GetSuggestedWords(string searchQuery)
         {
-            return _activeWordStorage?.GetWordsWithPrefix(prefix) ?? new List<string>();
+            if (string.IsNullOrEmpty(searchQuery) || _activeWordStorage == null || !_activeWordStorage.IsReady)
+                return new List<string>();
+
+            string[] words = searchQuery.Split(new char[] { ' ' }, System.StringSplitOptions.RemoveEmptyEntries);
+            List<string> suggestedWords = new List<string>();
+
+            // query only had spaces
+            if (words.Length == 0)
+                return suggestedWords;
+
+            string lastWord = words[words.Length - 1];
+
+            if (searchQuery[searchQuery.Length - 1] != ' ')
+                suggestedWords.AddRange(_activeWordStorage.GetWordsWithPrefix(lastWord));
+            suggestedWords.AddRange(_activeWordStorage.GetFollowUpWords(lastWord));
+
+            return suggestedWords;
         }
     }
 }
