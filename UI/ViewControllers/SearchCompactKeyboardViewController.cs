@@ -109,7 +109,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
         public void SetText(string text)
         {
-            _searchText = text.ToUpper();
+            _searchText = text;
             _textDisplayComponent.text = string.IsNullOrEmpty(text) ? PlaceholderText : text.ToUpper();
 
             _predictionBar.ClearAndSetPredictionButtons(_searchText);
