@@ -6,7 +6,6 @@ using UnityEngine.UI;
 using TMPro;
 using CustomUI.BeatSaber;
 using CustomUI.Settings;
-using CustomUI.Utilities;
 using EnhancedSearchAndFilters.UI;
 using EnhancedSearchAndFilters.SongData;
 using Object = UnityEngine.Object;
