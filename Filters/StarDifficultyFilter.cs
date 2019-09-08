@@ -61,8 +61,8 @@ namespace EnhancedSearchAndFilters.Filters
                 {
                     _minEnabledAppliedValue = false;
                     _maxEnabledAppliedValue = false;
-                    _minAppliedValue = DefaultMaxValue;
-                    _maxAppliedValue = _maxStagingValue;
+                    _minAppliedValue = DefaultMinValue;
+                    _maxAppliedValue = DefaultMaxValue;
                     _includeUnratedAppliedValue = false;
                 }
             }

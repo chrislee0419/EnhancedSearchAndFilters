@@ -63,8 +63,8 @@ namespace EnhancedSearchAndFilters.Filters
                     _rankedAppliedValue = RankFilterOption.Off;
                     _minEnabledAppliedValue = false;
                     _maxEnabledAppliedValue = false;
-                    _minAppliedValue = DefaultMaxValue;
-                    _maxAppliedValue = _maxStagingValue;
+                    _minAppliedValue = DefaultMinValue;
+                    _maxAppliedValue = DefaultMaxValue;
                 }
             }
         }
