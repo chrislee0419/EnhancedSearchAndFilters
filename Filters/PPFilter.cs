@@ -147,8 +147,6 @@ namespace EnhancedSearchAndFilters.Filters
                 if (_rankedStagingValue == RankFilterOption.Ranked)
                 {
                     _container.SetActive(true);
-                    _minEnabledStagingValue = _minEnabledAppliedValue;
-                    _maxEnabledStagingValue = _maxEnabledAppliedValue;
 
                     _minViewController.transform.Find("MinValueToggle").GetComponent<Toggle>().isOn = _minEnabledStagingValue;
                     _maxViewController.transform.Find("MaxValueToggle").GetComponent<Toggle>().isOn = _maxEnabledStagingValue;
@@ -174,12 +172,6 @@ namespace EnhancedSearchAndFilters.Filters
             var unused = _container.AddComponent<Image>();
             unused.color = new Color(0f, 0f, 0f, 0f);
             unused.material = Utilities.NoGlowMaterial;
-
-            Controls[2] = new FilterControl(_container, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 24f), new Vector2(0f, -20f),
-                delegate ()
-                {
-                    _container.SetActive(_rankedStagingValue == RankFilterOption.Ranked);
-                });
 
             var togglePrefab = Utilities.GetTogglePrefab();
 
@@ -281,6 +273,15 @@ namespace EnhancedSearchAndFilters.Filters
             Utilities.MoveListViewControllerElements(_maxViewController);
 
             Object.Destroy(togglePrefab);
+
+            Controls[2] = new FilterControl(_container, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 24f), new Vector2(0f, -20f),
+                delegate ()
+                {
+                    _container.SetActive(_rankedStagingValue == RankFilterOption.Ranked);
+
+                    minToggle.isOn = _minEnabledStagingValue;
+                    maxToggle.isOn = _maxEnabledStagingValue;
+                });
 
             _isInitialized = true;
         }
