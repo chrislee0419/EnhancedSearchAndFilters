@@ -109,6 +109,7 @@ namespace EnhancedSearchAndFilters.UI
                 CreateSearchButton(DefaultSearchButtonPosition, DefaultButtonSize);
                 CreateFilterButton(DefaultFilterButtonPosition, DefaultButtonSize);
                 CreateClearButton(DefaultClearButtonPosition, DefaultButtonSize);
+                ToggleButtonsActive(false);
             }
         }
 
@@ -194,6 +195,8 @@ namespace EnhancedSearchAndFilters.UI
                 CreateFilterButton(DefaultFilterButtonPosition, DefaultButtonSize);
                 CreateClearButton(DefaultClearButtonPosition, DefaultButtonSize);
             }
+
+            ToggleButtonsActive(false);
         }
 
         private void OnFreePlayFlowCoordinatorFinished(FlowCoordinator unused)
@@ -367,6 +370,9 @@ namespace EnhancedSearchAndFilters.UI
                 FilterButton.gameObject.SetActive(active);
             if (ClearButton != null)
                 ClearButton.gameObject.SetActive(active);
+
+            if (!active)
+                BeatSaverDownloaderTweaks.HideTopButtons();
         }
 
         private void LevelPackSelected(LevelPacksViewController viewController, IBeatmapLevelPack levelPack)
