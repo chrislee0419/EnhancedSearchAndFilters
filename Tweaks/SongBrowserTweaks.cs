@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
-using SongCore.OverrideClasses;
 using CustomUI.BeatSaber;
 using CustomUI.Utilities;
 using SongBrowser;
@@ -179,6 +177,23 @@ namespace EnhancedSearchAndFilters.Tweaks
         {
             (_songBrowserUI as SongBrowserUI).CancelFilter();
             (_songBrowserUI as SongBrowserUI).RefreshSongUI();
+        }
+
+        /// <summary>
+        /// Gets whether the filter mode is set by SongBrowser.
+        /// </summary>
+        /// <returns>A boolean indicating whether a SongBrowser filter is applied.</returns>
+        public static bool IsFilterApplied()
+        {
+            if (!ModLoaded || !Initialized)
+                return false;
+
+            return _IsFilterApplied();
+        }
+
+        private static bool _IsFilterApplied()
+        {
+            return (_songBrowserUI as SongBrowserUI).Model.Settings.filterMode != SongFilterMode.None;
         }
 
         public static void OnModeSelection()

@@ -32,7 +32,11 @@ namespace EnhancedSearchAndFilters.Search
             if (!_cache.TryGetValue(levelPack.packName, out var storage))
             {
                 storage = new WordCountStorage(levelPack);
-                _cache[levelPack.packName] = storage;
+
+                // never cache filtered level packs
+                if (!(levelPack.packName == UI.SongListUI.FilteredSongsPackName) &&
+                    !Tweaks.SongBrowserTweaks.IsFilterApplied())
+                    _cache[levelPack.packName] = storage;
             }
 
             _activeWordStorage = storage;
