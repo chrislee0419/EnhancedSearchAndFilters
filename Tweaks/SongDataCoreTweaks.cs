@@ -165,6 +165,7 @@ namespace EnhancedSearchAndFilters.Tweaks
         private static bool _IsRanked(string levelID, out float[] ppList)
         {
             if (!SongDataCorePlugin.ScoreSaber.IsDataAvailable() ||
+                !levelID.StartsWith("custom_level_") ||
                 !SongDataCorePlugin.ScoreSaber.Data.Songs.TryGetValue(levelID.Substring(13).ToLower(), out var song))
             {
                 ppList = null;
