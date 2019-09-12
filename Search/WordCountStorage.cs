@@ -109,11 +109,16 @@ namespace EnhancedSearchAndFilters.Search
                 if (_taskCancelled)
                     return false;
 
+                var songNameWords = GetWordsFromString(level.songName);
+                var songSubNameWords = GetWordsFromString(level.songSubName);
+                var authorNameWords = GetWordsFromString(level.songAuthorName);
+                var levelAuthors = GetWordsFromString(level.levelAuthorName);
+
                 string[][] wordsFromSong = new string[][]
                 {
-                    GetWordsFromString(level.songName),
-                    GetWordsFromString(level.songSubName),
-                    GetWordsFromString(level.songAuthorName)
+                    songNameWords,
+                    songSubNameWords,
+                    authorNameWords
                 };
 
                 foreach (var wordsFromField in wordsFromSong)
@@ -139,38 +144,68 @@ namespace EnhancedSearchAndFilters.Search
                     }
                 }
 
-                var authors = GetWordsFromString(level.levelAuthorName);
-                for (int i = 0; i < authors.Length; ++i)
+                // last word of song name connects to the first word of subname and all mappers
+                var lastWord = songNameWords.LastOrDefault();
+                if (!string.IsNullOrEmpty(lastWord))
                 {
-                    var author = authors[i];
+                    var connections = allWordConnections[lastWord];
+                    string[] firstWords = levelAuthors.Append(songSubNameWords.FirstOrDefault()).ToArray();
+
+                    foreach (var firstWord in firstWords)
+                    {
+                        // only make a connection once (same thing for the below connections)
+                        if (!string.IsNullOrEmpty(firstWord) && !connections.ContainsKey(firstWord))
+                             connections.Add(firstWord, 1);
+                    }
+                }
+
+                // last word of song subname connects to first word of author
+                lastWord = songSubNameWords.LastOrDefault();
+                if (!string.IsNullOrEmpty(lastWord))
+                {
+                    var connections = allWordConnections[lastWord];
+                    var firstWord = authorNameWords.FirstOrDefault();
+
+                    if (!string.IsNullOrEmpty(firstWord) && !connections.ContainsKey(firstWord))
+                        connections.Add(firstWord, 1);
+                }
+
+                // last word of author name connects to first word of song name
+                lastWord = authorNameWords.LastOrDefault();
+                if (!string.IsNullOrEmpty(lastWord))
+                {
+                    var connections = allWordConnections[lastWord];
+                    var firstWord = songNameWords.FirstOrDefault();
+
+                    if (!string.IsNullOrEmpty(firstWord) && !connections.ContainsKey(firstWord))
+                        connections.Add(firstWord, 1);
+                }
+
+                // level authors are added to the word storage differently from the other fields
+                var firstSongNameWord = songNameWords.FirstOrDefault();
+                for (int i = 0; i < levelAuthors.Length; ++i)
+                {
+                    var author = levelAuthors[i];
 
                     // since the names of map makers occur very frequently, we limit them to only one entry
                     // otherwise, they always show up as the first couple of predictions
                     if (!allWords.Contains(author))
                         allWords.Add(author);
 
-                    Dictionary<string, int> authorConnections;
+                    Dictionary<string, int> levelAuthorConnections;
                     if (!allWordConnections.ContainsKey(author))
                     {
-                        authorConnections = new Dictionary<string, int>();
-                        allWordConnections[author] = authorConnections;
+                        levelAuthorConnections = new Dictionary<string, int>();
+                        allWordConnections[author] = levelAuthorConnections;
                     }
                     else
                     {
-                        authorConnections = allWordConnections[author];
+                        levelAuthorConnections = allWordConnections[author];
                     }
 
-                    // make connections between this mapper and all of the other mappers of this map
-                    foreach (var otherAuthor in authors)
-                    {
-                        if (otherAuthor != author)
-                        {
-                            if (authorConnections.ContainsKey(otherAuthor))
-                                authorConnections[otherAuthor] += 1;
-                            else
-                                authorConnections.Add(otherAuthor, 1);
-                        }
-                    }
+                    // make connection between this mapper and the first word of the song name
+                    if (!string.IsNullOrEmpty(firstSongNameWord) && !levelAuthorConnections.ContainsKey(firstSongNameWord))
+                        levelAuthorConnections.Add(firstSongNameWord, 1);
                 }
             }
 
