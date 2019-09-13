@@ -1,6 +1,6 @@
 # EnhancedSearchAndFilters
 
-A mod that helps you find the songs you want to play quicker! Includes a more option rich search screen and song filtering. The latest version of this mod can be found [here](https://github.com/chrislee0419/EnhancedSearchAndFilters/releases).
+A mod that helps you find the songs you want to play quicker! Includes a more option-rich search screen and song filtering. The latest version of this mod can be found [here](https://github.com/chrislee0419/EnhancedSearchAndFilters/releases).
 
 _**If you have any suggestions or found any bugs**_, please report it [here](https://github.com/chrislee0419/EnhancedSearchAndFilters/issues) or through Discord at `chris#9068`.
 
@@ -8,19 +8,19 @@ _**If you have any suggestions or found any bugs**_, please report it [here](htt
 
 - Search
      - Auto-refreshing search results
-       - Now you don't have to enter the whole title of a song and hope it appears in the search results! You can see what songs match as you're typing in.
+       - Now you don't have to enter the whole title of a song and hope it appears in the search results! You can see what songs match as you're typing it in.
      - Search by song title, author, and map maker
-       - Never search for artists or map makers? Further refine search results by disabling search for those fields.
+       - Never search for artists or map makers? Further refine your search results when you disable searching in those fields.
      - Symbols
-       - Apostrophes, quotations, commas, brackets, etc. can be removed before searching.
+       - Apostrophes, quotation marks, commas, brackets, etc. can be removed before searching.
        - Or alternatively, symbols can be typed in yourself when trying to find a song with lots of symbols in the title!
      - Word suggestions
        - While typing, the mod shows you a list of possible words you're trying to type.
 - Filter
      - Limit song length, difficulties, and NJS on the song list.
-     - Find songs you have voted on (needs BeatSaverDownloader).
+     - Find songs you have voted on (requires the BeatSaverDownloader mod).
      - One Saber, Lightshow, and Mapping Extensions-required songs can be easily found!
-     - Find ranked songs (needs SongDataCore).
+     - Find ranked songs (requires the SongDataCore mod).
 - Mod compatibility
      - Compatible with BeatSaverDownloader, SongBrowser, and SongDataCore.
 
