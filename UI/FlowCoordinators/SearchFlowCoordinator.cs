@@ -83,6 +83,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                     if (!_songDetailsViewController.isInViewControllerHierarchy)
                         PushViewControllerToNavigationController(_searchResultsNavigationController, _songDetailsViewController, null, PluginConfig.CompactSearchMode);
                     _songDetailsViewController.SetContent(level);
+                    _searchResultsNavigationController.CrossfadeAudioToLevelAsync(level);
                 };
                 _songDetailsViewController.SelectButtonPressed += delegate (IPreviewBeatmapLevel level)
                 {
@@ -175,6 +176,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 
             PopAllViewControllersFromNavigationController();
             _searchResultsNavigationController.ShowLoadingSpinner();
+            _searchResultsNavigationController.CrossfadeAudioToDefault();
 
             // clear list, just in case the user forced the results to show
             if (PluginConfig.CompactSearchMode)
@@ -193,6 +195,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                 _searchQuery = _searchQuery.Substring(0, _searchQuery.Length - 1);
 
                 PopAllViewControllersFromNavigationController();
+                _searchResultsNavigationController.CrossfadeAudioToDefault();
 
                 if (_searchQuery.Length > 0)
                 {
@@ -226,6 +229,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             _searchQuery = "";
 
             SearchBehaviour.Instance.StopSearch();
+            _searchResultsNavigationController.CrossfadeAudioToDefault();
 
             if (PluginConfig.CompactSearchMode)
             {
@@ -256,6 +260,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 
             PopAllViewControllersFromNavigationController();
             _searchResultsNavigationController.ShowLoadingSpinner();
+            _searchResultsNavigationController.CrossfadeAudioToDefault();
 
             // clear list, just in case the user forced the results to show
             if (PluginConfig.CompactSearchMode)
@@ -273,6 +278,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             _searchCompactKeyboardViewController.SetSymbolButtonInteractivity(!PluginConfig.StripSymbols);
 
             _searchResultsNavigationController.AdjustElements();
+            _searchResultsNavigationController.CrossfadeAudioToDefault();
             _searchResultsListViewController.UpdateSize();
 
             if (PluginConfig.CompactSearchMode)

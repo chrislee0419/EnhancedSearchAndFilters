@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -20,6 +21,10 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         private Button _forceButton;
         private Button _lastSearchButton;
         private TextMeshProUGUI _lastSearchText;
+
+        private SongPreviewPlayer _songPreviewPlayer;
+        private string _songPreviewPlayerCrossfadingLevelID;
+        private CancellationTokenSource _cancellationTokenSource;
 
         private const string _headerText = "Search Results";
         private const string _placeholderResultsText = "Use the keyboard on the right screen\nto search for a song.\n\n---->";
@@ -63,6 +68,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 _lastSearchText.fontSize = 3.5f;
                 _lastSearchText.color = new Color(1f, 1f, 1f, 0.3f);
                 _lastSearchText.alignment = TextAlignmentOptions.TopRight;
+
+                _songPreviewPlayer = Instantiate(Resources.FindObjectsOfTypeAll<SongPreviewPlayer>().First());
             }
             else
             {
@@ -78,6 +85,13 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _lastSearchButton.gameObject.SetActive(false);
             _lastSearchText.gameObject.SetActive(false);
             SetHeaderActive(!PluginConfig.CompactSearchMode);
+        }
+
+        protected override void DidDeactivate(DeactivationType deactivationType)
+        {
+            base.DidDeactivate(deactivationType);
+
+            CrossfadeAudioToDefault();
         }
 
         public void ShowLoadingSpinner()
@@ -176,6 +190,50 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
             if (show && lastQuery != null)
                 _lastSearchText.SetText($"<line-height=85%><u>Last Search</u>\n</line-height><color=#FFFFCC>\"{lastQuery}\"</color>");
+        }
+
+        /// <summary>
+        /// Play the preview audio of the provided preview beatmap level.
+        /// </summary>
+        /// <param name="level">The level to play the audio from.</param>
+        public async void CrossfadeAudioToLevelAsync(IPreviewBeatmapLevel level)
+        {
+            if (_songPreviewPlayerCrossfadingLevelID != level.levelID)
+            {
+                try
+                {
+                    _songPreviewPlayerCrossfadingLevelID = level.levelID;
+
+                    if (_cancellationTokenSource != null)
+                        _cancellationTokenSource.Cancel();
+                    _cancellationTokenSource = new CancellationTokenSource();
+                    CancellationToken token = _cancellationTokenSource.Token;
+
+                    AudioClip audio = await level.GetPreviewAudioClipAsync(token);
+                    token.ThrowIfCancellationRequested();
+
+                    _songPreviewPlayer.CrossfadeTo(audio, level.previewStartTime, level.previewDuration);
+                }
+                catch (OperationCanceledException)
+                {
+                    if (_songPreviewPlayerCrossfadingLevelID == level.levelID)
+                        _songPreviewPlayerCrossfadingLevelID = null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Stop playing level preview audio.
+        /// </summary>
+        public void CrossfadeAudioToDefault()
+        {
+            if (_cancellationTokenSource != null)
+            {
+                _cancellationTokenSource.Cancel();
+                _cancellationTokenSource = null;
+            }
+            _songPreviewPlayer.CrossfadeToDefault();
+            _songPreviewPlayerCrossfadingLevelID = null;
         }
     }
 }
