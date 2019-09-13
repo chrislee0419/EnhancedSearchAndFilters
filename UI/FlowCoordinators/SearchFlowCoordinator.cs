@@ -166,7 +166,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             }
 
             if (!string.IsNullOrEmpty(_lastSearchQuery))
-                _searchResultsNavigationController.ShowLastSearchButton();
+                _searchResultsNavigationController.ShowLastSearchButton(true, _lastSearchQuery);
         }
 
         private void KeyboardTextKeyPressed(char key)
@@ -220,6 +220,9 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 
         private void KeyboardClearButtonPressed()
         {
+            if (!string.IsNullOrEmpty(_searchQuery))
+                _lastSearchQuery = _searchQuery;
+
             _searchQuery = "";
 
             SearchBehaviour.Instance.StopSearch();
@@ -241,6 +244,10 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                 _searchResultsListViewController.UpdateSongs(new IPreviewBeatmapLevel[0]);
                 _searchResultsNavigationController.ShowPlaceholderText();
             }
+
+            // allow the user to redo the cleared search
+            if (!string.IsNullOrEmpty(_lastSearchQuery))
+                _searchResultsNavigationController.ShowLastSearchButton(true, _lastSearchQuery);
         }
 
         private void KeyboardPredictionPressed(string query)

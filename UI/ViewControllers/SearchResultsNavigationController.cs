@@ -19,6 +19,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         private TextMeshProUGUI _resultsText;
         private Button _forceButton;
         private Button _lastSearchButton;
+        private TextMeshProUGUI _lastSearchText;
 
         private const string _headerText = "Search Results";
         private const string _placeholderResultsText = "Use the keyboard on the right screen\nto search for a song.\n\n---->";
@@ -48,7 +49,20 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 _resultsText.alignment = TextAlignmentOptions.Center;
                 _resultsText.enableWordWrapping = true;
                 _forceButton = BeatSaberUI.CreateUIButton(this.rectTransform, "CancelButton", new Vector2(59f, -32f), new Vector2(36f, 10f), () => ForceShowButtonPressed?.Invoke(), "Force Show Results");
-                _lastSearchButton = BeatSaberUI.CreateUIButton(this.rectTransform, "CancelButton", new Vector2(59f, -32f), new Vector2(36f, 10f), () => LastSearchButtonPressed?.Invoke(), "Redo Last Search");
+
+                _lastSearchButton = BeatSaberUI.CreateUIButton(this.rectTransform, "CancelButton", new Vector2(59f, -32f), new Vector2(36f, 10f), () => LastSearchButtonPressed?.Invoke(), "<color=#FFFFCC>Redo Last Search</color>");
+                (_lastSearchButton as HMUI.NoTransitionsButton).selectionStateDidChangeEvent += delegate (HMUI.NoTransitionsButton.SelectionState selectionState)
+                {
+                    var text = _lastSearchButton.GetComponentInChildren<TextMeshProUGUI>();
+                    if (selectionState == HMUI.NoTransitionsButton.SelectionState.Highlighted)
+                        text.text = "<color=#444400>Redo Last Search</color>";
+                    else
+                        text.text = "<color=#FFFFCC>Redo Last Search</color>";
+                };
+                _lastSearchText = BeatSaberUI.CreateText(this.rectTransform, "", new Vector2(23f, -31.5f), new Vector2(30f, 8f));
+                _lastSearchText.fontSize = 3.5f;
+                _lastSearchText.color = new Color(1f, 1f, 1f, 0.3f);
+                _lastSearchText.alignment = TextAlignmentOptions.TopRight;
             }
             else
             {
@@ -62,6 +76,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _resultsText.gameObject.SetActive(!PluginConfig.CompactSearchMode);
             _forceButton.gameObject.SetActive(false);
             _lastSearchButton.gameObject.SetActive(false);
+            _lastSearchText.gameObject.SetActive(false);
             SetHeaderActive(!PluginConfig.CompactSearchMode);
         }
 
@@ -70,6 +85,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _resultsText.gameObject.SetActive(false);
             _forceButton.gameObject.SetActive(false);
             _lastSearchButton.gameObject.SetActive(false);
+            _lastSearchText.gameObject.SetActive(false);
 
             SetHeaderActive(!PluginConfig.CompactSearchMode);
             _loadingSpinner.SetActive(true);
@@ -80,6 +96,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _loadingSpinner.SetActive(false);
             _forceButton.gameObject.SetActive(false);
             _lastSearchButton.gameObject.SetActive(false);
+            _lastSearchText.gameObject.SetActive(false);
 
             _resultsText.text = _placeholderResultsText;
             _resultsText.gameObject.SetActive(true);
@@ -109,6 +126,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _resultsText.gameObject.SetActive(false);
             _forceButton.gameObject.SetActive(false);
             _lastSearchButton.gameObject.SetActive(false);
+            _lastSearchText.gameObject.SetActive(false);
         }
 
         private void SetHeaderActive(bool active)
@@ -149,9 +167,15 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         /// <summary>
         /// Should only be used when there was a non-empty search before.
         /// </summary>
-        public void ShowLastSearchButton(bool show = true)
+        /// <param name="show">A boolean representing whether to show the last search button and text.</param>
+        /// <param name="lastQuery">The last search query to display.</param>
+        public void ShowLastSearchButton(bool show, string lastQuery = null)
         {
             _lastSearchButton.gameObject.SetActive(show);
+            _lastSearchText.gameObject.SetActive(show);
+
+            if (show && lastQuery != null)
+                _lastSearchText.SetText($"<line-height=85%><u>Last Search</u>\n</line-height><color=#FFFFCC>\"{lastQuery}\"</color>");
         }
     }
 }
