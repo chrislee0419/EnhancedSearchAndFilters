@@ -331,7 +331,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 if (detailsList[i] == null)
                     continue;
 
-                pairs.Add(detailsList[i], levels[i]);
+                if (!pairs.ContainsKey(detailsList[i]))
+                    pairs.Add(detailsList[i], levels[i]);
             }
 
             var filteredLevels = pairs.Keys.ToList();
