@@ -412,7 +412,7 @@ namespace EnhancedSearchAndFilters.UI
 
         private void SelectSongFromSearchResult(IPreviewBeatmapLevel level)
         {
-            Logger.log.Debug($"Level selected from search: {level.songName} - {level.songSubName}");
+            Logger.log.Debug($"Level selected from search: {level.songName} {level.songSubName} - {level.songAuthorName}");
             DismissSearchFlowCoordinator();
 
             IPreviewBeatmapLevel[] levels = LevelsViewController.GetPrivateField<IBeatmapLevelPack>("_levelPack").beatmapLevelCollection.beatmapLevels;
