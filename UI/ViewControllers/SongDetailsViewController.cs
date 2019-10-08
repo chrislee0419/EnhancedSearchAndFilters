@@ -332,6 +332,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             selectButton.name = "SearchSelectSongButton";
             selectButton.SetButtonText("SELECT SONG");
             selectButton.interactable = true;
+            selectButton.GetComponentInChildren<Image>().color = new Color(0f, 0.706f, 1f, 0.784f);
             (selectButton.transform as RectTransform).sizeDelta += new Vector2(10f, 0);
             selectButton.ToggleWordWrapping(false);
             selectButton.onClick.RemoveAllListeners();
