@@ -321,6 +321,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 img.rectTransform.sizeDelta = new Vector2(2.5f, 2.5f);
                 img.sprite = _crossSprite;
                 img.color = _crossColor;
+                img.material = Utilities.NoGlowMaterial;
 
                 _difficultyElements.Add(_difficultyStrings[i], new Tuple<TextMeshProUGUI, Image>(text, img));
             }
