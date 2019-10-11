@@ -91,7 +91,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             foreach (var tuple in _difficultyElements.Values)
             {
                 tuple.Item2.sprite = _blankSprite;
-                tuple.Item2.color = Color.black;
+                tuple.Item2.color = new Color(0f, 0f, 0f, 0f);
             }
 
             if (level is CustomPreviewBeatmapLevel)
