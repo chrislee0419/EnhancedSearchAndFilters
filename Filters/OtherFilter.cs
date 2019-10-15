@@ -94,7 +94,7 @@ namespace EnhancedSearchAndFilters.Filters
             Controls[0] = new FilterControl(text.gameObject, new Vector2(0f, 0.95f), new Vector2(0f, 0.95f), new Vector2(0f, 1f), new Vector2(50f, 6f), Vector2.zero);
 
             // one saber view controller
-            _oneSaberViewController = Utilities.CreateBoolViewController("Has One Saber Mode", "Filters out songs that don't have at least one saber map");
+            _oneSaberViewController = Utilities.CreateBoolViewController("Has One Saber Mode", "Filters out songs that don't have a one saber map");
             _oneSaberViewController.GetValue += () => _oneSaberStagingValue;
             _oneSaberViewController.SetValue += delegate (bool value)
             {
