@@ -147,7 +147,24 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 else if (dbs.beatmapCharacteristic.serializedName == "NoArrows")
                     _detailsText.text += ": Has 'No Arrows' mode\n";
 
-                SetDifficultyIcons(dbs.difficultyBeatmaps, ref hasLightshow);
+                // set difficulty icons and lightshow text (if not already present)
+                foreach (var db in dbs.difficultyBeatmaps)
+                {
+                    string difficultyName = db.difficulty.Name() == "ExpertPlus" ? "Expert+" : db.difficulty.Name();
+
+                    if (!_difficultyElements.TryGetValue(difficultyName, out var tuple))
+                        continue;
+
+                    Image img = tuple.Item2;
+                    img.sprite = _checkmarkSprite;
+                    img.color = _checkmarkColor;
+
+                    if (!hasLightshow && db.beatmapData.notesCount == 0)
+                    {
+                        _detailsText.text += ": Has a Lightshow\n";
+                        hasLightshow = true;
+                    }
+                }
             }
 
             if (Tweaks.SongDataCoreTweaks.IsRanked(beatmapLevel.levelID, out var ppList))
@@ -161,27 +178,6 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             // on the off chance that the details text will contain one of everything, we'll need to reduce the size of the text so it doesn't overlap with the buttons
             if (_detailsText.text.Count(x => x == '\n') > 3)
                 _detailsText.text = "<size=85%>" + _detailsText.text + "</size>";
-        }
-
-        private void SetDifficultyIcons(IDifficultyBeatmap[] difficulties, ref bool hasLightshow)
-        {
-            foreach (var db in difficulties)
-            {
-                string difficultyName = db.difficulty.Name() == "ExpertPlus" ? "Expert+" : db.difficulty.Name();
-
-                if (!_difficultyElements.TryGetValue(difficultyName, out var tuple))
-                    continue;
-
-                Image img = tuple.Item2;
-                img.sprite = _checkmarkSprite;
-                img.color = _checkmarkColor;
-
-                if (!hasLightshow && db.beatmapData.notesCount == 0)
-                {
-                    _detailsText.text += ": Has a Lightshow\n";
-                    hasLightshow = true;
-                }
-            }
         }
 
         private void RemoveCustomUIElements(Transform parent)
