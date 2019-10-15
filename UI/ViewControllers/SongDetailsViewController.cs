@@ -175,8 +175,15 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                     _detailsText.text += $": Is Ranked ({ppList.Min().ToString("0")}pp to {ppList.Max().ToString("0")}pp)\n";
             }
 
+            // if we can't find the PlayerData object for whatever reason, assume the level has been played before
+            if (!(PlayerDataHelper.Instance?.HasCompletedLevel(beatmapLevel.levelID) ?? true))
+                _detailsText.text += ": Has not been completed\n";
+
             // on the off chance that the details text will contain one of everything, we'll need to reduce the size of the text so it doesn't overlap with the buttons
-            if (_detailsText.text.Count(x => x == '\n') > 3)
+            int lineCount = _detailsText.text.Count(x => x == '\n');
+            if (lineCount > 4)
+                _detailsText.text = "<size=68%>" + _detailsText.text + "</size>";
+            else if (lineCount > 3)
                 _detailsText.text = "<size=85%>" + _detailsText.text + "</size>";
         }
 

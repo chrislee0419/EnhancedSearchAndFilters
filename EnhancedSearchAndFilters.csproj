@@ -122,6 +122,7 @@
     <Compile Include="Logger.cs" />
     <Compile Include="PluginConfig.cs" />
     <Compile Include="Search\SearchBehaviour.cs" />
+    <Compile Include="SongData\PlayerDataHelper.cs" />
     <Compile Include="Tweaks\SongBrowserTweaks.cs" />
     <Compile Include="Tweaks\SongDataCoreTweaks.cs" />
     <Compile Include="UI\Components\PredictionBar.cs" />
