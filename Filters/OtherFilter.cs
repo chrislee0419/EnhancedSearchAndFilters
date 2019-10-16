@@ -24,12 +24,16 @@ namespace EnhancedSearchAndFilters.Filters
                 {
                     if (_oneSaberAppliedValue != _oneSaberStagingValue ||
                         _lightshowAppliedValue != _lightshowStagingValue ||
-                        _mappingExtensionsAppliedValue != _mappingExtensionsStagingValue)
+                        _mappingExtensionsAppliedValue != _mappingExtensionsStagingValue ||
+                        _hasCompletedAppliedValue != _hasCompletedStagingValue)
                         return FilterStatus.AppliedAndChanged;
                     else
                         return FilterStatus.Applied;
                 }
-                else if (_oneSaberStagingValue || _lightshowStagingValue || _mappingExtensionsStagingValue != SongRequirement.Off)
+                else if (_oneSaberStagingValue ||
+                         _lightshowStagingValue ||
+                         _mappingExtensionsStagingValue != SongRequirementFilterOption.Off ||
+                         _hasCompletedStagingValue != SongCompletedFilterOption.Off)
                 {
                     return FilterStatus.NotAppliedAndChanged;
                 }
@@ -43,7 +47,9 @@ namespace EnhancedSearchAndFilters.Filters
         {
             get
             {
-                return _oneSaberAppliedValue || _lightshowAppliedValue || _mappingExtensionsAppliedValue != SongRequirement.Off;
+                return _oneSaberAppliedValue || _lightshowAppliedValue ||
+                       _mappingExtensionsAppliedValue != SongRequirementFilterOption.Off ||
+                       _hasCompletedAppliedValue != SongCompletedFilterOption.Off;
             }
             set
             {
@@ -52,29 +58,34 @@ namespace EnhancedSearchAndFilters.Filters
                     _oneSaberAppliedValue = _oneSaberStagingValue;
                     _lightshowAppliedValue = _lightshowStagingValue;
                     _mappingExtensionsAppliedValue = _mappingExtensionsStagingValue;
+                    _hasCompletedAppliedValue = _hasCompletedStagingValue;
                 }
                 else
                 {
                     _oneSaberAppliedValue = false;
                     _lightshowAppliedValue = false;
-                    _mappingExtensionsAppliedValue = SongRequirement.Off;
+                    _mappingExtensionsAppliedValue = SongRequirementFilterOption.Off;
+                    _hasCompletedAppliedValue = SongCompletedFilterOption.Off;
                 }
             }
         }
-        public FilterControl[] Controls { get; private set; } = new FilterControl[4];
+        public FilterControl[] Controls { get; private set; } = new FilterControl[5];
 
         public event Action SettingChanged;
 
         private BoolViewController _oneSaberViewController;
         private BoolViewController _lightshowViewController;
         private ListViewController _mappingExtensionsViewController;
+        private ListViewController _hasCompletedViewController;
 
         private bool _oneSaberStagingValue = false;
         private bool _lightshowStagingValue = false;
-        private SongRequirement _mappingExtensionsStagingValue = SongRequirement.Off;
+        private SongRequirementFilterOption _mappingExtensionsStagingValue = SongRequirementFilterOption.Off;
+        private SongCompletedFilterOption _hasCompletedStagingValue = SongCompletedFilterOption.Off;
         private bool _oneSaberAppliedValue = false;
         private bool _lightshowAppliedValue = false;
-        private SongRequirement _mappingExtensionsAppliedValue = SongRequirement.Off;
+        private SongRequirementFilterOption _mappingExtensionsAppliedValue = SongRequirementFilterOption.Off;
+        private SongCompletedFilterOption _hasCompletedAppliedValue = SongCompletedFilterOption.Off;
 
         private bool _isInitialized = false;
 
@@ -130,9 +141,9 @@ namespace EnhancedSearchAndFilters.Filters
             _mappingExtensionsViewController = Utilities.CreateListViewController("Requires Mapping Extensions", values, "Filters out songs that don't require the 'Mapping Extensions' mod");
             _mappingExtensionsViewController.GetTextForValue += delegate (float value)
             {
-                if (value == (float)SongRequirement.Required)
+                if (value == (float)SongRequirementFilterOption.Required)
                     return "<size=90%>Required</size>";
-                else if (value == (float)SongRequirement.NotRequired)
+                else if (value == (float)SongRequirementFilterOption.NotRequired)
                     return "<size=70%>Not Required</size>";
                 else
                     return "OFF";
@@ -140,15 +151,40 @@ namespace EnhancedSearchAndFilters.Filters
             _mappingExtensionsViewController.GetValue += () => (float)_mappingExtensionsStagingValue;
             _mappingExtensionsViewController.SetValue += delegate (float value)
             {
-                _mappingExtensionsStagingValue = (SongRequirement)value;
+                _mappingExtensionsStagingValue = (SongRequirementFilterOption)value;
                 SettingChanged?.Invoke();
             };
             _mappingExtensionsViewController.Init();
             _mappingExtensionsViewController.applyImmediately = true;
 
+            Utilities.CreateHorizontalDivider(_mappingExtensionsViewController.transform);
             Utilities.MoveIncDecViewControllerElements(_mappingExtensionsViewController);
 
             Controls[3] = new FilterControl(_mappingExtensionsViewController.gameObject, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 12f), new Vector2(0f, -32f));
+
+            // has completed view controller
+            _hasCompletedViewController = Utilities.CreateListViewController("Songs Completed At Least Once", values, "Filters out songs that you have completed at least once/not completed");
+            _hasCompletedViewController.GetTextForValue += delegate (float value)
+            {
+                if (value == (float)SongCompletedFilterOption.HasCompleted)
+                    return "<size=62%>Has Been Completed</size>";
+                else if (value == (float)SongCompletedFilterOption.HasNeverCompleted)
+                    return "<size=62%>Has Never Been Completed</size>";
+                else
+                    return "OFF";
+            };
+            _hasCompletedViewController.GetValue += () => (float)_hasCompletedStagingValue;
+            _hasCompletedViewController.SetValue += delegate (float value)
+            {
+                _hasCompletedStagingValue = (SongCompletedFilterOption)value;
+                SettingChanged?.Invoke();
+            };
+            _hasCompletedViewController.Init();
+            _hasCompletedViewController.applyImmediately = true;
+
+            Utilities.MoveIncDecViewControllerElements(_hasCompletedViewController);
+
+            Controls[4] = new FilterControl(_hasCompletedViewController.gameObject, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 12f), new Vector2(0f, -44f));
 
             _isInitialized = true;
         }
@@ -158,14 +194,17 @@ namespace EnhancedSearchAndFilters.Filters
             _oneSaberViewController.applyImmediately = false;
             _lightshowViewController.applyImmediately = false;
             _mappingExtensionsViewController.applyImmediately = false;
+            _hasCompletedViewController.applyImmediately = false;
 
             _oneSaberViewController.Init();
             _lightshowViewController.Init();
             _mappingExtensionsViewController.Init();
+            _hasCompletedViewController.Init();
 
             _oneSaberViewController.applyImmediately = true;
             _lightshowViewController.applyImmediately = true;
             _mappingExtensionsViewController.applyImmediately = true;
+            _hasCompletedViewController.applyImmediately = true;
         }
 
         public void SetDefaultValues()
@@ -175,7 +214,8 @@ namespace EnhancedSearchAndFilters.Filters
 
             _oneSaberStagingValue = false;
             _lightshowStagingValue = false;
-            _mappingExtensionsStagingValue = SongRequirement.Off;
+            _mappingExtensionsStagingValue = SongRequirementFilterOption.Off;
+            _hasCompletedStagingValue = SongCompletedFilterOption.Off;
 
             RefreshUI();
         }
@@ -188,21 +228,23 @@ namespace EnhancedSearchAndFilters.Filters
             _oneSaberStagingValue = _oneSaberAppliedValue;
             _lightshowStagingValue = _lightshowAppliedValue;
             _mappingExtensionsStagingValue = _mappingExtensionsAppliedValue;
+            _hasCompletedStagingValue = _hasCompletedAppliedValue;
 
             RefreshUI();
         }
 
         public void FilterSongList(ref List<BeatmapDetails> detailsList)
         {
-            if (!_isInitialized || (!_oneSaberAppliedValue && !_lightshowAppliedValue && _mappingExtensionsAppliedValue == SongRequirement.Off))
+            if (!_isInitialized || !ApplyFilter)
                 return;
+
+            List<CustomPreviewBeatmapLevel> customLevels = null;
+            if (_mappingExtensionsAppliedValue != SongRequirementFilterOption.Off)
+                customLevels = Loader.CustomLevels.Values.ToList();
 
             for (int i = 0; i < detailsList.Count;)
             {
                 BeatmapDetails beatmap = detailsList[i];
-                List<CustomPreviewBeatmapLevel> customLevels = null;
-                if (_mappingExtensionsAppliedValue != SongRequirement.Off)
-                    customLevels = Loader.CustomLevels.Values.ToList();
 
                 if (_lightshowAppliedValue &&
                     !beatmap.DifficultyBeatmapSets.Any(diffSet => diffSet.DifficultyBeatmaps.Any(diff => diff.NotesCount == 0)))
@@ -213,7 +255,7 @@ namespace EnhancedSearchAndFilters.Filters
                 {
                     detailsList.RemoveAt(i);
                 }
-                else if (_mappingExtensionsAppliedValue != SongRequirement.Off && !beatmap.IsOST)
+                else if (_mappingExtensionsAppliedValue != SongRequirementFilterOption.Off && !beatmap.IsOST)
                 {
                     // remove songs that somehow aren't OST, but also aren't custom levels handled by SongCore
                     CustomPreviewBeatmapLevel customLevel = customLevels.FirstOrDefault(x => x.levelID == beatmap.LevelID);
@@ -231,8 +273,8 @@ namespace EnhancedSearchAndFilters.Filters
                     }
 
                     bool required = songData._difficulties?.Any(x => x.additionalDifficultyData?._requirements?.Any(y => y == "Mapping Extensions") == true) == true;
-                    if ((_mappingExtensionsAppliedValue == SongRequirement.Required && !required) ||
-                        (_mappingExtensionsAppliedValue == SongRequirement.NotRequired && required))
+                    if ((_mappingExtensionsAppliedValue == SongRequirementFilterOption.Required && !required) ||
+                        (_mappingExtensionsAppliedValue == SongRequirementFilterOption.NotRequired && required))
                     {
                         detailsList.RemoveAt(i);
                         continue;
@@ -246,13 +288,34 @@ namespace EnhancedSearchAndFilters.Filters
                     ++i;
                 }
             }
+
+            // filter by whether a level has been completed is done separately, with parallelization, since it is a very slow operation
+            if (_hasCompletedAppliedValue != SongCompletedFilterOption.Off)
+            {
+                var levelsToRemove = detailsList.AsParallel().AsOrdered().Where(delegate (BeatmapDetails details)
+                {
+                    // if PlayerData object cannot be found, assume level has not been completed
+                    bool hasBeenCompleted = PlayerDataHelper.Instance?.HasCompletedLevel(details.LevelID) ?? false;
+                    return hasBeenCompleted != (_hasCompletedAppliedValue == SongCompletedFilterOption.HasCompleted);
+                }).ToArray();
+
+                foreach (var level in levelsToRemove)
+                    detailsList.Remove(level);
+            }
         }
     }
 
-    internal enum SongRequirement
+    internal enum SongRequirementFilterOption
     {
         Off = 0,
         Required = 1,
         NotRequired = 2
+    }
+
+    internal enum SongCompletedFilterOption
+    {
+        Off = 0,
+        HasCompleted = 1,
+        HasNeverCompleted = 2
     }
 }
