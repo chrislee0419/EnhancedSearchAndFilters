@@ -177,7 +177,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
             // if we can't find the PlayerData object for whatever reason, assume the level has been played before
             if (!(PlayerDataHelper.Instance?.HasCompletedLevel(beatmapLevel.levelID) ?? true))
-                _detailsText.text += ": Has not been completed\n";
+                _detailsText.text += ": Has never been completed\n";
 
             // on the off chance that the details text will contain one of everything, we'll need to reduce the size of the text so it doesn't overlap with the buttons
             int lineCount = _detailsText.text.Count(x => x == '\n');
