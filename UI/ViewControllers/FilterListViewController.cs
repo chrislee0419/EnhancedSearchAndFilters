@@ -89,7 +89,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
         public override float CellSize()
         {
-            return 8f;
+            return 7f;
         }
 
         public override TableCell CellForIdx(TableView tablewView, int idx)
@@ -108,7 +108,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 Destroy(tableCell.GetPrivateField<TextMeshProUGUI>("_authorText").gameObject);
 
                 cellText = tableCell.GetPrivateField<TextMeshProUGUI>("_songNameText");
-                cellText.fontSize = 5f;
+                cellText.fontSize = 4.5f;
                 cellText.alignment = TextAlignmentOptions.Left;
                 cellText.rectTransform.anchorMin = new Vector2(0.15f, 0f);
                 cellText.rectTransform.anchorMax = Vector2.one;

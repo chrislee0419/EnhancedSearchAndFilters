@@ -77,8 +77,8 @@ namespace EnhancedSearchAndFilters.Filters
 
         public event Action SettingChanged;
 
-        ListViewController _minViewController;
-        ListViewController _maxViewController;
+        private ListViewController _minViewController;
+        private ListViewController _maxViewController;
         private Toggle[] _difficultyToggles = new Toggle[5];
 
         private bool _isInitialized = false;
@@ -107,7 +107,7 @@ namespace EnhancedSearchAndFilters.Filters
                 return;
 
             // difficulties
-            var difficultiesContainer = new GameObject("DifficultiesContainer");
+            var difficultiesContainer = new GameObject("NJSFilterDifficultiesContainer");
             Controls[0] = new FilterControl(difficultiesContainer, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 26f), Vector2.zero,
                 delegate ()
                 {

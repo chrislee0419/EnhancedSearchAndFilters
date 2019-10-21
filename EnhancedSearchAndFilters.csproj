@@ -104,6 +104,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Filters\FilterControl.cs" />
+    <Compile Include="Filters\PlayerStatsFilter.cs" />
     <Compile Include="Search\Trie.cs" />
     <Compile Include="Search\WordCountStorage.cs" />
     <Compile Include="Search\WordPredictionEngine.cs" />

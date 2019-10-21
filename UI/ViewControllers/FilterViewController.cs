@@ -151,6 +151,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 _listViewController.FilterList.Add(new PPFilter());
                 _listViewController.FilterList.Add(new StarDifficultyFilter());
                 _listViewController.FilterList.Add(new VotedFilter());
+                _listViewController.FilterList.Add(new PlayerStatsFilter());
                 _listViewController.FilterList.Add(new OtherFilter());
 
                 foreach (var filter in _listViewController.FilterList)
