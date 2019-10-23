@@ -30,6 +30,9 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             {
                 _tableCellInstance = Resources.FindObjectsOfTypeAll<LevelListTableCell>().First(x => (x.name == "LevelListTableCell"));
 
+                // fix for autoscrolling when a gamepad is attached
+                this.GetComponentInChildren<ScrollRect>().vertical = false;
+
                 this.DidSelectRowEvent += RowSelected;
             }
 

@@ -34,9 +34,9 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             if (firstActivation)
             {
                 _songListTableCellInstance = Resources.FindObjectsOfTypeAll<LevelListTableCell>().First(x => (x.name == "LevelListTableCell"));
+                base.includePageButtons = false;
             }
 
-            base.includePageButtons = false;
             base.DidActivate(firstActivation, type);
 
             if (firstActivation)
@@ -66,6 +66,9 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 //rt.pivot = new Vector2(0.5f, 0f);
                 //rt.sizeDelta = new Vector2(40f, 6f);
                 //rt.anchoredPosition = Vector2.zero;
+
+                // fix for autoscrolling when a gamepad is attached
+                this.GetComponentInChildren<ScrollRect>().vertical = false;
 
                 this.DidSelectRowEvent += RowSelected;
             }
