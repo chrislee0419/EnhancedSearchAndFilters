@@ -71,7 +71,11 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         {
             _beatmapLevels = beatmapLevels;
             if (this.isActivated)
+            {
                 _customListTableView.ReloadData();
+                if (beatmapLevels.Length != 0)
+                    _customListTableView.ScrollToCellWithIdx(0, TableViewScroller.ScrollPositionType.Beginning, false);
+            }
         }
 
         private void RowSelected(TableView unused, int row)
