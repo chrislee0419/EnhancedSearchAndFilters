@@ -293,6 +293,8 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                     PushViewControllerToNavigationController(_searchResultsNavigationController, _searchCompactKeyboardViewController);
                 _searchResultsNavigationController.HideUIElements();
                 _searchCompactKeyboardViewController.SetText(_searchQuery);
+
+                ProvideInitialViewControllers(_searchResultsNavigationController, _searchOptionsViewController, null);
             }
             else
             {
@@ -307,6 +309,8 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                     _searchResultsNavigationController.ShowPlaceholderText();
                 }
                 _searchKeyboardViewController.SetText(_searchQuery);
+
+                ProvideInitialViewControllers(_searchResultsNavigationController, _searchOptionsViewController, _searchKeyboardViewController);
             }
 
             if (_searchQuery.Length > 0)
