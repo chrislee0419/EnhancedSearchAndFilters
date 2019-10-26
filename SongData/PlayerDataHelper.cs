@@ -102,25 +102,25 @@ namespace EnhancedSearchAndFilters.SongData
                     x.levelID.StartsWith(levelID) &&
                     x.beatmapCharacteristic.serializedName == characteristicName &&
                     difficulties.Contains(x.difficulty) &&
-                    x.validScore && x.fullCombo);
+                    x.validScore && x.fullCombo && x.maxCombo != 0);
             }
             else if (!string.IsNullOrEmpty(characteristicName))
             {
                 return _playerData.levelsStatsData.Any(x =>
                     x.levelID.StartsWith(levelID) &&
                     x.beatmapCharacteristic.serializedName == characteristicName &&
-                    x.validScore && x.fullCombo);
+                    x.validScore && x.fullCombo && x.maxCombo != 0);
             }
             else if (difficulties != null)
             {
                 return _playerData.levelsStatsData.Any(x =>
                     x.levelID.StartsWith(levelID) &&
                     difficulties.Contains(x.difficulty) &&
-                    x.validScore && x.fullCombo);
+                    x.validScore && x.fullCombo && x.maxCombo != 0);
             }
             else
             {
-                return _playerData.levelsStatsData.Any(x => x.levelID.StartsWith(levelID) && x.validScore && x.fullCombo);
+                return _playerData.levelsStatsData.Any(x => x.levelID.StartsWith(levelID) && x.validScore && x.fullCombo && x.maxCombo != 0);
             }
         }
     }

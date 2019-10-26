@@ -120,7 +120,7 @@ namespace EnhancedSearchAndFilters.Filters
             Controls[0] = new FilterControl(_hasCompletedViewController.gameObject, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 12f), Vector2.zero);
 
             // has full combo filter
-            _hasFullComboViewController = Utilities.CreateListViewController("Songs With Full Combo", values, "Filters out songs that you have completed with a full combo/without a full combo");
+            _hasFullComboViewController = Utilities.CreateListViewController("Songs With Full Combo", values, "Filters out songs that you have completed with a full combo/without a full combo (ignores lightmaps)");
             _hasFullComboViewController.GetTextForValue += delegate (float value)
             {
                 if (value == (float)SongFullComboFilterOption.HasNoFullCombo)
