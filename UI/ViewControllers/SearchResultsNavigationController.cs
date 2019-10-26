@@ -69,7 +69,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 _lastSearchText.color = new Color(1f, 1f, 1f, 0.3f);
                 _lastSearchText.alignment = TextAlignmentOptions.TopRight;
 
-                _songPreviewPlayer = Instantiate(Resources.FindObjectsOfTypeAll<SongPreviewPlayer>().First());
+                _songPreviewPlayer = Resources.FindObjectsOfTypeAll<SongPreviewPlayer>().First();
             }
             else
             {
