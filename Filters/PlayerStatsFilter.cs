@@ -71,7 +71,7 @@ namespace EnhancedSearchAndFilters.Filters
                 }
             }
         }
-        public FilterControl[] Controls { get; private set; } = new FilterControl[3];
+        public FilterControl[] Controls { get; private set; } = new FilterControl[4];
 
         public event Action SettingChanged;
 
@@ -92,6 +92,15 @@ namespace EnhancedSearchAndFilters.Filters
         {
             if (_isInitialized)
                 return;
+
+            // title text
+            var text = BeatSaberUI.CreateText(null, "Filter According To Your Play Stats", Vector2.zero, Vector2.zero);
+            text.fontSize = 5.5f;
+            text.rectTransform.anchorMin = new Vector2(0f, 1f);
+            text.rectTransform.anchorMax = new Vector2(0f, 1f);
+            text.rectTransform.pivot = new Vector2(0f, 1f);
+
+            Controls[0] = new FilterControl(text.gameObject, new Vector2(0f, 0.95f), new Vector2(0f, 0.95f), new Vector2(0f, 1f), new Vector2(50f, 6f), Vector2.zero);
 
             // has completed filter
             var values = Enumerable.Range(0, 3).Select(x => (float)x).ToArray();
@@ -117,7 +126,7 @@ namespace EnhancedSearchAndFilters.Filters
             Utilities.MoveIncDecViewControllerElements(_hasCompletedViewController);
             Utilities.CreateHorizontalDivider(_hasCompletedViewController.transform);
 
-            Controls[0] = new FilterControl(_hasCompletedViewController.gameObject, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 12f), Vector2.zero);
+            Controls[1] = new FilterControl(_hasCompletedViewController.gameObject, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 12f), new Vector2(0f, -8f));
 
             // has full combo filter
             _hasFullComboViewController = Utilities.CreateListViewController("Songs With Full Combo", values, "Filters out songs that you have completed with a full combo/without a full combo (ignores lightmaps)");
@@ -141,11 +150,11 @@ namespace EnhancedSearchAndFilters.Filters
 
             Utilities.MoveIncDecViewControllerElements(_hasFullComboViewController);
 
-            Controls[1] = new FilterControl(_hasFullComboViewController.gameObject, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 12f), new Vector2(0f, -12f));
+            Controls[2] = new FilterControl(_hasFullComboViewController.gameObject, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 12f), new Vector2(0f, -20f));
 
             // difficulties
             var difficultiesContainer = new GameObject("PlayerStatsFilterDifficultiesContainer");
-            Controls[2] = new FilterControl(difficultiesContainer, new Vector2(0f, 0.05f), new Vector2(1f, 0.05f), new Vector2(0.5f, 0f), new Vector2(0f, 26f), Vector2.zero,
+            Controls[3] = new FilterControl(difficultiesContainer, new Vector2(0f, 0.05f), new Vector2(1f, 0.05f), new Vector2(0.5f, 0f), new Vector2(0f, 22f), Vector2.zero,
                 delegate ()
                 {
                     for (int i = 0; i < 5; i++)
@@ -163,11 +172,11 @@ namespace EnhancedSearchAndFilters.Filters
             // create the difficulty toggles
             var togglePrefab = Utilities.GetTogglePrefab();
 
-            var text = BeatSaberUI.CreateText(difficultiesContainer.transform as RectTransform, "(Optional) Difficulties To Filter", Vector2.zero, new Vector2(50f, 6f));
+            text = BeatSaberUI.CreateText(difficultiesContainer.transform as RectTransform, "(Optional) Difficulties To Filter", new Vector2(0f, -1f), new Vector2(50f, 6f));
             text.rectTransform.anchorMin = new Vector2(0f, 1f);
             text.rectTransform.anchorMax = new Vector2(0f, 1f);
             text.rectTransform.pivot = new Vector2(0f, 1f);
-            text.fontSize = 5.5f;
+            text.fontSize = 4.5f;
             BeatSaberUI.AddHintText(text.rectTransform, "Check the stats for specific difficulties. Leaving all difficulties unchecked has the same behaviour as checking all difficulties.");
 
             // easy toggle
