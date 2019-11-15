@@ -436,7 +436,7 @@ namespace EnhancedSearchAndFilters.UI
             if (SongBrowserTweaks.Initialized)
                 return;
 
-            BeatmapLevelPack levelPack = new BeatmapLevelPack("", FilteredSongsPackName, LevelsViewController.levelPack.coverImage, new BeatmapLevelCollection(levels));
+            BeatmapLevelPack levelPack = new BeatmapLevelPack("", FilteredSongsPackName, "", LevelsViewController.levelPack.coverImage, new BeatmapLevelCollection(levels));
             LevelsViewController.SetData(levelPack);
 
             FilterButton.SetButtonText(FilterButtonAppliedText);
