@@ -153,6 +153,17 @@ namespace EnhancedSearchAndFilters.SongData
             var customLevels = Loader.CustomLevels.Values.Select(x => GetCustomLevelIDWithoutDirectory(x.levelID));
             cache = cache.Where(c => customLevels.Any(level => level == c.LevelID)).ToList();
 
+            // repeat the above checks for user-added folders
+            foreach (var folder in Loader.SeperateSongFolders)
+            {
+                var levels = folder.Levels.Values.Select(x => GetCustomLevelIDWithoutDirectory(x.levelID));
+
+                if (folder.SongFolderEntry.WIP)
+                    cache = cache.Where(c => !levels.Any(wip => wip == c.LevelID)).ToList();
+                else
+                    cache = cache.Where(c => levels.Any(level => level == c.LevelID)).ToList();
+            }
+
             BeatmapDetailsCache.SaveBeatmapDetailsToCache(CachedBeatmapDetailsFilePath, cache);
         }
 
@@ -288,6 +299,11 @@ namespace EnhancedSearchAndFilters.SongData
 
             // we don't have to cache OST levels, since they can immediately be cast into IBeatmapLevel objects
             List<IPreviewBeatmapLevel> allLevels = Loader.CustomLevelsCollection.beatmapLevels.ToList();
+            foreach (var folder in Loader.SeperateSongFolders)
+            {
+                if (!folder.SongFolderEntry.WIP)
+                    allLevels.AddRange(folder.Levels.Values);
+            }
 
             List<Task> taskList = new List<Task>(WorkChunkSize);
             int index = 0;
