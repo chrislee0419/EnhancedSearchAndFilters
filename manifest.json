@@ -1,11 +1,11 @@
 ﻿{
-  "$schema": "https://raw.githubusercontent.com/nike4613/ModSaber-MetadataFileSchema/master/Schema.json",
+  "$schema": "https://raw.githubusercontent.com/beat-saber-modding-group/BSIPA-MetadataFileSchema/master/Schema.json",
   "author": "hello",
   "description": "Adds automatically refreshing search results and song filtering.",
   "gameVersion": "1.5.0",
   "id": "EnhancedSearchAndFilters",
   "name": "EnhancedSearchAndFilters",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "features": [],
   "dependsOn": {
     "SongCore": "^2.4.1",
