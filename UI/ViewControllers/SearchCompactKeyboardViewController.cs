@@ -22,6 +22,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
         private const string PlaceholderText = "Search...";
         private const float OffsetX = 5f;
+        private const string CursorText = "<color=#00CCCC>|</color>";
 
         protected override void DidActivate(bool firstActivation, ActivationType activationType)
         {
@@ -38,7 +39,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 _predictionBar.PredictionPressed += delegate (string query)
                 {
                     _searchText = query;
-                    _textDisplayComponent.SetText(_searchText.ToUpper());
+                    _textDisplayComponent.text = _searchText.ToUpper() + CursorText;
 
                     _predictionBar.ClearAndSetPredictionButtons(_searchText);
 
@@ -60,7 +61,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 _keyboard.TextKeyPressed += delegate (char key)
                 {
                     _searchText += key.ToString();
-                    _textDisplayComponent.text = _searchText.ToUpper();
+                    _textDisplayComponent.text = _searchText.ToUpper() + CursorText;
 
                     _predictionBar.ClearAndSetPredictionButtons(_searchText);
 
@@ -73,7 +74,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
                     if (_searchText.Length > 0)
                     {
-                        _textDisplayComponent.text = _searchText.ToUpper();
+                        _textDisplayComponent.text = _searchText.ToUpper() + CursorText;
                     }
                     else
                     {
@@ -110,7 +111,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         public void SetText(string text)
         {
             _searchText = text;
-            _textDisplayComponent.text = string.IsNullOrEmpty(text) ? PlaceholderText : text.ToUpper();
+            _textDisplayComponent.text = string.IsNullOrEmpty(text) ? PlaceholderText : (text.ToUpper() + CursorText);
 
             _predictionBar.ClearAndSetPredictionButtons(_searchText);
         }
