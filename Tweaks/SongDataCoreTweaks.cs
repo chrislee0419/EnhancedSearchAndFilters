@@ -137,8 +137,8 @@ namespace EnhancedSearchAndFilters.Tweaks
             }
             catch (Exception e)
             {
-                Logger.log.Warn("Error occurred when attempting to create BeatmapDetails object from information stored in SongDataCore");
-                Logger.log.Warn(e);
+                Logger.log.Warn($"Unable to create BeatmapDetails object for level ID '{levelID}' from information provided by SongDataCore");
+                Logger.log.Debug(e);
 
                 beatmapDetails = null;
                 return false;
