@@ -49,7 +49,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                     .First(x => x.name == "HeaderPanel" && x.parent.name == "PlayerSettingsViewController"), this.rectTransform);
                 headerRectTransform.gameObject.SetActive(true);
                 TextMeshProUGUI titleText = headerRectTransform.GetComponentInChildren<TextMeshProUGUI>();
-                titleText.text = "Options";
+                titleText.SetText("Options");
 
                 _submenu = new SubMenu(this.transform);
 
