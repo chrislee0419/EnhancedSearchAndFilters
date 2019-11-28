@@ -377,25 +377,17 @@ namespace EnhancedSearchAndFilters.UI
 
         private void LevelPackSelected(LevelPacksViewController viewController, IBeatmapLevelPack levelPack)
         {
-            var previousPack = _lastPack;
-
             if (levelPack.packName != FilteredSongsPackName)
                 _lastPack = levelPack;
 
-            if (SongBrowserTweaks.ModLoaded && SongBrowserTweaks.Initialized)
+            if (!SongBrowserTweaks.ModLoaded || !SongBrowserTweaks.Initialized)
             {
-                // on the new version of SongBrowser, selecting the same level pack should have no changes to what is shown
-                // unless it is an OST song pack (which we then clear the filter)
-                IPreviewBeatmapLevel[] levels = levelPack.beatmapLevelCollection.beatmapLevels;
-                if (previousPack != levelPack || (levels.Length > 0 && !(levels[0] is CustomPreviewBeatmapLevel)))
-                {
-                    if (_filterViewController != null)
-                        _filterViewController.UnapplyFilters(false);
-                    SongBrowserTweaks.FiltersUnapplied();
-                }
-            }
-            else
-            {
+                // SongBrowser can now apply filters to OST levels and switch between different level packs
+                // so our old behaviour of cancelling the filters is no longer needed
+                // that being said, without SongBrowser, we are still going to cancel filters upon switching level packs
+                // because i'd rather the player have to go into the FilterViewController,
+                // so that it can check if all the beatmap details have been loaded
+                Logger.log.Debug("Another level pack has been selected, unapplying filters");
                 UnapplyFilters();
             }
         }
