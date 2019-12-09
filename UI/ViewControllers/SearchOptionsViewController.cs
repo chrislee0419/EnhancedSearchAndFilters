@@ -55,17 +55,25 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
                 // have to use the ListViewController because IntViewController doesn't seem to work outside of the settings menu
                 float[] maxResultsShownValues =
-                    Enumerable.Range(PluginConfig.MaxSearchResultsMinValue, PluginConfig.MaxSearchResultsMaxValue + 1)
-                    .Select((x) => (float)x).ToArray();
+                    Enumerable.Range(PluginConfig.MaxSearchResultsMinValue / PluginConfig.MaxSearchResultsValueIncrement, (PluginConfig.MaxSearchResultsUnlimitedValue - PluginConfig.MaxSearchResultsMinValue) / PluginConfig.MaxSearchResultsValueIncrement + 1)
+                    .Select(x => (float)x).ToArray();
                 _maxResultsShownSetting = _submenu.AddList("Maximum # of Results Shown", maxResultsShownValues,
                     "The maximum number of songs found before a search result is shown.\n" +
                     "<color=#11FF11>A lower number is less distracting and only displays results when most irrelevant songs are removed.</color>\n" +
                     "<color=#FFFF11>You can force a search result to be shown using the button on the center screen.</color>");
-                _maxResultsShownSetting.GetTextForValue += x => ((int)x).ToString();
-                _maxResultsShownSetting.GetValue += () => _maxResultsShownStagingValue;
+                _maxResultsShownSetting.GetTextForValue += delegate (float value)
+                {
+                    value *= PluginConfig.MaxSearchResultsValueIncrement;
+
+                    if (value == PluginConfig.MaxSearchResultsUnlimitedValue)
+                        return "Unlimited";
+                    else
+                        return ((int)value).ToString();
+                };
+                _maxResultsShownSetting.GetValue += () => _maxResultsShownStagingValue / PluginConfig.MaxSearchResultsValueIncrement;
                 _maxResultsShownSetting.SetValue += delegate (float value)
                 {
-                    _maxResultsShownStagingValue = (int)value;
+                    _maxResultsShownStagingValue = (int)value * PluginConfig.MaxSearchResultsValueIncrement;
                     _resetButton.interactable = true;
                     _applyButton.interactable = true;
                 };

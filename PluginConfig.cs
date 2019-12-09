@@ -15,7 +15,7 @@ namespace EnhancedSearchAndFilters
             get
             {
                 int value = config.GetInt("EnhancedSearchAndFilters", "MaxSearchResults", MaxSearchResultsDefaultValue, true);
-                return Math.Min(Math.Max(value, MaxSearchResultsMinValue), MaxSearchResultsMaxValue);
+                return Math.Min(Math.Max(value, MaxSearchResultsMinValue), MaxSearchResultsUnlimitedValue);
             }
             set
             {
@@ -25,6 +25,8 @@ namespace EnhancedSearchAndFilters
         public const int MaxSearchResultsDefaultValue = 14;
         public const int MaxSearchResultsMaxValue = 28;
         public const int MaxSearchResultsMinValue = 7;
+        public const int MaxSearchResultsUnlimitedValue = MaxSearchResultsMaxValue + MaxSearchResultsValueIncrement;
+        public const int MaxSearchResultsValueIncrement = 7;
 
         /// <summary>
         /// Determine whether to strip symbols from song details when performing a search

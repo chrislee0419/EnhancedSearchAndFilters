@@ -330,7 +330,8 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 
         private void ShowSearchResult(IPreviewBeatmapLevel[] levels, bool force = false)
         {
-            if (!force && (levels.Length > PluginConfig.MaxSearchResults || levels.Length == 0))
+            force |= PluginConfig.MaxSearchResults == PluginConfig.MaxSearchResultsUnlimitedValue;
+            if ((!force && levels.Length > PluginConfig.MaxSearchResults) || levels.Length == 0)
             {
                 PopAllViewControllersFromNavigationController();
                 _searchResultsNavigationController.ShowResults(_searchQuery, levels, _levelsSearchSpace.Length);
