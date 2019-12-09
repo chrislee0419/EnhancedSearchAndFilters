@@ -146,7 +146,7 @@ namespace EnhancedSearchAndFilters.UI
             SongBrowserTweaks.OnModeSelection();
         }
 
-        IEnumerator GetSongBrowserButtons()
+        private IEnumerator GetSongBrowserButtons()
         {
             Logger.log.Info("SongBrowser mod found. Attempting to modify button behaviour.");
 
@@ -168,7 +168,7 @@ namespace EnhancedSearchAndFilters.UI
             }
         }
 
-        IEnumerator GetBeatSaverDownloaderButtons()
+        private IEnumerator GetBeatSaverDownloaderButtons()
         {
             Logger.log.Info("BeatSaverDownloader mod found. Attempting to replace button behaviour and positions.");
 
@@ -345,7 +345,10 @@ namespace EnhancedSearchAndFilters.UI
             }
 
             if (_lastPack == null || LevelsViewController.levelPack.packName != FilteredSongsPackName)
+            {
                 _lastPack = LevelsViewController.levelPack;
+                Logger.log.Debug($"Storing '{LevelsViewController.levelPack.packName}' level pack as last pack");
+            }
 
             IPreviewBeatmapLevel[] levels = _lastPack.beatmapLevelCollection.beatmapLevels;
 
@@ -378,7 +381,10 @@ namespace EnhancedSearchAndFilters.UI
         private void LevelPackSelected(LevelPacksViewController viewController, IBeatmapLevelPack levelPack)
         {
             if (levelPack.packName != FilteredSongsPackName)
+            {
                 _lastPack = levelPack;
+                Logger.log.Debug($"Storing '{LevelsViewController.levelPack.packName}' level pack as last pack");
+            }
 
             if (!SongBrowserTweaks.ModLoaded || !SongBrowserTweaks.Initialized)
             {
