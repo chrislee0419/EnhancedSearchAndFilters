@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -54,6 +55,7 @@ namespace EnhancedSearchAndFilters.Search
 
         private static int MaxSearchInOneFrame;
         private static readonly Regex RemoveSymbolsRegex = new Regex("[^a-zA-Z0-9 ]");
+        private static readonly char[] SplitCharacters = new char[] { ' ' };
 
         public void StartNewSearch(IPreviewBeatmapLevel[] searchSpace, string searchQuery, Action<IPreviewBeatmapLevel[]> action)
         {
@@ -115,7 +117,7 @@ namespace EnhancedSearchAndFilters.Search
                 searchQuery = searchQuery.ToLower();
 
             if (splitWords)
-                queryWords = searchQuery.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                queryWords = searchQuery.Split(SplitCharacters, StringSplitOptions.RemoveEmptyEntries);
             else
                 queryWords = new string[] { searchQuery };
 
@@ -125,15 +127,66 @@ namespace EnhancedSearchAndFilters.Search
                 for (int count = 0; count < MaxSearchInOneFrame && index < _searchSpace.Count; ++count)
                 {
                     IPreviewBeatmapLevel level = _searchSpace[index];
-                    string fields;
+                    string songName;
 
+                    if (splitWords)
+                    {
+                        // combine contiguous single letter 'word' sequences in the title each into one word
+                        // only done when Split Words option is enabled
+                        StringBuilder songNameSB = new StringBuilder(level.songName.Length);
+                        StringBuilder constructedWordSB = new StringBuilder(level.songName.Length);
+
+                        foreach (string word in level.songName.Split(SplitCharacters, StringSplitOptions.RemoveEmptyEntries))
+                        {
+                            if (word.Length > 1 || !char.IsLetterOrDigit(word[0]))
+                            {
+                                // multi-letter word or special character
+                                if (constructedWordSB.Length > 0)
+                                {
+                                    if (songNameSB.Length > 0)
+                                        songNameSB.Append(' ');
+
+                                    songNameSB.Append(constructedWordSB.ToString());
+                                    constructedWordSB.Clear();
+                                }
+
+                                if (songNameSB.Length > 0)
+                                    songNameSB.Append(' ');
+
+                                songNameSB.Append(word);
+
+                            }
+                            else
+                            {
+                                // single letter 'word'
+                                constructedWordSB.Append(word);
+                            }
+                        }
+
+                        // add last constructed word if it exists
+                        if (constructedWordSB.Length > 0)
+                        {
+                            if (songNameSB.Length > 0)
+                                songNameSB.Append(' ');
+
+                            songNameSB.Append(constructedWordSB.ToString());
+                        }
+
+                        songName = songNameSB.ToString();
+                    }
+                    else
+                    {
+                        songName = level.songName;
+                    }
+
+                    string fields;
                     if (songFields == SearchableSongFields.All)
-                        fields = $"{level.songName} {level.songSubName} {level.levelAuthorName} {level.songAuthorName}".ToLower();
+                        fields = $"{songName} {level.songSubName} {level.levelAuthorName} {level.songAuthorName}".ToLower();
                     else if (songFields == SearchableSongFields.TitleOnly)
-                        fields = $"{level.songName} {level.songSubName}".ToLower();
+                        fields = $"{songName} {level.songSubName}".ToLower();
                     //else if (songFields == SearchableSongFields.TitleAndAuthor)
                     else
-                        fields = $"{level.songName} {level.songSubName} {level.songAuthorName}".ToLower();
+                        fields = $"{songName} {level.songSubName} {level.songAuthorName}".ToLower();
 
                     if (stripSymbols)
                         fields = RemoveSymbolsRegex.Replace(fields, string.Empty);
