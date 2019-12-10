@@ -74,7 +74,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                         _searchCompactKeyboardViewController.SetText(_searchQuery);
                     else
                         _searchKeyboardViewController.SetText(_searchQuery);
-                    SearchBehaviour.Instance.StartNewSearch(_levelsSearchSpace, _searchQuery, SearchCompleted);
+                    SearchBehaviour.Instance.StartNewSearch(_levelsSearchSpace, _searchQuery, levels => ShowSearchResult(levels, true));
                 };
                 _searchResultsListViewController.SongSelected += delegate (IPreviewBeatmapLevel level)
                 {
