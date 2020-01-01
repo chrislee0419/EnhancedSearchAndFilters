@@ -11,7 +11,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
     {
         public override string ResourceName => "EnhancedSearchAndFilters.UI.Views.SearchOptionsView.bsml";
 
-        public event Action SearchOptionsChanged;
+        public event Action SearchOptionsApplied;
 
         [UIValue("max-results-increment-value")]
         public int MaxResultsShownIncrementValue { get => PluginConfig.MaxSearchResultsValueIncrement; }
@@ -29,6 +29,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             get => _maxResultsShownStagingValue;
             set
             {
+                if (_maxResultsShownStagingValue == value)
+                    return;
                 _maxResultsShownStagingValue = value;
                 _resetButton.interactable = true;
                 _applyButton.interactable = true;
@@ -43,6 +45,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             get => _splitQueryStagingValue;
             set
             {
+                if (_splitQueryStagingValue == value)
+                    return;
                 _splitQueryStagingValue = value;
                 _resetButton.interactable = true;
                 _applyButton.interactable = true;
@@ -57,6 +61,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             get => _songFieldsStagingValue;
             set
             {
+                if (_songFieldsStagingValue == value)
+                    return;
                 _songFieldsStagingValue = value;
                 _resetButton.interactable = true;
                 _applyButton.interactable = true;
@@ -71,6 +77,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             get => _stripSymbolsStagingValue;
             set
             {
+                if (_stripSymbolsStagingValue == value)
+                    return;
                 _stripSymbolsStagingValue = value;
                 _resetButton.interactable = true;
                 _applyButton.interactable = true;
@@ -85,6 +93,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             get => _compactModeStagingValue;
             set
             {
+                if (_compactModeStagingValue == value)
+                    return;
                 _compactModeStagingValue = value;
                 _resetButton.interactable = true;
                 _applyButton.interactable = true;
@@ -126,9 +136,10 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         protected override void DidActivate(bool firstActivation, ActivationType activationType)
         {
             base.DidActivate(firstActivation, activationType);
+            this.name = "SearchOptionsViewController";
 
-            // force show current value in config
-            ResetButtonClicked();
+            _resetButton.interactable = false;
+            _applyButton.interactable = false;
         }
 
         [UIAction("max-results-formatter")]
@@ -188,7 +199,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _resetButton.interactable = false;
             _applyButton.interactable = false;
 
-            SearchOptionsChanged?.Invoke();
+            SearchOptionsApplied?.Invoke();
         }
     }
 }

@@ -93,7 +93,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                     _searchResultsListViewController.DeselectSong();
                 };
 
-                _searchOptionsViewController.SearchOptionsChanged += OptionsChanged;
+                _searchOptionsViewController.SearchOptionsApplied += OptionsChanged;
 
                 _searchKeyboardViewController.TextKeyPressed += KeyboardTextKeyPressed;
                 _searchKeyboardViewController.DeleteButtonPressed += KeyboardDeleteButtonPressed;

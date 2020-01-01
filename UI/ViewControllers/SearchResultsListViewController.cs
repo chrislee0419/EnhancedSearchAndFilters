@@ -25,10 +25,11 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         {
             if (firstActivation)
             {
+                name = "SearchResultsListViewController";
                 _tableCellInstance = Resources.FindObjectsOfTypeAll<LevelListTableCell>().First(x => (x.name == "LevelListTableCell"));
 
                 // tableview setup
-                var tableViewGO = new GameObject("EnhancedSearchTableView");
+                var tableViewGO = new GameObject("SearchTableView");
                 tableViewGO.SetActive(false);
                 tableViewGO.transform.SetParent(this.transform);
 
@@ -55,7 +56,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 // page up/down button setup
                 var buttonPrefab = Resources.FindObjectsOfTypeAll<NoTransitionsButton>().Where(x => x.name == "PageUpButton").Last();
                 var buttonGO = Instantiate(buttonPrefab.gameObject, tableViewGO.transform, false);
-                buttonGO.name = "EnhancedSearchPageUpButton";
+                buttonGO.name = "PageUpButton";
                 (buttonGO.transform as RectTransform).anchorMin = new Vector2(0f, 1f);
                 (buttonGO.transform as RectTransform).anchorMax = Vector2.one;
                 (buttonGO.transform as RectTransform).anchoredPosition = new Vector2(0f, -1f);
@@ -64,7 +65,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 _tableView.SetPrivateField("_pageUpButton", buttonGO.GetComponent<NoTransitionsButton>());
 
                 buttonGO = Instantiate(buttonPrefab.gameObject, tableViewGO.transform, false);
-                buttonGO.name = "EnhancedSearchPageDownButton";
+                buttonGO.name = "PageDownButton";
                 (buttonGO.transform as RectTransform).anchorMin = Vector2.zero;
                 (buttonGO.transform as RectTransform).anchorMax = new Vector2(1f, 0f);
                 (buttonGO.transform as RectTransform).anchoredPosition = new Vector2(0f, 1f);
@@ -87,7 +88,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             if (!this.isActivated)
                 return;
 
-            var container = (this.transform.Find("EnhancedSearchTableView") as RectTransform);
+            var container = (this.transform.Find("SearchTableView") as RectTransform);
             if (PluginConfig.CompactSearchMode)
             {
                 this.rectTransform.anchorMin = new Vector2(0.5f, 0f);

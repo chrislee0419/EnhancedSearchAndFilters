@@ -60,6 +60,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             if (firstActivation)
             {
                 BSMLParser.instance.Parse(BSMLUtilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.SearchResultsNavigationView.bsml"), this.gameObject, this);
+                name = "SearchResultsNavigationController";
 
                 _loadingSpinner = Utilities.CreateLoadingSpinner(this.rectTransform);
 
