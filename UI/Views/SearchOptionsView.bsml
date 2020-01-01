@@ -21,17 +21,20 @@
                        max="~max-results-max-value"
                        integer-only="true"
                        value="max-results-value"
+                       get-event="refresh-values"
                        apply-on-change="true"
                        formatter="max-results-formatter" />
     <bool-setting text="Search Each Word Individually"
                   hover-hint="~split-query-hover-hint"
                   preferred-width="105"
                   value="split-query-value"
+                  get-event="refresh-values"
                   apply-on-change="true" />
     <list-setting text="Song Fields to Search"
                   hover-hint="~song-fields-hover-hint"
                   preferred-width="105"
                   value="song-fields-value"
+                  get-event="refresh-values"
                   options="song-fields-options"
                   apply-on-change="true"
                   formatter="song-fields-formatter" />
@@ -39,11 +42,13 @@
                   hover-hint="~strip-symbols-hover-hint"
                   preferred-width="105"
                   value="strip-symbols-value"
+                  get-event="refresh-values"
                   apply-on-change="true" />
     <bool-setting text="Use Compact Mode"
                   hover-hint="~compact-mode-hover-hint"
                   preferred-width="105"
                   value="compact-mode-value"
+                  get-event="refresh-values"
                   apply-on-change="true" />
   </vertical>
   <bg anchor-min-x="0" anchor-min-y="0" anchor-max-x="1" anchor-max-y="0" size-delta-x="-10" size-delta-y="12" anchor-pos-y="6">

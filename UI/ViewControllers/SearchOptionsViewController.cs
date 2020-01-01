@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.UI;
+using BeatSaberMarkupLanguage;
+using BeatSaberMarkupLanguage.Parser;
 using BeatSaberMarkupLanguage.ViewControllers;
 using BeatSaberMarkupLanguage.Attributes;
 
@@ -12,6 +14,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         public override string ResourceName => "EnhancedSearchAndFilters.UI.Views.SearchOptionsView.bsml";
 
         public event Action SearchOptionsApplied;
+
+        private BSMLParserParams _parserParams;
 
         [UIValue("max-results-increment-value")]
         public int MaxResultsShownIncrementValue { get => PluginConfig.MaxSearchResultsValueIncrement; }
@@ -32,9 +36,9 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 if (_maxResultsShownStagingValue == value)
                     return;
                 _maxResultsShownStagingValue = value;
+
                 _resetButton.interactable = true;
                 _applyButton.interactable = true;
-                NotifyPropertyChanged();
             }
         }
 
@@ -48,9 +52,9 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 if (_splitQueryStagingValue == value)
                     return;
                 _splitQueryStagingValue = value;
+
                 _resetButton.interactable = true;
                 _applyButton.interactable = true;
-                NotifyPropertyChanged();
             }
         }
 
@@ -64,9 +68,9 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 if (_songFieldsStagingValue == value)
                     return;
                 _songFieldsStagingValue = value;
+
                 _resetButton.interactable = true;
                 _applyButton.interactable = true;
-                NotifyPropertyChanged();
             }
         }
 
@@ -80,9 +84,9 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 if (_stripSymbolsStagingValue == value)
                     return;
                 _stripSymbolsStagingValue = value;
+
                 _resetButton.interactable = true;
                 _applyButton.interactable = true;
-                NotifyPropertyChanged();
             }
         }
 
@@ -96,9 +100,9 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 if (_compactModeStagingValue == value)
                     return;
                 _compactModeStagingValue = value;
+
                 _resetButton.interactable = true;
                 _applyButton.interactable = true;
-                NotifyPropertyChanged();
             }
         }
 
@@ -135,7 +139,10 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
         protected override void DidActivate(bool firstActivation, ActivationType activationType)
         {
-            base.DidActivate(firstActivation, activationType);
+            if (firstActivation)
+                _parserParams = BSMLParser.instance.Parse(Content, gameObject, this);
+
+            didActivate?.Invoke(firstActivation, activationType);
             this.name = "SearchOptionsViewController";
 
             _resetButton.interactable = false;
@@ -172,6 +179,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
             _resetButton.interactable = true;
             _applyButton.interactable = true;
+
+            _parserParams.EmitEvent("refresh-values");
         }
 
         [UIAction("reset-button-clicked")]
@@ -185,6 +194,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
             _resetButton.interactable = false;
             _applyButton.interactable = false;
+
+            _parserParams.EmitEvent("refresh-values");
         }
 
         [UIAction("apply-button-clicked")]
