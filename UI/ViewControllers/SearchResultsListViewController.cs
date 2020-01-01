@@ -87,7 +87,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             if (!this.isActivated)
                 return;
 
-            var container = (this.transform.Find("CustomListContainer") as RectTransform);
+            var container = (this.transform.Find("EnhancedSearchTableView") as RectTransform);
             if (PluginConfig.CompactSearchMode)
             {
                 this.rectTransform.anchorMin = new Vector2(0.5f, 0f);
@@ -141,7 +141,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             // adapted from CustomUI's CustomListViewController
             LevelListTableCell tableCell = (LevelListTableCell)_tableView.DequeueReusableCellForIdentifier(ReuseIdentifier);
 
-            if (!tableCell)
+            if (tableCell == null)
             {
                 tableCell = Instantiate(_tableCellInstance);
 

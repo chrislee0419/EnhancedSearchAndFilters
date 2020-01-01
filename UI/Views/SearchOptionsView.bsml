@@ -5,7 +5,7 @@
   <vertical child-expand-width="true" spacing="3" pad="2">
     <increment-setting text="Maximum # of Results Shown"
                        hover-hint="~max-results-hover-hint"
-                       increment="~max-results-increment"
+                       increment="~max-results-increment-value"
                        min="~max-results-min-value"
                        max="~max-results-max-value"
                        integer-only="true"
@@ -23,11 +23,11 @@
                   apply-on-change="true"
                   formatter="song-fields-formatter" />
     <bool-setting text="Strip Symbols from Song Details"
-                  hover-hint="~strip-sybmols-hover-hint"
+                  hover-hint="~strip-symbols-hover-hint"
                   value="strip-symbols-value"
                   apply-on-change="true" />
     <bool-setting text="Use Compact Mode"
-                  hover-hint="compact-mode-hover-hint"
+                  hover-hint="~compact-mode-hover-hint"
                   value="compact-mode-value"
                   apply-on-change="true" />
   </vertical>

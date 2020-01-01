@@ -51,6 +51,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         private const float ResultsTextCompactFontSize = 5f;
         private static readonly Vector2 LoadingSpinnerCompactAnchoredPosition = new Vector2(-35f, 0f);
 
+        [UIValue("redo-search-button-default-text")]
         private const string RedoSearchButtonDefaultText = "<color=#FFFFCC>Redo Last Search</color>";
         private const string RedoSearchButtonHighlightedText = "<color=#444400>Redo Last Search</color>";
 

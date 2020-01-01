@@ -1,6 +1,5 @@
 ﻿using System;
 using HMUI;
-using BS_Utils.Utilities;
 using BeatSaberMarkupLanguage;
 using EnhancedSearchAndFilters.UI.ViewControllers;
 using EnhancedSearchAndFilters.Search;
@@ -126,7 +125,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
         {
             _levelsSearchSpace = levelPack.beatmapLevelCollection.beatmapLevels;
             Action onFinish = PushInitialViewControllersToNavigationController;
-            parentFlowCoordinator.InvokeMethod("PresentFlowCoordinator", new object[] { this, onFinish, false, false });
+            parentFlowCoordinator.PresentFlowCoordinator(this, onFinish);
 
             WordPredictionEngine.instance.SetActiveWordStorageFromLevelPack(levelPack);
         }
@@ -145,7 +144,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             BackButtonPressed?.Invoke();
         }
 
-        public void PushInitialViewControllersToNavigationController()
+        private void PushInitialViewControllersToNavigationController()
         {
             // push view controllers to navigation controller after it has been activated, otherwise the coroutines will not be called
             PopAllViewControllersFromNavigationController(true);

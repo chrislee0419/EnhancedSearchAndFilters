@@ -91,7 +91,7 @@ namespace EnhancedSearchAndFilters.UI
 
             _hideSearchButton = hideSearchButton;
             _hideFilterButtons = hideFilterButtons;
-            BSMLParser.instance.Parse(BeatSaberMarkupLanguage.Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.ScreenTestView.bsml"), _container, this);
+            BSMLParser.instance.Parse(BeatSaberMarkupLanguage.Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.ButtonPanel.bsml"), _container, this);
 
             // replace the ugly looking button with the marginally better looking keyboard button (RoundRectBig)
             var replacementButtonImage = Resources.FindObjectsOfTypeAll<TextMeshProButton>().First(x => x.name == "KeyboardButton").GetComponentInChildren<Image>().sprite;
@@ -117,15 +117,15 @@ namespace EnhancedSearchAndFilters.UI
             if (_clearFilterButton != null)
             {
                 _clearFilterButton?.gameObject.AddComponent<EnterExitEventHandler>();
-                var handler = _filterButton.gameObject.GetComponent<EnterExitEventHandler>();
+                var handler = _clearFilterButton.gameObject.GetComponent<EnterExitEventHandler>();
 
                 handler.PointerEntered += () => _clearFilterButton.SetButtonText(_areFiltersApplied ? ClearFilterButtonHighlightedAppliedText : ClearFilterButtonHighlightedText);
                 handler.PointerExited += () => _clearFilterButton.SetButtonText(_areFiltersApplied ? ClearFilterButtonAppliedText : ClearFilterButtonText);
             }
 
-            HidePanel(true);
-
             _initialized = true;
+
+            HidePanel(true);
         }
 
         [UIAction("search-button-clicked")]

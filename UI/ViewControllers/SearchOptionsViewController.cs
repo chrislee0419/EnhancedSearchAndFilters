@@ -7,24 +7,24 @@ using BeatSaberMarkupLanguage.Attributes;
 
 namespace EnhancedSearchAndFilters.UI.ViewControllers
 {
-    class SearchOptionsViewController : BSMLResourceViewController
+    internal class SearchOptionsViewController : BSMLResourceViewController
     {
         public override string ResourceName => "EnhancedSearchAndFilters.UI.Views.SearchOptionsView.bsml";
 
         public event Action SearchOptionsChanged;
 
         [UIValue("max-results-increment-value")]
-        private int MaxResultsShownIncrementValue => PluginConfig.MaxSearchResultsValueIncrement;
+        public int MaxResultsShownIncrementValue { get => PluginConfig.MaxSearchResultsValueIncrement; }
         [UIValue("max-results-min-value")]
-        private int MaxResultsShownMinValue => PluginConfig.MaxSearchResultsMinValue;
+        public int MaxResultsShownMinValue { get => PluginConfig.MaxSearchResultsMinValue; }
         [UIValue("max-results-max-value")]
-        private int MaxResultsShownMaxValue => PluginConfig.MaxSearchResultsUnlimitedValue;
+        public int MaxResultsShownMaxValue { get => PluginConfig.MaxSearchResultsUnlimitedValue; }
         [UIValue("song-fields-options")]
-        private List<object> SongFieldsOptions => Enum.GetValues(typeof(SearchableSongFields)).Cast<SearchableSongFields>().Select(x => (object)x).ToList();
+        public List<object> SongFieldsOptions { get => Enum.GetValues(typeof(SearchableSongFields)).Cast<SearchableSongFields>().Select(x => (object)x).ToList(); }
 
-        private int _maxResultsShownStagingValue;
+        private int _maxResultsShownStagingValue = PluginConfig.MaxSearchResults;
         [UIValue("max-results-value")]
-        private int MaxResultsShownStagingValue
+        public int MaxResultsShownStagingValue
         {
             get => _maxResultsShownStagingValue;
             set
@@ -36,9 +36,9 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             }
         }
 
-        private bool _splitQueryStagingValue;
+        private bool _splitQueryStagingValue = PluginConfig.SplitQueryByWords;
         [UIValue("split-query-value")]
-        private bool SplitQueryStagingValue
+        public bool SplitQueryStagingValue
         {
             get => _splitQueryStagingValue;
             set
@@ -50,9 +50,9 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             }
         }
 
-        private SearchableSongFields _songFieldsStagingValue;
+        private SearchableSongFields _songFieldsStagingValue = PluginConfig.SongFieldsToSearch;
         [UIValue("song-fields-value")]
-        private SearchableSongFields SongFieldsStagingValue
+        public SearchableSongFields SongFieldsStagingValue
         {
             get => _songFieldsStagingValue;
             set
@@ -64,9 +64,9 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             }
         }
 
-        private bool _stripSymbolsStagingValue;
+        private bool _stripSymbolsStagingValue = PluginConfig.StripSymbols;
         [UIValue("strip-symbols-value")]
-        private bool StripSymbolsStagingValue
+        public bool StripSymbolsStagingValue
         {
             get => _stripSymbolsStagingValue;
             set
@@ -78,9 +78,9 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             }
         }
 
-        private bool _compactModeStagingValue;
+        private bool _compactModeStagingValue = PluginConfig.CompactSearchMode;
         [UIValue("compact-mode-value")]
-        private bool CompactModeStagingValue
+        public bool CompactModeStagingValue
         {
             get => _compactModeStagingValue;
             set
@@ -131,12 +131,13 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             ResetButtonClicked();
         }
 
+        [UIAction("max-results-formatter")]
+        private string MaxResultsFormatter(int value) => value == PluginConfig.MaxSearchResultsUnlimitedValue ? "Unlimited" : value.ToString();
+
         [UIAction("song-fields-formatter")]
         private string SongFieldsFormatter(object value)
         {
-            SearchableSongFields songFields = (SearchableSongFields)value;
-
-            switch (songFields)
+            switch ((SearchableSongFields)value)
             {
                 case SearchableSongFields.All:
                     return "All";

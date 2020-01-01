@@ -4,16 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 using HMUI;
 using TableView = HMUI.TableView;
 using TableViewScroller = HMUI.TableViewScroller;
-using NoTransitionsButton = HMUI.NoTransitionsButton;
 using BS_Utils.Utilities;
 using BeatSaberMarkupLanguage;
 using EnhancedSearchAndFilters.Tweaks;
 using EnhancedSearchAndFilters.UI.FlowCoordinators;
-using EnhancedSearchAndFilters.UI.ViewControllers;
 
 namespace EnhancedSearchAndFilters.UI
 {
@@ -73,6 +70,9 @@ namespace EnhancedSearchAndFilters.UI
             else
             {
                 ButtonPanel.instance.Setup(PluginConfig.DisableSearch, PluginConfig.DisableFilter);
+                ButtonPanel.instance.SearchButtonPressed += SearchButtonPressed;
+                ButtonPanel.instance.FilterButtonPressed += FilterButtonPressed;
+                ButtonPanel.instance.ClearFilterButtonPressed += ClearButtonPressed;
             }
 
             LevelSelectionNavigationController.didActivateEvent += (_, __) => ButtonPanel.instance.ShowPanel();
@@ -216,7 +216,9 @@ namespace EnhancedSearchAndFilters.UI
         {
             if (_searchFlowCoordinator == null)
             {
-                _searchFlowCoordinator = new GameObject("EnhancedSearchFlowCoordinator").AddComponent<SearchFlowCoordinator>();
+                _searchFlowCoordinator = BeatSaberUI.CreateFlowCoordinator<SearchFlowCoordinator>();
+                _searchFlowCoordinator.name = "EnhancedSearchFlowCoordinator";
+
                 _searchFlowCoordinator.BackButtonPressed += DismissSearchFlowCoordinator;
                 _searchFlowCoordinator.SongSelected += SelectSongFromSearchResult;
             }
@@ -233,6 +235,8 @@ namespace EnhancedSearchAndFilters.UI
             if (_filterFlowCoordinator == null)
             {
                 _filterFlowCoordinator = BeatSaberUI.CreateFlowCoordinator<FilterFlowCoordinator>();
+                _filterFlowCoordinator.name = "FilterFlowCoordinator";
+
                 _filterFlowCoordinator.BackButtonPressed += DismissFilterFlowCoordinator;
                 _filterFlowCoordinator.FilterApplied += FilterFlowCoordinatorSetFilteredSongs;
                 _filterFlowCoordinator.FiltersUnapplied += FilterFlowCoordinatorFiltersUnapplied;
