@@ -1,0 +1,59 @@
+﻿<bg>
+  <horizontal bg="panel-top" anchor-min-x="0" anchor-min-y="1" anchor-max-x="1" anchor-max-y="1" size-delta-x="-16" size-delta-y="10">
+    <text text="Options" align="Center" font-size="6" />
+  </horizontal>
+  <vertical child-expand-width="true" spacing="3" pad="2">
+    <increment-setting text="Maximum # of Results Shown"
+                       hover-hint="~max-results-hover-hint"
+                       increment="~max-results-increment"
+                       min="~max-results-min-value"
+                       max="~max-results-max-value"
+                       integer-only="true"
+                       value="max-results-value"
+                       apply-on-change="true"
+                       formatter="max-results-formatter" />
+    <bool-setting text="Search Each Word Individually"
+                  hover-hint="~split-query-hover-hint"
+                  value="split-query-value"
+                  apply-on-change="true" />
+    <list-setting text="Song Fields to Search"
+                  hover-hint="~song-fields-hover-hint"
+                  value="song-fields-value"
+                  options="song-fields-options"
+                  apply-on-change="true"
+                  formatter="song-fields-formatter" />
+    <bool-setting text="Strip Symbols from Song Details"
+                  hover-hint="~strip-sybmols-hover-hint"
+                  value="strip-symbols-value"
+                  apply-on-change="true" />
+    <bool-setting text="Use Compact Mode"
+                  hover-hint="compact-mode-hover-hint"
+                  value="compact-mode-value"
+                  apply-on-change="true" />
+  </vertical>
+  <bg anchor-min-x="0" anchor-min-y="0" anchor-max-x="1" anchor-max-y="0" size-delta-x="-10" size-delta-y="10" anchor-pos-y="5">
+    <button text="Use Defaults"
+            on-click="default-button-clicked"
+            anchor-min-x="0" anchor-min-y="0"
+            anchor-max-x="0" anchor-max-y="1"
+            size-delta-x="36"
+            pad="0" />
+    <button text="Reset"
+            id="reset-button"
+            on-click="reset-button-clicked"
+            interactable="false"
+            anchor-min-x="1" anchor-min-y="0"
+            anchor-max-x="1" anchor-max-y="1"
+            size-delta-x="24" size-delta-y="-1"
+            anchor-pos-x="-27"
+            pad="0" />
+    <button text="Apply"
+            id="apply-button"
+            on-click="apply-button-clicked"
+            interactable="false"
+            anchor-min-x="1" anchor-min-y="0"
+            anchor-max-x="1" anchor-max-y="1"
+            size-delta-x="24" size-delta-y="-1"
+            pad="0" />
+  </bg>
+</bg>

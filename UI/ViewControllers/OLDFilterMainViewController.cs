@@ -5,15 +5,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using VRUI;
-using CustomUI.BeatSaber;
-using CustomUI.Utilities;
+using HMUI;
+using BS_Utils.Utilities;
+using BeatSaberMarkupLanguage;
 using EnhancedSearchAndFilters.Filters;
 using EnhancedSearchAndFilters.SongData;
 
 namespace EnhancedSearchAndFilters.UI.ViewControllers
 {
-    class FilterViewController : VRUIViewController
+    class OLDFilterMainViewController : ViewController
     {
         public Action BackButtonPressed;
         public Action FiltersUnapplied;
@@ -223,7 +223,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             // _listViewController deactivated by DidDeactivate
 
             // load all songs so we have access to all the song details we need to filter
-            BeatmapDetailsLoader.Instance.LoadBeatmaps(_levels,
+            BeatmapDetailsLoader.instance.LoadBeatmaps(_levels,
                 delegate (int songsLoaded)
                 {
                     // on update, show updated progress text
@@ -310,7 +310,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         public void Activate(FlowCoordinator parentFlowCoordinator, IPreviewBeatmapLevel[] levels)
         {
             _levels = levels;
-            parentFlowCoordinator.InvokePrivateMethod("PresentViewController", new object[] { this, null, false });
+            parentFlowCoordinator.InvokeMethod("PresentViewController", new object[] { this, null, false });
         }
 
         /// <summary>
@@ -324,7 +324,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 return levels.ToList();
             Logger.log.Debug($"Providing SongBrowser with a list of filtered songs. Starting with {levels.Length} songs");
 
-            BeatmapDetails[] detailsList = BeatmapDetailsLoader.Instance.LoadBeatmapsInstant(levels);
+            BeatmapDetails[] detailsList = BeatmapDetailsLoader.instance.LoadBeatmapsInstant(levels);
 
             Dictionary<BeatmapDetails, IPreviewBeatmapLevel> pairs = new Dictionary<BeatmapDetails, IPreviewBeatmapLevel>(levels.Length);
             for (int i = 0; i < levels.Length; ++i)
@@ -374,20 +374,20 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
         private void HandleBackButtonPressed()
         {
-            BeatmapDetailsLoader.Instance.CancelLoading();
+            BeatmapDetailsLoader.instance.CancelLoading();
 
             BackButtonPressed?.Invoke();
         }
 
         private void HandleClearButtonPressed()
         {
-            if (BeatmapDetailsLoader.Instance.IsLoading)
+            if (BeatmapDetailsLoader.instance.IsLoading)
                 return;
 
             bool hasChanged = false;
             foreach (var filter in _listViewController.FilterList)
             {
-                filter.SetDefaultValues();
+                filter.SetDefaultValuesToStaging();
 
                 if (filter.Status == FilterStatus.AppliedAndChanged)
                     hasChanged = true;
@@ -406,7 +406,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
         private void HandleResetButtonPressed()
         {
-            if (BeatmapDetailsLoader.Instance.IsLoading)
+            if (BeatmapDetailsLoader.instance.IsLoading)
                 return;
 
             _resetButton.interactable = false;
@@ -414,7 +414,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             bool isAppliedNoChanges = false;
             foreach (var filter in _listViewController.FilterList)
             {
-                filter.ResetValues();
+                filter.SetAppliedValuesToStaging();
 
                 if (filter.Status == FilterStatus.Applied)
                     isAppliedNoChanges = true;
@@ -443,7 +443,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
         private void HandleApplyButtonPressed()
         {
-            if (BeatmapDetailsLoader.Instance.IsLoading)
+            if (BeatmapDetailsLoader.instance.IsLoading)
                 return;
 
             _resetButton.interactable = false;
@@ -510,7 +510,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
         private void HandleUnapplyButtonPressed()
         {
-            if (BeatmapDetailsLoader.Instance.IsLoading)
+            if (BeatmapDetailsLoader.instance.IsLoading)
                 return;
 
             UnapplyFilters();

@@ -1,16 +1,16 @@
 ﻿using System;
-using VRUI;
+using HMUI;
+using BS_Utils.Utilities;
+using BeatSaberMarkupLanguage;
 using EnhancedSearchAndFilters.UI.ViewControllers;
 using EnhancedSearchAndFilters.Search;
-using CustomUI.BeatSaber;
-using CustomUI.Utilities;
 
 namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 {
-    class SearchFlowCoordinator : FlowCoordinator
+    public class SearchFlowCoordinator : FlowCoordinator
     {
-        public Action BackButtonPressed;
-        public Action<IPreviewBeatmapLevel> SongSelected;
+        public event Action BackButtonPressed;
+        public event Action<IPreviewBeatmapLevel> SongSelected;
 
         private SearchResultsNavigationController _searchResultsNavigationController;
         private SearchResultsListViewController _searchResultsListViewController;
@@ -33,6 +33,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             if (firstActivation && activationType == ActivationType.AddedToHierarchy)
             {
                 title = "Search For Songs";
+                showBackButton = true;
 
                 _searchResultsNavigationController = BeatSaberUI.CreateViewController<SearchResultsNavigationController>();
                 _searchResultsListViewController = BeatSaberUI.CreateViewController<SearchResultsListViewController>();
@@ -40,19 +41,6 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                 _searchOptionsViewController = BeatSaberUI.CreateViewController<SearchOptionsViewController>();
                 _searchKeyboardViewController = BeatSaberUI.CreateViewController<SearchKeyboardViewController>();
                 _searchCompactKeyboardViewController = BeatSaberUI.CreateViewController<SearchCompactKeyboardViewController>();
-
-                _searchResultsNavigationController.BackButtonPressed += delegate ()
-                {
-                    if (!_readyForDeactivation)
-                        return;
-
-                    _lastSearchQuery = _searchQuery;
-
-                    SearchBehaviour.Instance.StopSearch();
-                    _searchResultsListViewController.UpdateSongs(new IPreviewBeatmapLevel[0]);
-                    PopAllViewControllersFromNavigationController(true);
-                    BackButtonPressed?.Invoke();
-                };
                 _searchResultsNavigationController.ForceShowButtonPressed += delegate ()
                 {
                     ShowSearchResult(SearchBehaviour.Instance.CachedResult, true);
@@ -138,9 +126,23 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
         {
             _levelsSearchSpace = levelPack.beatmapLevelCollection.beatmapLevels;
             Action onFinish = PushInitialViewControllersToNavigationController;
-            parentFlowCoordinator.InvokePrivateMethod("PresentFlowCoordinator", new object[] { this, onFinish, false, false });
+            parentFlowCoordinator.InvokeMethod("PresentFlowCoordinator", new object[] { this, onFinish, false, false });
 
-            WordPredictionEngine.Instance.SetActiveWordStorageFromLevelPack(levelPack);
+            WordPredictionEngine.instance.SetActiveWordStorageFromLevelPack(levelPack);
+        }
+
+        protected override void BackButtonWasPressed(ViewController topViewController)
+        {
+            if (!_readyForDeactivation)
+                return;
+
+            _lastSearchQuery = _searchQuery;
+
+            SearchBehaviour.Instance.StopSearch();
+            _searchResultsListViewController.UpdateSongs(new IPreviewBeatmapLevel[0]);
+            PopAllViewControllersFromNavigationController(true);
+
+            BackButtonPressed?.Invoke();
         }
 
         public void PushInitialViewControllersToNavigationController()

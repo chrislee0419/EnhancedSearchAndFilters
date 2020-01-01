@@ -8,36 +8,38 @@ using System.Collections.Concurrent;
 using System.Linq;
 using UnityEngine;
 using SongCore;
-using CustomUI.Utilities;
+using BS_Utils.Utilities;
 
 namespace EnhancedSearchAndFilters.SongData
 {
-    class BeatmapDetailsLoader : MonoBehaviour
+    class BeatmapDetailsLoader : PersistentSingleton<BeatmapDetailsLoader>
     {
-        private static BeatmapDetailsLoader _instance;
-        public static BeatmapDetailsLoader Instance
-        {
-            get
-            {
-                if (_instance == null)
-                {
-                    _beatmapLevelsModel = Resources.FindObjectsOfTypeAll<StandardLevelDetailViewController>().First().GetPrivateField<BeatmapLevelsModelSO>("_beatmapLevelsModel");
-                    _customLevelLoader = _beatmapLevelsModel.GetPrivateField<CustomLevelLoaderSO>("_customLevelLoader");
-
-                    _instance = new GameObject("BeatmapLoader").AddComponent<BeatmapDetailsLoader>();
-                    DontDestroyOnLoad(_instance.gameObject);
-                }
-
-                return _instance;
-            }
-        }
-
         public bool IsLoading { get; private set; } = false;
         public bool IsCaching { get; private set; } = false;
         public bool SongsAreCached { get; private set; } = false;
 
-        private static BeatmapLevelsModelSO _beatmapLevelsModel;
-        private static CustomLevelLoaderSO _customLevelLoader;
+        private static BeatmapLevelsModel _beatmapLevelsModel;
+        private static BeatmapLevelsModel BeatmapLevelsModel
+        {
+            get
+            {
+                if (_beatmapLevelsModel == null)
+                    _beatmapLevelsModel = Resources.FindObjectsOfTypeAll<StandardLevelDetailViewController>().First().GetPrivateField<BeatmapLevelsModel>("_beatmapLevelsModel");
+
+                return _beatmapLevelsModel;
+            }
+        }
+        private static CustomLevelLoader _customLevelLoader;
+        private static CustomLevelLoader CustomLevelLoader
+        {
+            get
+            {
+                if (_customLevelLoader == null)
+                    _customLevelLoader = BeatmapLevelsModel.GetPrivateField<CustomLevelLoader>("_customLevelLoader");
+
+                return _customLevelLoader;
+            }
+        }
 
         private HMTask _cachingTask;
         private ManualResetEvent _manualResetEvent;
@@ -64,7 +66,7 @@ namespace EnhancedSearchAndFilters.SongData
         /// </summary>
         public void StartPopulatingCache(bool force = false)
         {
-            if (IsLoading || (SongsAreCached && !force && !IsCaching))
+            if (IsLoading || (SongsAreCached && !force && !IsCaching) || PluginConfig.DisableFilter)
                 return;
 
             if (!IsCaching)
@@ -142,6 +144,9 @@ namespace EnhancedSearchAndFilters.SongData
         /// </summary>
         public void SaveCacheToFile()
         {
+            if (PluginConfig.DisableFilter)
+                return;
+
             List<BeatmapDetails> cache = _cache.Values.ToList();
 
             // remove WIP levels from cache (don't save them, since they're likely to change often and
@@ -241,7 +246,7 @@ namespace EnhancedSearchAndFilters.SongData
             for (int i = 0; i < levels.Length; ++i)
             {
                 IPreviewBeatmapLevel level = levels[i];
-                string levelID = GetLevelID(level);
+                string levelID = GetSimplifiedLevelID(level);
 
                 if (level is IBeatmapLevel)
                 {
@@ -316,7 +321,7 @@ namespace EnhancedSearchAndFilters.SongData
 
                 for (int i = 0; i < WorkChunkSize && index < allLevels.Count; ++index)
                 {
-                    string levelID = GetLevelID(allLevels[index]);
+                    string levelID = GetSimplifiedLevelID(allLevels[index]);
 
                     if (!_cache.ContainsKey(levelID) || _cache[levelID].SongDuration == 0f)
                     {
@@ -364,7 +369,7 @@ namespace EnhancedSearchAndFilters.SongData
                 for (int i = 0; i < WorkChunkSize && index < _levels.Length; ++index)
                 {
                     IPreviewBeatmapLevel level = _levels[index];
-                    string levelID = GetLevelID(level);
+                    string levelID = GetSimplifiedLevelID(level);
 
                     if (level is IBeatmapLevel)
                     {
@@ -430,7 +435,7 @@ namespace EnhancedSearchAndFilters.SongData
         private async Task<CustomBeatmapLevel> LoadCustomBeatmapLevelAsync(CustomPreviewBeatmapLevel level, CancellationToken token)
         {
             CustomBeatmapLevel customLevel = new CustomBeatmapLevel(level, null, null);
-            BeatmapLevelData beatmapData = await _customLevelLoader.LoadBeatmapLevelDataAsync(level.customLevelPath, customLevel, level.standardLevelInfoSaveData, token).ConfigureAwait(false);
+            BeatmapLevelData beatmapData = await CustomLevelLoader.LoadBeatmapLevelDataAsync(level.customLevelPath, customLevel, level.standardLevelInfoSaveData, token).ConfigureAwait(false);
             customLevel.SetBeatmapLevelData(beatmapData);
 
             return customLevel;
@@ -439,7 +444,7 @@ namespace EnhancedSearchAndFilters.SongData
         private async Task CacheCustomBeatmapDetailsAsync(CustomPreviewBeatmapLevel level)
         {
             CustomBeatmapLevel customLevel = await LoadCustomBeatmapLevelAsync(level, _cachingTokenSource.Token).ConfigureAwait(false);
-            _cache[GetLevelID(level)] = new BeatmapDetails(customLevel);
+            _cache[GetSimplifiedLevelID(level)] = new BeatmapDetails(customLevel);
         }
 
         private async Task<Tuple<int, BeatmapDetails>> GetCustomBeatmapDetailsAsync(CustomPreviewBeatmapLevel level, int index)
@@ -449,7 +454,7 @@ namespace EnhancedSearchAndFilters.SongData
                 CustomBeatmapLevel customLevel = await LoadCustomBeatmapLevelAsync(level, _loadingTokenSource.Token);
 
                 var details = new BeatmapDetails(customLevel);
-                _cache[GetLevelID(level)] = details;
+                _cache[GetSimplifiedLevelID(level)] = details;
 
                 return new Tuple<int, BeatmapDetails>(index, details);
             }
@@ -463,22 +468,21 @@ namespace EnhancedSearchAndFilters.SongData
         /// </summary>
         /// <param name="level">A preview beatmap level.</param>
         /// <returns>The level ID of the provided IPreviewBeatmapLevel.</returns>
-        private string GetLevelID(IPreviewBeatmapLevel level)
+        public static string GetSimplifiedLevelID(IPreviewBeatmapLevel level)
         {
             // Since custom levels have their IDs formatted like "custom_level_(hash)[_(directory)]", where the "_(directory)" part is optional,
             // we have to remove that part to get a consistent naming. Also, we don't care about duplicate songs;
             // if they have the same hash, we can use the same BeatmapDetails object.
-            if (!(level is CustomPreviewBeatmapLevel) && !level.levelID.StartsWith("custom_level"))
+            if (!(level is CustomPreviewBeatmapLevel) && !level.levelID.StartsWith(CustomLevelLoader.kCustomLevelPackPrefixId))
                 return level.levelID;
             else
                 return GetCustomLevelIDWithoutDirectory(level.levelID);
         }
 
-        private string GetCustomLevelIDWithoutDirectory(string levelID)
+        private static string GetCustomLevelIDWithoutDirectory(string levelID)
         {
-            // "custom_level_" is 13 characters long
             // The hash is always 40 characters long
-            return levelID.Substring(0, 53);
+            return levelID.Substring(0, CustomLevelLoader.kCustomLevelPrefixId.Length + 40);
         }
     }
 }

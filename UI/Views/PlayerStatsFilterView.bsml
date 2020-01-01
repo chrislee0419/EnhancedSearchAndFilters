@@ -1,0 +1,45 @@
+﻿<vertical id="root" child-expand-width="true" anchor-min-x="0" anchor-min-y="0" anchor-max-x="1" anchor-max-y="1">
+  <text text="Filter According To Your Play Stats" font-size="5.5" />
+  <horizontal child-expand-height="true" spacing="3">
+    <vertical preferred-width="80" child-expand-width="true">
+      <list-setting text="Songs Completed At Least Once"
+                    hover-hint="Filters out songs that you have completed at least one difficulty/have not completed"
+                    value="~completed-value"
+                    options="~completed-options"
+                    apply-on-change="true"
+                    on-change="list-setting-changed"
+                    formatter="completed-formatter" />
+      <list-setting text="Songs With Full Combo"
+                    hover-hint="Filters out songs that you have completed with a full combo/without a full combo (ignores lightmaps)"
+                    value="~full-combo-value"
+                    options="~full-combo-options"
+                    apply-on-change="true"
+                    on-change="list-setting-changed"
+                    formatter="full-combo-formatter" />
+    </vertical>
+    <vertical bg="round-rect-panel" preferred-width="67" child-expand-width="true">
+      <text text="[Optional] Difficulties To Apply Filter To:" font-size="4.5"
+            hover-hint="Check that stats for specific difficulties. Leaving all difficulties unchecked has the same behaviour as checking all difficulties." />
+      <checkbox text="Easy"
+                value="~easy-value"
+                apply-on-change="true"
+                on-change="difficulty-changed" />
+      <checkbox text="Normal"
+                value="~normal-value"
+                apply-on-change="true"
+                on-change="difficulty-changed" />
+      <checkbox text="Hard"
+                value="~hard-value"
+                apply-on-change="true"
+                on-change="difficulty-changed" />
+      <checkbox text="Expert"
+                value="~expert-value"
+                apply-on-change="true"
+                on-change="difficulty-changed" />
+      <checkbox text="Expert+"
+                value="~expert-plus-value"
+                apply-on-change="true"
+                on-change="difficulty-changed" />
+    </vertical>
+  </horizontal>
+</vertical>

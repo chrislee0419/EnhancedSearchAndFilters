@@ -1,0 +1,9 @@
+﻿<bg>
+  <horizontal id="header" bg="panel-top" anchor-min-x="0" anchor-min-y="1" anchor-max-x="1" anchor-max-y="1" size-delta-x="-16" size-delta-y="10">
+    <text text="Search Results" align="Center" font-size="6" />
+  </horizontal>
+  <text id="results-text" text="~results-text-placeholder" font-size="6" />
+  <text id="last-search-text" text="" font-size="3.5" font-align="TopRight" anchor-pos-x="23" anchor-pos-y="-31.5" size-delta-x="30" size-delta-y="8" />
+  <button id="force-search-button" text="Force Show Results" on-click="force-search-button-clicked" anchor-pos-x="59" anchor-pos-y="-32" size-delta-x="36" size-delta-y="10" />
+  <button id="last-search-button" text="~redo-search-button-default-text" on-click="last-search-button-clicked" anchor-pos-x="59" anchor-pos-y="-32" size-delta-x="36" size-delta-y="10" />
+</bg>

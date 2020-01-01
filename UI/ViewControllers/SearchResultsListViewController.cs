@@ -5,35 +5,78 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using HMUI;
-using CustomUI.BeatSaber;
-using CustomUI.Utilities;
 using UEImage = UnityEngine.UI.Image;
+using BS_Utils.Utilities;
 
 namespace EnhancedSearchAndFilters.UI.ViewControllers
 {
-    // NOTE: some of the fields included in CustomListViewController are not used
-    class SearchResultsListViewController : CustomListViewController
+    internal class SearchResultsListViewController : ViewController, TableView.IDataSource
     {
         public Action<IPreviewBeatmapLevel> SongSelected;
 
         private IPreviewBeatmapLevel[] _beatmapLevels = new IPreviewBeatmapLevel[0];
 
+        private TableView _tableView;
         private LevelListTableCell _tableCellInstance;
 
-        public new string reuseIdentifier = "SearchListTableCell";
+        private const string ReuseIdentifier = "EnhancedSearchListTableCell";
 
         protected override void DidActivate(bool firstActivation, ActivationType activationType)
         {
-            base.DidActivate(firstActivation, activationType);
-
             if (firstActivation)
             {
                 _tableCellInstance = Resources.FindObjectsOfTypeAll<LevelListTableCell>().First(x => (x.name == "LevelListTableCell"));
 
-                // fix for autoscrolling when a gamepad is attached
-                this.GetComponentInChildren<ScrollRect>().vertical = false;
+                // tableview setup
+                var tableViewGO = new GameObject("EnhancedSearchTableView");
+                tableViewGO.SetActive(false);
+                tableViewGO.transform.SetParent(this.transform);
 
-                this.DidSelectRowEvent += RowSelected;
+                var scrollRect = tableViewGO.AddComponent<ScrollRect>();
+                tableViewGO.AddComponent<RectMask2D>();
+                _tableView = tableViewGO.AddComponent<TableView>();
+
+                _tableView.SetPrivateField("_preallocatedCells", new TableView.CellsGroup[0]);
+                _tableView.SetPrivateField("_isInitialized", false);
+
+                var viewport = new GameObject("Viewport").AddComponent<RectTransform>();
+                viewport.SetParent(tableViewGO.transform, false);
+                scrollRect.viewport = viewport;
+
+                viewport.anchorMin = Vector2.zero;
+                viewport.anchorMax = Vector2.one;
+                viewport.sizeDelta = Vector2.zero;
+                viewport.anchoredPosition = Vector2.zero;
+                (tableViewGO.transform as RectTransform).anchorMin = Vector2.zero;
+                (tableViewGO.transform as RectTransform).anchorMax = Vector2.one;
+                (tableViewGO.transform as RectTransform).sizeDelta = Vector2.zero;
+                (tableViewGO.transform as RectTransform).anchoredPosition = Vector2.zero;
+
+                // page up/down button setup
+                var buttonPrefab = Resources.FindObjectsOfTypeAll<NoTransitionsButton>().Where(x => x.name == "PageUpButton").Last();
+                var buttonGO = Instantiate(buttonPrefab.gameObject, tableViewGO.transform, false);
+                buttonGO.name = "EnhancedSearchPageUpButton";
+                (buttonGO.transform as RectTransform).anchorMin = new Vector2(0f, 1f);
+                (buttonGO.transform as RectTransform).anchorMax = Vector2.one;
+                (buttonGO.transform as RectTransform).anchoredPosition = new Vector2(0f, -1f);
+                (buttonGO.transform as RectTransform).sizeDelta = new Vector2(0f, 10.25f);
+                (buttonGO.transform as RectTransform).localRotation = Quaternion.Euler(0f, 0f, 180f);
+                _tableView.SetPrivateField("_pageUpButton", buttonGO.GetComponent<NoTransitionsButton>());
+
+                buttonGO = Instantiate(buttonPrefab.gameObject, tableViewGO.transform, false);
+                buttonGO.name = "EnhancedSearchPageDownButton";
+                (buttonGO.transform as RectTransform).anchorMin = Vector2.zero;
+                (buttonGO.transform as RectTransform).anchorMax = new Vector2(1f, 0f);
+                (buttonGO.transform as RectTransform).anchoredPosition = new Vector2(0f, 1f);
+                (buttonGO.transform as RectTransform).sizeDelta = new Vector2(0f, 10.25f);
+                (buttonGO.transform as RectTransform).localRotation = Quaternion.Euler(0f, 0f, 0f);
+                _tableView.SetPrivateField("_pageDownButton", buttonGO.GetComponent<NoTransitionsButton>());
+
+                _tableView.dataSource = this;
+                tableViewGO.SetActive(true);
+
+                // fix for autoscrolling when a gamepad is attached
+               scrollRect.vertical = false;
             }
 
             UpdateSize();
@@ -72,9 +115,9 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _beatmapLevels = beatmapLevels;
             if (this.isActivated)
             {
-                _customListTableView.ReloadData();
+                _tableView.ReloadData();
                 if (beatmapLevels.Length != 0)
-                    _customListTableView.ScrollToCellWithIdx(0, TableViewScroller.ScrollPositionType.Beginning, false);
+                    _tableView.ScrollToCellWithIdx(0, TableViewScroller.ScrollPositionType.Beginning, false);
             }
         }
 
@@ -90,13 +133,13 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         public void DeselectSong()
         {
             if (this.isActivated)
-                _customListTableView.ClearSelection();
+                _tableView.ClearSelection();
         }
 
-        public override TableCell CellForIdx(TableView tableView, int idx)
+        public TableCell CellForIdx(TableView tableView, int idx)
         {
             // adapted from CustomUI's CustomListViewController
-            LevelListTableCell tableCell = (LevelListTableCell)_customListTableView.DequeueReusableCellForIdentifier(reuseIdentifier);
+            LevelListTableCell tableCell = (LevelListTableCell)_tableView.DequeueReusableCellForIdentifier(ReuseIdentifier);
 
             if (!tableCell)
             {
@@ -114,7 +157,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                     i.enabled = false;
                 tableCell.SetPrivateField("_beatmapCharacteristicAlphas", new float[0]);
                 tableCell.SetPrivateField("_beatmapCharacteristicImages", new UEImage[0]);
-                tableCell.reuseIdentifier = reuseIdentifier;
+                tableCell.reuseIdentifier = ReuseIdentifier;
             }
 
             IPreviewBeatmapLevel level = _beatmapLevels[idx];
@@ -149,9 +192,14 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             coverImage.color = Color.white;
         }
 
-        public override int NumberOfCells()
+        public int NumberOfCells()
         {
             return _beatmapLevels.Length;
+        }
+
+        public float CellSize()
+        {
+            return 8f;
         }
     }
 }

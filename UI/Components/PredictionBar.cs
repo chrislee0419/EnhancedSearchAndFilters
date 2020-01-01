@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -54,7 +53,7 @@ namespace EnhancedSearchAndFilters.UI.Components
             // create new buttons
             Button btn = null;
             float currentX = 0f;
-            var predictions = WordPredictionEngine.Instance.GetSuggestedWords(searchText);
+            var predictions = WordPredictionEngine.instance.GetSuggestedWords(searchText);
             for (int i = 0; i < predictions.Count && currentX < _xEndPos - _xStartPos; ++i)
             {
                 var word = predictions[i];

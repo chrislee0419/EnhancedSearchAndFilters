@@ -1,0 +1,32 @@
+﻿<vertical id="root" child-expand-width="true" anchor-min-x="0" anchor-min-y="0" anchor-max-x="1" anchor-max-y="1">
+  <text text="Limit Song Duration"
+        font-size="5.5" />
+  <checkbox text="Enable Minimum Duration Filter"
+            value="~min-checkbox-value"
+            on-change="min-checkbox-changed"
+            apply-on-change="true" />
+  <increment id="min-increment-setting"
+             text="    Minimum Duration"
+             hover-hint="Filters out songs that are shorter than this value"
+             value="~min-increment-value"
+             min="~min-value"
+             max="~max-value"
+             increment="~inc-value"
+             on-change="min-value-changed"
+             apply-on-change="true"
+             formatter="time-formatter" />
+  <checkbox text="Enable Maximum Duration Filter"
+            value="~max-checkbox-value"
+            on-change="max-checkbox-changed"
+            apply-on-change="true" />
+  <increment id="max-increment-setting"
+             text="    Maximum Duration"
+             hover-hint="Filters out songs that are longer than this value"
+             value="~max-increment-value"
+             min="~min-value"
+             max="~max-value"
+             increment="~inc-value"
+             on-change="max-value-changed"
+             apply-on-change="true"
+             formatter="time-formatter" />
+</vertical>

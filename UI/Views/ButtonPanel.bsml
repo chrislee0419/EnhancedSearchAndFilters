@@ -1,0 +1,56 @@
+﻿<vertical child-control-width="true" child-expand-width="true" child-align="MiddleCenter" spacing="2" pad="3">
+  <!-- container is of size 28w x 26h
+       for whatever reason, the buttons really hate fitting to the size of the verticallayoutgroup
+       so we just give it the correct preferred width (22w)
+  -->
+  <macro.if value="!hide-search">
+    <macro.if value="!hide-filters">
+      <button id="search-button"
+              preferred-height="10"
+              preferred-width="22"
+              on-click="search-button-clicked"
+              text="Search"
+              font-size="4"
+              pad="0" />
+      <button id="filter-button"
+              preferred-height="5"
+              preferred-width="22"
+              on-click="filter-button-clicked"
+              text="~filter-button-default-text"
+              font-size="2.8"
+              pad="0" />
+      <button id="clear-filter-button"
+              preferred-height="5"
+              preferred-width="22"
+              on-click="clear-filter-button-clicked"
+              text="~clear-filter-button-default-text"
+              font-size="2.8"
+              pad="0" />
+    </macro.if>
+    <macro.if value="hide-filters">
+      <button id="search-button"
+              preferred-height="14"
+              preferred-width="22"
+              on-click="search-button-clicked"
+              text="Search"
+              font-size="4.5"
+              pad="0" />
+    </macro.if>
+  </macro.if>
+  <macro.if value="hide-search">
+    <button id="filter-button"
+            preferred-height="10"
+            preferred-width="22"
+            on-click="filter-button-clicked"
+            text="~filter-button-default-text"
+            font-size="4"
+            pad="0" />
+    <button id="clear-filter-button"
+            preferred-height="7"
+            preferred-width="22"
+            on-click="clear-filter-button-clicked"
+            text="~clear-filter-button-default-text"
+            font-size="3.5"
+            pad="0"/>
+  </macro.if>
+</vertical>

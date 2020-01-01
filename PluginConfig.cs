@@ -115,6 +115,30 @@ namespace EnhancedSearchAndFilters
                 config.SetBool("EnhancedSearchAndFilters", "ShowFirstTimeLoadingText", value);
             }
         }
+
+        public static bool DisableSearch
+        {
+            get
+            {
+                return config.GetBool("EnhancedSearchAndFilters", "DisableSearch", false, true);
+            }
+            set
+            {
+                config.SetBool("EnhancedSearchAndFilters", "DisableSearch", value);
+            }
+        }
+
+        public static bool DisableFilter
+        {
+            get
+            {
+                return config.GetBool("EnhancedSearchAndFilters", "DisableFilter", false, true);
+            }
+            set
+            {
+                config.SetBool("EnhancedSearchAndFilters", "DisableFilter", value);
+            }
+        }
     }
 
     internal enum SearchableSongFields

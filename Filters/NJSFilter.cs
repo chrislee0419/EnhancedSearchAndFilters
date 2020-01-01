@@ -1,41 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
-using CustomUI.BeatSaber;
-using CustomUI.Settings;
-using EnhancedSearchAndFilters.UI;
+using BeatSaberMarkupLanguage;
+using BeatSaberMarkupLanguage.Components.Settings;
+using BeatSaberMarkupLanguage.Notify;
+using BeatSaberMarkupLanguage.Attributes;
 using EnhancedSearchAndFilters.SongData;
-using Object = UnityEngine.Object;
 
 namespace EnhancedSearchAndFilters.Filters
 {
-    class NJSFilter : IFilter
+    class NJSFilter : IFilter, INotifiableHost
     {
-        public string FilterName { get { return "Note Jump Speed (NJS)"; } }
+        public event Action SettingChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public string Name { get { return "Note Jump Speed (NJS)"; } }
         public bool IsAvailable { get { return true; } }
         public FilterStatus Status {
             get
             {
-                if (ApplyFilter)
+                if (IsFilterApplied)
                 {
                     if (_minEnabledStagingValue != _minEnabledAppliedValue ||
                         _maxEnabledStagingValue != _maxEnabledAppliedValue ||
                         _minStagingValue != _minAppliedValue ||
-                        _maxStagingValue != _maxAppliedValue)
+                        _maxStagingValue != _maxAppliedValue ||
+                        _easyStagingValue != _easyAppliedValue ||
+                        _normalStagingValue != _normalAppliedValue ||
+                        _hardStagingValue != _hardAppliedValue ||
+                        _expertStagingValue != _expertAppliedValue ||
+                        _expertPlusStagingValue != _expertPlusAppliedValue)
                         return FilterStatus.AppliedAndChanged;
-
-                    for (int i = 0; i < 5; ++i)
-                    {
-                        if (_difficultiesStagingValue[i] != _difficultiesAppliedValue[i])
-                            return FilterStatus.AppliedAndChanged;
-                    }
-
-                    return FilterStatus.Applied;
+                    else
+                        return FilterStatus.Applied;
                 }
-                else if ((_minEnabledStagingValue || _maxEnabledStagingValue) && _difficultiesStagingValue.Contains(true))
+                else if ((_minEnabledStagingValue || _maxEnabledStagingValue) &&
+                    (_easyStagingValue || _normalStagingValue || _hardStagingValue || _expertStagingValue || _expertPlusStagingValue))
                 {
                     return FilterStatus.NotAppliedAndChanged;
                 }
@@ -45,187 +47,69 @@ namespace EnhancedSearchAndFilters.Filters
                 }
             }
         }
-        public bool ApplyFilter {
-            get
-            {
-                return (_minEnabledAppliedValue || _maxEnabledAppliedValue) && _difficultiesAppliedValue.Contains(true);
-            }
-            set
-            {
-                if (value)
-                {
-                    _minEnabledAppliedValue = _minEnabledStagingValue;
-                    _maxEnabledAppliedValue = _maxEnabledStagingValue;
-                    _minAppliedValue = _minStagingValue;
-                    _maxAppliedValue = _maxStagingValue;
+        public bool IsFilterApplied => (_minEnabledAppliedValue || _maxEnabledAppliedValue) &&
+            (_easyAppliedValue || _normalAppliedValue || _hardAppliedValue || _expertAppliedValue || _expertPlusAppliedValue);
 
-                    for (int i = 0; i < 5; ++i)
-                        _difficultiesAppliedValue[i] = _difficultiesStagingValue[i];
-                }
-                else
-                {
-                    _minEnabledAppliedValue = false;
-                    _maxEnabledAppliedValue = false;
+        [UIObject("root")]
+        public GameObject ViewGameObject { get; private set; }
 
-                    for (int i = 0; i < 5; ++i)
-                        _difficultiesAppliedValue[i] = false;
-                }
-            }
-        }
+#pragma warning disable CS0649
+        [UIComponent("min-increment-setting")]
+        private IncrementSetting _minSetting;
+        [UIComponent("max-increment-setting")]
+        private IncrementSetting _maxSetting;
+#pragma warning restore CS0649
 
-        public FilterControl[] Controls { get; private set; } = new FilterControl[3];
-
-        public event Action SettingChanged;
-
-        private ListViewController _minViewController;
-        private ListViewController _maxViewController;
-        private Toggle[] _difficultyToggles = new Toggle[5];
-
-        private bool _isInitialized = false;
-
+        [UIValue("min-checkbox-value")]
         private bool _minEnabledStagingValue = false;
+        [UIValue("max-checkbox-value")]
         private bool _maxEnabledStagingValue = false;
+        [UIValue("min-increment-value")]
         private int _minStagingValue = DefaultMinValue;
+        [UIValue("max-increment-value")]
         private int _maxStagingValue = DefaultMaxValue;
-        private bool[] _difficultiesStagingValue = new bool[5];
+        [UIValue("easy-value")]
+        private bool _easyStagingValue = false;
+        [UIValue("normal-value")]
+        private bool _normalStagingValue = false;
+        [UIValue("hard-value")]
+        private bool _hardStagingValue = false;
+        [UIValue("expert-value")]
+        private bool _expertStagingValue = false;
+        [UIValue("expert-plus-value")]
+        private bool _expertPlusStagingValue = false;
+
         private bool _minEnabledAppliedValue = false;
         private bool _maxEnabledAppliedValue = false;
         private int _minAppliedValue = DefaultMinValue;
         private int _maxAppliedValue = DefaultMaxValue;
-        private bool[] _difficultiesAppliedValue = new bool[5];
+        private bool _easyAppliedValue = false;
+        private bool _normalAppliedValue = false;
+        private bool _hardAppliedValue = false;
+        private bool _expertAppliedValue = false;
+        private bool _expertPlusAppliedValue = false;
+
+        private bool _isInitialized = false;
 
         private const int DefaultMinValue = 10;
         private const int DefaultMaxValue = 20;
+        [UIValue("min-value")]
         private const int MinValue = 1;
+        [UIValue("max-value")]
         private const int MaxValue = 50;
 
-        private static readonly string[] DifficultyStrings = new string[] { "Easy", "Normal", "Hard", "Expert", "ExpertPlus" };
-
-        public void Init()
+        public void Init(GameObject viewContainer)
         {
             if (_isInitialized)
                 return;
 
-            // difficulties
-            var difficultiesContainer = new GameObject("NJSFilterDifficultiesContainer");
-            Controls[0] = new FilterControl(difficultiesContainer, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 26f), Vector2.zero,
-                delegate ()
-                {
-                    for (int i = 0; i < 5; ++i)
-                        _difficultyToggles[i].isOn = _difficultiesStagingValue[i];
-                });
-
-            // the container needs some graphical component to have the Transform to RectTransform cast work
-            var unused = difficultiesContainer.AddComponent<Image>();
-            unused.color = new Color(0f, 0f, 0f, 0f);
-
-            var divider = Utilities.CreateHorizontalDivider(difficultiesContainer.transform);
-            divider.color = new Color(1f, 1f, 1f, 0.4f);
-            divider.rectTransform.sizeDelta = new Vector2(0f, 0.2f);
-
-            CreateDifficultyToggles(difficultiesContainer.transform);
-
-            // minimum value setting
-            float[] values = Enumerable.Range(MinValue, MaxValue).Select(x => (float)x).ToArray();
-            _minViewController = Utilities.CreateListViewController("Minimum NJS", values, "Filter out songs that have a smaller NJS than this value");
-            _minViewController.GetTextForValue += x => ((int)x).ToString();
-            _minViewController.GetValue += () => _minStagingValue;
-            _minViewController.SetValue += delegate (float value)
-            {
-                if (_maxEnabledStagingValue && value > _maxStagingValue)
-                {
-                    _minStagingValue = _maxStagingValue;
-                    RefreshUI();
-                    return;
-                }
-
-                _minStagingValue = (int)value;
-
-                RefreshUI(false);
-
-                SettingChanged?.Invoke();
-            };
-            _minViewController.Init();
-            _minViewController.applyImmediately = true;
-
-            var minToggle = CreateEnableToggle(_minViewController);
-            minToggle.name = "MinValueToggle";
-            minToggle.onValueChanged.AddListener(delegate (bool value)
-            {
-                _minEnabledStagingValue = value;
-
-                if (value && _maxEnabledStagingValue && _minStagingValue > _maxStagingValue)
-                    _minStagingValue = _maxStagingValue;
-
-                RefreshUI(true, true);
-
-                SettingChanged?.Invoke();
-            });
-
-            Utilities.MoveListViewControllerElements(_minViewController);
-            Utilities.CreateHorizontalDivider(_minViewController.transform);
-
-            Controls[1] = new FilterControl(_minViewController.gameObject, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 12f), new Vector2(0f, -26f),
-                delegate ()
-                {
-                    // disabling buttons needs to be done after the view controller is enabled to override the interactable assignments of ListSettingsController:OnEnable()
-                    _minViewController.GetComponentsInChildren<Button>().First(x => x.name == "DecButton").interactable = _minEnabledStagingValue && _minStagingValue > MinValue;
-                    _minViewController.GetComponentsInChildren<Button>().First(x => x.name == "IncButton").interactable = _minEnabledStagingValue && (!_maxEnabledStagingValue || _minStagingValue < _maxStagingValue) && _minStagingValue < MaxValue;
-
-                    minToggle.isOn = _minEnabledStagingValue;
-                });
-
-            // maximum value setting
-            _maxViewController = Utilities.CreateListViewController("Maximum NJS", values, "Filter out songs that have a larger NJS than this value");
-            _maxViewController.GetTextForValue += x => ((int)x).ToString();
-            _maxViewController.GetValue += () => _maxStagingValue;
-            _maxViewController.SetValue += delegate (float value)
-            {
-                if (_minEnabledStagingValue && value < _minStagingValue)
-                {
-                    _maxStagingValue = _minStagingValue;
-                    RefreshUI();
-                    return;
-                }
-
-                _maxStagingValue = (int)value;
-
-                RefreshUI(false);
-
-                SettingChanged?.Invoke();
-            };
-            _maxViewController.Init();
-            _maxViewController.applyImmediately = true;
-
-            var maxToggle = CreateEnableToggle(_maxViewController);
-            maxToggle.name = "MaxValueToggle";
-            maxToggle.onValueChanged.AddListener(delegate (bool value)
-            {
-                _maxEnabledStagingValue = value;
-
-                if (value && _minEnabledStagingValue && _maxStagingValue < _minStagingValue)
-                    _maxStagingValue = _minStagingValue;
-
-                RefreshUI(true, true);
-
-                SettingChanged?.Invoke();
-            });
-
-            Utilities.MoveListViewControllerElements(_maxViewController);
-
-            Controls[2] = new FilterControl(_maxViewController.gameObject, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 12f), new Vector2(0f, -38f),
-                delegate ()
-                {
-                    _maxViewController.GetComponentsInChildren<Button>().First(x => x.name == "DecButton").interactable = _maxEnabledStagingValue && (!_minEnabledStagingValue || _maxStagingValue > _minStagingValue) && _maxStagingValue < MinValue;
-                    _maxViewController.GetComponentsInChildren<Button>().First(x => x.name == "IncButton").interactable = _maxEnabledStagingValue && _maxStagingValue < MaxValue;
-
-                    maxToggle.isOn = _maxEnabledStagingValue;
-                });
+            BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.NJSFilterView.bsml"), viewContainer, this);
+            ViewGameObject.name = "NJSFilterViewContainer";
 
             _isInitialized = true;
         }
 
-        public void SetDefaultValues()
+        public void SetDefaultValuesToStaging()
         {
             if (!_isInitialized)
                 return;
@@ -234,18 +118,16 @@ namespace EnhancedSearchAndFilters.Filters
             _maxEnabledStagingValue = false;
             _minStagingValue = DefaultMinValue;
             _maxStagingValue = DefaultMaxValue;
+            _easyStagingValue = false;
+            _normalStagingValue = false;
+            _hardStagingValue = false;
+            _expertStagingValue = false;
+            _expertPlusStagingValue = false;
 
-            _minViewController.GetComponentInChildren<Toggle>().isOn = false;
-            _maxViewController.GetComponentInChildren<Toggle>().isOn = false;
-
-            foreach (var toggle in _difficultyToggles)
-                toggle.isOn = false;
-
-            RefreshUI();
-            // don't need to invoke SettingsChanged here, since that will be handed by FilterViewController
+            NotifyAllPropertiesChanged();
         }
 
-        public void ResetValues()
+        public void SetAppliedValuesToStaging()
         {
             if (!_isInitialized)
                 return;
@@ -254,23 +136,50 @@ namespace EnhancedSearchAndFilters.Filters
             _maxEnabledStagingValue = _maxEnabledAppliedValue;
             _minStagingValue = _minAppliedValue;
             _maxStagingValue = _maxAppliedValue;
+            _easyStagingValue = _easyAppliedValue;
+            _normalStagingValue = _normalAppliedValue;
+            _hardStagingValue = _hardAppliedValue;
+            _expertStagingValue = _expertAppliedValue;
+            _expertPlusStagingValue = _expertPlusAppliedValue;
 
-            _minViewController.GetComponentInChildren<Toggle>().isOn = _minEnabledAppliedValue;
-            _maxViewController.GetComponentInChildren<Toggle>().isOn = _maxEnabledAppliedValue;
+            NotifyAllPropertiesChanged();
+        }
 
-            for (int i = 0; i < 5; ++i)
-                _difficultyToggles[i].isOn = _difficultiesAppliedValue[i];
+        public void ApplyStagingValues()
+        {
+            if (!_isInitialized)
+                return;
 
-            RefreshUI();
-            // don't need to invoke SettingsChanged here, since that will be handed by FilterViewController
+            _minEnabledAppliedValue = _minEnabledStagingValue;
+            _maxEnabledAppliedValue = _maxEnabledStagingValue;
+            _minAppliedValue = _minStagingValue;
+            _maxAppliedValue = _maxStagingValue;
+            _easyAppliedValue = _easyStagingValue;
+            _normalAppliedValue = _normalStagingValue;
+            _hardAppliedValue = _hardStagingValue;
+            _expertAppliedValue = _expertStagingValue;
+            _expertPlusAppliedValue = _expertPlusStagingValue;
+        }
+
+        public void ApplyDefaultValues()
+        {
+            if (!_isInitialized)
+                return;
+
+            _minEnabledAppliedValue = false;
+            _maxEnabledAppliedValue = false;
+            _minAppliedValue = DefaultMinValue;
+            _maxAppliedValue = DefaultMaxValue;
+            _easyAppliedValue = false;
+            _normalAppliedValue = false;
+            _hardAppliedValue = false;
+            _expertAppliedValue = false;
+            _expertPlusAppliedValue = false;
         }
 
         public void FilterSongList(ref List<BeatmapDetails> detailsList)
         {
-            // don't need to check _isApplied, that's done outside of this module
-            if ((!_isInitialized) ||
-                (!_minEnabledAppliedValue && !_maxEnabledAppliedValue) ||
-                (!_difficultiesAppliedValue.Aggregate((x, y) => x || y)))
+            if (!_isInitialized || !IsFilterApplied)
                 return;
 
             for (int i = 0; i < detailsList.Count;)
@@ -284,193 +193,194 @@ namespace EnhancedSearchAndFilters.Filters
                     continue;
                 }
 
-                SimplifiedDifficultyBeatmapSet[] difficultySets = details.DifficultyBeatmapSets;
+                var difficultySets = details.DifficultyBeatmapSets;
 
-                bool remove = false;
-                for (int j = 0; j < 5; ++j)
-                {
-                    if (!_difficultiesAppliedValue[j])
-                        continue;
-
-                    remove = difficultySets.Count(delegate (SimplifiedDifficultyBeatmapSet difficultySet)
-                    {
-                        return difficultySet.DifficultyBeatmaps.Count(delegate (SimplifiedDifficultyBeatmap difficulty)
-                        {
-                            return difficulty.Difficulty.ToString() == DifficultyStrings[j] && (difficulty.NoteJumpMovementSpeed < _minAppliedValue || difficulty.NoteJumpMovementSpeed > _maxAppliedValue);
-                        }) > 0;
-                    }) > 0;
-
-                    if (remove)
-                        break;
-                }
-
-                if (remove)
+                if (!(TestDifficulty(BeatmapDifficulty.Easy, _easyAppliedValue, difficultySets) ||
+                    TestDifficulty(BeatmapDifficulty.Normal, _normalAppliedValue, difficultySets) ||
+                    TestDifficulty(BeatmapDifficulty.Hard, _hardAppliedValue, difficultySets) ||
+                    TestDifficulty(BeatmapDifficulty.Expert, _expertAppliedValue, difficultySets) ||
+                    TestDifficulty(BeatmapDifficulty.ExpertPlus, _expertPlusAppliedValue, difficultySets)))
                     detailsList.RemoveAt(i);
                 else
                     ++i;
             }
         }
 
-        private Toggle CreateEnableToggle(ListViewController controller)
+        /// <summary>
+        /// Checks whether a beatmap fulfills the NJS filter settings.
+        /// </summary>
+        /// <param name="difficulty">The difficulty to check.</param>
+        /// <param name="difficultyAppliedValue">The applied value of the difficulty.</param>
+        /// <param name="difficultyBeatmapSets"></param>
+        /// <returns>True, if the beatmap contains at least one difficulty that fulfills the filter settings. Otherwise, false.</returns>
+        private bool TestDifficulty(BeatmapDifficulty difficulty, bool difficultyAppliedValue, SimplifiedDifficultyBeatmapSet[] difficultyBeatmapSets)
         {
-            var gameplayToggle = Utilities.GetTogglePrefab();
+            if (!difficultyAppliedValue)
+                return true;
 
-            var toggle = Utilities.CreateToggleFromPrefab(gameplayToggle.toggle, controller.transform.Find("Value"));
-
-            Object.Destroy(gameplayToggle);
-
-            return toggle;
-        }
-
-        private void CreateDifficultyToggles(Transform parent)
-        {
-            var gameplayToggle = Utilities.GetTogglePrefab();
-
-            var text = BeatSaberUI.CreateText(parent as RectTransform, "Difficulties To Filter NJS", Vector2.zero, new Vector2(50f, 6f));
-            text.rectTransform.anchorMin = new Vector2(0f, 1f);
-            text.rectTransform.anchorMax = new Vector2(0f, 1f);
-            text.rectTransform.pivot = new Vector2(0f, 1f);
-            text.fontSize = 5.5f;
-            BeatSaberUI.AddHintText(text.rectTransform, "Song is kept if at least one of the checked difficulties passes the filter. Songs without a checked difficulty and OST songs are not removed.");
-
-            // easy
-            var toggle = CreateToggleFromPrefab(gameplayToggle.toggle, parent, Vector2.zero, new Vector2(0.2f, 0.5f));
-            toggle.onValueChanged.AddListener(delegate (bool value)
+            bool difficultyFound = false;
+            foreach (var difficultyBeatmapSet in difficultyBeatmapSets)
             {
-                _difficultiesStagingValue[0] = value;
-
-                if (_minEnabledStagingValue || _maxEnabledStagingValue)
-                    SettingChanged?.Invoke();
-            });
-            _difficultyToggles[0] = toggle;
-
-            text = BeatSaberUI.CreateText(parent as RectTransform, "Easy", new Vector2(0f, -2f), new Vector2(8f, 4f));
-            text.rectTransform.anchorMin = new Vector2(0.1f, 0.5f);
-            text.rectTransform.anchorMax = new Vector2(0.1f, 0.5f);
-            text.rectTransform.pivot = new Vector2(0.5f, 0f);
-            text.enableWordWrapping = false;
-            text.alignment = TextAlignmentOptions.Bottom;
-            text.fontSize = 3.5f;
-
-            // normal
-            toggle = CreateToggleFromPrefab(gameplayToggle.toggle, parent, new Vector2(0.2f, 0f), new Vector2(0.4f, 0.5f));
-            toggle.onValueChanged.AddListener(delegate (bool value)
-            {
-                _difficultiesStagingValue[1] = value;
-
-                if (_minEnabledStagingValue || _maxEnabledStagingValue)
-                    SettingChanged?.Invoke();
-            });
-            _difficultyToggles[1] = toggle;
-
-            text = BeatSaberUI.CreateText(parent as RectTransform, "Normal", new Vector2(0f, -2f), new Vector2(8f, 4f));
-            text.rectTransform.anchorMin = new Vector2(0.3f, 0.5f);
-            text.rectTransform.anchorMax = new Vector2(0.3f, 0.5f);
-            text.rectTransform.pivot = new Vector2(0.5f, 0f);
-            text.enableWordWrapping = false;
-            text.alignment = TextAlignmentOptions.Bottom;
-            text.fontSize = 3.5f;
-
-            // hard
-            toggle = CreateToggleFromPrefab(gameplayToggle.toggle, parent, new Vector2(0.4f, 0f), new Vector2(0.6f, 0.5f));
-            toggle.onValueChanged.AddListener(delegate (bool value)
-            {
-                _difficultiesStagingValue[2] = value;
-
-                if (_minEnabledStagingValue || _maxEnabledStagingValue)
-                    SettingChanged?.Invoke();
-            });
-            _difficultyToggles[2] = toggle;
-
-            text = BeatSaberUI.CreateText(parent as RectTransform, "Hard", new Vector2(0f, -2f), new Vector2(8f, 4f));
-            text.rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
-            text.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
-            text.rectTransform.pivot = new Vector2(0.5f, 0f);
-            text.enableWordWrapping = false;
-            text.alignment = TextAlignmentOptions.Bottom;
-            text.fontSize = 3.5f;
-
-            // expert
-            toggle = CreateToggleFromPrefab(gameplayToggle.toggle, parent, new Vector2(0.6f, 0f), new Vector2(0.8f, 0.5f));
-            toggle.onValueChanged.AddListener(delegate (bool value)
-            {
-                _difficultiesStagingValue[3] = value;
-
-                if (_minEnabledStagingValue || _maxEnabledStagingValue)
-                    SettingChanged?.Invoke();
-            });
-            _difficultyToggles[3] = toggle;
-
-            text = BeatSaberUI.CreateText(parent as RectTransform, "Expert", new Vector2(0f, -2f), new Vector2(8f, 4f));
-            text.rectTransform.anchorMin = new Vector2(0.7f, 0.5f);
-            text.rectTransform.anchorMax = new Vector2(0.7f, 0.5f);
-            text.rectTransform.pivot = new Vector2(0.5f, 0f);
-            text.enableWordWrapping = false;
-            text.alignment = TextAlignmentOptions.Bottom;
-            text.fontSize = 3.5f;
-
-            // expert+
-            toggle = CreateToggleFromPrefab(gameplayToggle.toggle, parent, new Vector2(0.8f, 0f), new Vector2(1f, 0.5f));
-            toggle.onValueChanged.AddListener(delegate (bool value)
-            {
-                _difficultiesStagingValue[4] = value;
-
-                if (_minEnabledStagingValue || _maxEnabledStagingValue)
-                    SettingChanged?.Invoke();
-            });
-            _difficultyToggles[4] = toggle;
-
-            text = BeatSaberUI.CreateText(parent as RectTransform, "Expert+", new Vector2(0f, -2f), new Vector2(8f, 4f));
-            text.rectTransform.anchorMin = new Vector2(0.9f, 0.5f);
-            text.rectTransform.anchorMax = new Vector2(0.9f, 0.5f);
-            text.rectTransform.pivot = new Vector2(0.5f, 0f);
-            text.enableWordWrapping = false;
-            text.alignment = TextAlignmentOptions.Bottom;
-            text.fontSize = 3.5f;
-
-            Object.Destroy(gameplayToggle.gameObject);
-        }
-
-        private Toggle CreateToggleFromPrefab(Toggle prefab, Transform parent, Vector2 anchorMin, Vector2 anchorMax)
-        {
-            var toggle = Utilities.CreateToggleFromPrefab(prefab, parent);
-
-            var rt = toggle.transform as RectTransform;
-            rt.anchorMin = anchorMin + ((anchorMax - anchorMin) / 2f);
-            rt.anchorMax = rt.anchorMin;
-            rt.pivot = new Vector2(0.5f, 0.5f);
-            rt.sizeDelta = new Vector2(6f, 6f);
-            rt.anchoredPosition = Vector2.zero;
-
-            return toggle;
-        }
-
-        private void RefreshUI(bool init = true, bool refreshValue = false)
-        {
-            if (init)
-            {
-                if (!refreshValue)
+                var difficultyBeatmap = difficultyBeatmapSet.DifficultyBeatmaps.Cast<SimplifiedDifficultyBeatmap?>().FirstOrDefault(x => x.Value.Difficulty == difficulty);
+                if (!(difficultyBeatmap is null))
                 {
-                    // disable applyImmediately temporarily, otherwise Init() triggers a call to SetValue, which also calls RefreshUI()
-                    _minViewController.applyImmediately = false;
-                    _maxViewController.applyImmediately = false;
-                }
+                    difficultyFound = true;
 
-                _minViewController.Init();
-                _maxViewController.Init();
-
-                if (!refreshValue)
-                {
-                    _minViewController.applyImmediately = true;
-                    _maxViewController.applyImmediately = true;
+                    if ((!_minEnabledAppliedValue || difficultyBeatmap.Value.NoteJumpMovementSpeed >= _minAppliedValue) &&
+                        (!_maxEnabledAppliedValue || difficultyBeatmap.Value.NoteJumpMovementSpeed <= _maxAppliedValue))
+                        return true;
                 }
             }
 
-            // reset button state
-            _minViewController.GetComponentsInChildren<Button>().First(x => x.name == "DecButton").interactable = _minEnabledStagingValue && _minStagingValue > MinValue;
-            _minViewController.GetComponentsInChildren<Button>().First(x => x.name == "IncButton").interactable = _minEnabledStagingValue && (!_maxEnabledStagingValue || _minStagingValue < _maxStagingValue) && _minStagingValue < MaxValue;
-            _maxViewController.GetComponentsInChildren<Button>().First(x => x.name == "DecButton").interactable = _maxEnabledStagingValue && (!_minEnabledStagingValue || _maxStagingValue > _minStagingValue) && _maxStagingValue > MinValue;
-            _maxViewController.GetComponentsInChildren<Button>().First(x => x.name == "IncButton").interactable = _maxEnabledStagingValue && _maxStagingValue < MaxValue;
+            // if we don't find a difficulty that we can test, then we don't filter it out
+            return !difficultyFound;
+        }
+
+        public string SerializeFromStaging()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void DeserializeToStaging(string serializedSettings)
+        {
+            throw new NotImplementedException();
+        }
+
+        [UIAction("difficulty-changed")]
+        private void OnDifficultyChanged(bool value) => SettingChanged?.Invoke();
+
+        [UIAction("min-checkbox-changed")]
+        private void OnMinCheckboxChanged(bool value)
+        {
+            _minSetting.gameObject.SetActive(_minEnabledStagingValue);
+
+            if (_minEnabledStagingValue)
+                ValidateMinValue();
+
+            SettingChanged?.Invoke();
+        }
+
+        [UIAction("min-value-changed")]
+        private void OnMinValueChanged(int value)
+        {
+            ValidateMinValue();
+
+            SettingChanged?.Invoke();
+        }
+
+        private void ValidateMinValue()
+        {
+            try
+            {
+                if (_minEnabledStagingValue)
+                {
+                    if (_maxEnabledStagingValue)
+                    {
+                        _minSetting.maxValue = _maxStagingValue;
+
+                        if (_minStagingValue > _maxStagingValue)
+                            _minStagingValue = _maxStagingValue;
+                    }
+                    else
+                    {
+                        _minSetting.maxValue = MaxValue;
+                    }
+
+                    // notify min value changed
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(_minStagingValue)));
+                }
+                else
+                {
+                    _maxSetting.minValue = MinValue;
+
+                    // notify max value changed
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(_maxStagingValue)));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.log?.Error($"Error occurred while validating min duration value: {ex.Message}");
+                Logger.log?.Error(ex);
+            }
+        }
+
+        [UIAction("max-checkbox-changed")]
+        private void OnMaxCheckboxChanged(bool value)
+        {
+            _maxSetting.gameObject.SetActive(_maxEnabledStagingValue);
+
+            if (_maxEnabledStagingValue)
+                ValidateMaxValue();
+
+            SettingChanged?.Invoke();
+        }
+
+        [UIAction("max-value-changed")]
+        private void OnMaxValueChanged(int value)
+        {
+            ValidateMaxValue();
+
+            SettingChanged?.Invoke();
+        }
+
+        private void ValidateMaxValue()
+        {
+            try
+            {
+                if (_maxEnabledStagingValue)
+                {
+                    if (_minEnabledStagingValue)
+                    {
+                        _maxSetting.minValue = _minStagingValue;
+
+                        if (_maxStagingValue < _minStagingValue)
+                            _maxStagingValue = _minStagingValue;
+                    }
+                    else
+                    {
+                        _maxSetting.minValue = MinValue;
+                    }
+
+                    // notify max value changed
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(_maxStagingValue)));
+                }
+                else
+                {
+                    _minSetting.maxValue = MaxValue;
+
+                    // notify min value changed
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(_maxStagingValue)));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.log.Error($"Error occurred while validating max duration value: {ex.Message}");
+                Logger.log.Error(ex);
+            }
+        }
+
+        private void NotifyAllPropertiesChanged()
+        {
+            try
+            {
+                if (PropertyChanged != null)
+                {
+                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_minEnabledStagingValue)));
+                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_maxEnabledStagingValue)));
+                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_minStagingValue)));
+                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_maxStagingValue)));
+                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_easyStagingValue)));
+                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_normalStagingValue)));
+                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_hardStagingValue)));
+                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_expertStagingValue)));
+                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_expertPlusStagingValue)));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.log.Error($"Error Invoking PropertyChanged: {ex.Message}");
+                Logger.log.Error(ex);
+            }
         }
     }
 }

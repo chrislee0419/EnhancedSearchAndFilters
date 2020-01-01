@@ -35,17 +35,33 @@
     <Reference Include="0Harmony.1.2.0.1">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Libs\0Harmony.1.2.0.1.dll</HintPath>
     </Reference>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\Assembly-CSharp.dll</HintPath>
+    <Reference Include="BSML">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Plugins\BSML.dll</HintPath>
     </Reference>
-    <Reference Include="BeatSaberCustomUI">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Plugins\BeatSaberCustomUI.dll</HintPath>
-    </Reference>
-    <Reference Include="BS_Utils">
+    <Reference Include="BS_Utils, Version=1.3.7.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Plugins\BS_Utils.dll</HintPath>
+    </Reference>
+    <Reference Include="Cinemachine">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\Cinemachine.dll</HintPath>
+    </Reference>
+    <Reference Include="DynamicBone">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\DynamicBone.dll</HintPath>
+    </Reference>
+    <Reference Include="FinalIK">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\FinalIK.dll</HintPath>
+    </Reference>
+    <Reference Include="HMLib">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\HMLib.dll</HintPath>
+    </Reference>
+    <Reference Include="HMUI">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\HMUI.dll</HintPath>
     </Reference>
     <Reference Include="IPA.Loader">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\IPA.Loader.dll</HintPath>
+    </Reference>
+    <Reference Include="MainAssembly">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\MainAssembly.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json.12.0.0.0">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Libs\Newtonsoft.Json.12.0.0.0.dll</HintPath>
@@ -79,6 +95,10 @@
     <Reference Include="UnityEngine">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\UnityEngine.AnimationModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.AudioModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" />
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
@@ -101,9 +121,11 @@
     <Reference Include="UnityEngine.VRModule">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\UnityEngine.VRModule.dll</HintPath>
     </Reference>
+    <Reference Include="VRUI">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\VRUI.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Filters\FilterControl.cs" />
     <Compile Include="Filters\PlayerStatsFilter.cs" />
     <Compile Include="Search\Trie.cs" />
     <Compile Include="Search\WordCountStorage.cs" />
@@ -118,7 +140,6 @@
     <Compile Include="Filters\OtherFilter.cs" />
     <Compile Include="Filters\PPFilter.cs" />
     <Compile Include="Filters\StarDifficultyFilter.cs" />
-    <Compile Include="Filters\VotedFilter.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="PluginConfig.cs" />
@@ -126,22 +147,33 @@
     <Compile Include="SongData\PlayerDataHelper.cs" />
     <Compile Include="Tweaks\SongBrowserTweaks.cs" />
     <Compile Include="Tweaks\SongDataCoreTweaks.cs" />
+    <Compile Include="UI\ButtonPanel.cs" />
+    <Compile Include="UI\Components\EnterExitEventHandler.cs" />
     <Compile Include="UI\Components\PredictionBar.cs" />
     <Compile Include="UI\Components\SearchKeyboard.cs" />
+    <Compile Include="UI\FlowCoordinators\FilterFlowCoordinator.cs" />
     <Compile Include="UI\FlowCoordinators\SearchFlowCoordinator.cs" />
     <Compile Include="UI\SongListUI.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Tweaks\BeatSaverDownloaderTweaks.cs" />
     <Compile Include="UI\Utilities.cs" />
     <Compile Include="UI\Components\CompactSearchKeyboard.cs" />
-    <Compile Include="UI\ViewControllers\FilterListViewController.cs" />
-    <Compile Include="UI\ViewControllers\FilterViewController.cs" />
+    <None Include="UI\ViewControllers\OLDFilterListViewController.cs" />
+    <None Include="UI\ViewControllers\OLDFilterMainViewController.cs" />
+    <Compile Include="UI\ViewControllers\FilterSideViewController.cs" />
+    <Compile Include="UI\ViewControllers\FilterMainViewController.cs" />
     <Compile Include="UI\ViewControllers\SearchCompactKeyboardViewController.cs" />
     <Compile Include="UI\ViewControllers\SearchKeyboardViewController.cs" />
     <Compile Include="UI\ViewControllers\SearchOptionsViewController.cs" />
     <Compile Include="UI\ViewControllers\SearchResultsNavigationController.cs" />
     <Compile Include="UI\ViewControllers\SearchResultsListViewController.cs" />
     <Compile Include="UI\ViewControllers\SongDetailsViewController.cs" />
+    <EmbeddedResource Include="UI\Views\DifficultyFilterView.bsml" />
+    <EmbeddedResource Include="UI\Views\DurationFilterView.bsml" />
+    <EmbeddedResource Include="UI\Views\NJSFilterView.bsml" />
+    <EmbeddedResource Include="UI\Views\OtherFilterView.bsml" />
+    <EmbeddedResource Include="UI\Views\PlayerStatsFilterView.bsml" />
+    <EmbeddedResource Include="UI\Views\PPFilterView.bsml" />
+    <EmbeddedResource Include="UI\Views\StarDifficultyFilterView.bsml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="manifest.json" />
@@ -152,6 +184,23 @@
   <ItemGroup>
     <EmbeddedResource Include="Assets\checkmark.png" />
     <EmbeddedResource Include="Assets\cross.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UI\Views\FilterMainView.bsml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Filters\Views\DifficultyFilterView.bsml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UI\Views\ButtonPanel.bsml" />
+    <EmbeddedResource Include="UI\Views\SearchOptionsView.bsml" />
+    <EmbeddedResource Include="UI\Views\SearchResultsNavigationView.bsml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UI\Views\FilterLoadingView.bsml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UI\Views\FilterSideView.bsml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

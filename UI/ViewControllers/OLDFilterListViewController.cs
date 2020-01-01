@@ -5,14 +5,12 @@ using UnityEngine;
 using UnityEngine.UI;
 using UEImage = UnityEngine.UI.Image;
 using TMPro;
-using CustomUI.BeatSaber;
-using CustomUI.Utilities;
 using EnhancedSearchAndFilters.Filters;
 using HMUI;
 
 namespace EnhancedSearchAndFilters.UI.ViewControllers
 {
-    class FilterListViewController : CustomListViewController
+    class OLDFilterListViewController : CustomListViewController
     {
         public Action<IFilter, IFilter> FilterSelected;
 
@@ -155,9 +153,9 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             statusImg = tableCell.GetComponentsInChildren<UEImage>().First(x => x.name == "StatusImage");
 
             if (filter.IsAvailable)
-                cellText.text = filter.FilterName;
+                cellText.text = filter.Name;
             else
-                cellText.text = $"<color=#FF8888><i>{filter.FilterName}</i></color>";
+                cellText.text = $"<color=#FF8888><i>{filter.Name}</i></color>";
 
             if (filter.Status == FilterStatus.NotAppliedAndDefault)
                 statusImg.color = DefaultFilterColor;

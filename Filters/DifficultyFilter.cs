@@ -1,163 +1,129 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
-using UnityEngine.UI;
-using CustomUI.BeatSaber;
-using EnhancedSearchAndFilters.UI;
+using BeatSaberMarkupLanguage;
+using BeatSaberMarkupLanguage.Notify;
+using BeatSaberMarkupLanguage.Attributes;
 using EnhancedSearchAndFilters.SongData;
-using Object = UnityEngine.Object;
 
 namespace EnhancedSearchAndFilters.Filters
 {
-    class DifficultyFilter : IFilter
+    internal class DifficultyFilter : IFilter, INotifiableHost
     {
-        public string FilterName { get { return "Difficulty"; } }
+        public event Action SettingChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public string Name { get { return "Difficulty"; } }
         public bool IsAvailable { get { return true; } }
         public FilterStatus Status {
             get
             {
-                bool anyApplied = _appliedValues.Contains(true);
-
-                for (int i = 0; i < 5; ++i)
-                {
-                    if (_stagingValues[i] != _appliedValues[i])
-                        return anyApplied ? FilterStatus.AppliedAndChanged : FilterStatus.NotAppliedAndChanged;
-                }
-
-                return anyApplied ? FilterStatus.Applied : FilterStatus.NotAppliedAndDefault;
-            }
-        }
-        public bool ApplyFilter
-        {
-            get
-            {
-                return _appliedValues.Contains(true);
-            }
-            set
-            {
-                if (value)
-                {
-                    for (int i = 0; i < 5; ++i)
-                        _appliedValues[i] = _stagingValues[i];
-                }
+                if (_easyStagingValue != _easyAppliedValue ||
+                    _normalStagingValue != _normalAppliedValue ||
+                    _hardStagingValue != _hardAppliedValue ||
+                    _expertStagingValue != _expertAppliedValue ||
+                    _expertPlusStagingValue != _expertPlusAppliedValue)
+                    return IsFilterApplied ? FilterStatus.AppliedAndChanged : FilterStatus.NotAppliedAndChanged;
                 else
-                {
-                    for (int i = 0; i < 5; ++i)
-                        _appliedValues[i] = false;
-                }
+                    return IsFilterApplied ? FilterStatus.Applied : FilterStatus.NotAppliedAndDefault;
             }
         }
-        public FilterControl[] Controls { get; private set; } = new FilterControl[1];
+        public bool IsFilterApplied => _easyAppliedValue || _normalAppliedValue || _hardAppliedValue || _expertAppliedValue || _expertPlusAppliedValue;
 
-        public event Action SettingChanged;
+        [UIObject("root")]
+        public GameObject ViewGameObject { get; private set; }
 
-        private bool[] _stagingValues = new bool[5];
-        private bool[] _appliedValues = new bool[5];
-        private Toggle[] _toggles = new Toggle[5];
+        [UIValue("easy-checkbox-value")]
+        private bool _easyStagingValue { get; set; } = false;
+        [UIValue("normal-checkbox-value")]
+        private bool _normalStagingValue { get; set; } = false;
+        [UIValue("hard-checkbox-value")]
+        private bool _hardStagingValue { get; set; } = false;
+        [UIValue("expert-checkbox-value")]
+        private bool _expertStagingValue { get; set; } = false;
+        [UIValue("expert-plus-checkbox-value")]
+        private bool _expertPlusStagingValue { get; set; } = false;
+
+        private bool _easyAppliedValue = false;
+        private bool _normalAppliedValue = false;
+        private bool _hardAppliedValue = false;
+        private bool _expertAppliedValue = false;
+        private bool _expertPlusAppliedValue = false;
 
         private bool _isInitialized = false;
 
-        private static readonly string[] DifficultyStrings = new string[] { "Easy", "Normal", "Hard", "Expert", "ExpertPlus" };
-
-        public void Init()
+        public void Init(GameObject viewContainer)
         {
             if (_isInitialized)
                 return;
 
-            var container = new GameObject("DifficultiesFilterContainer");
-            Controls[0] = new FilterControl(container, new Vector2(0f, 0.05f), new Vector2(1f, 0.95f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero,
-                delegate ()
-                {
-                    for (int i = 0; i < 5; ++i)
-                        _toggles[i].isOn = _stagingValues[i];
-                });
-
-            var unused = container.AddComponent<Image>();
-            unused.color = new Color(0f, 0f, 0f, 0f);
-            unused.material = Utilities.NoGlowMaterial;
-
-            var text = BeatSaberUI.CreateText(container.transform as RectTransform, "Keep Songs That Have These Difficulties", Vector2.zero, new Vector2(60f, 6f));
-            text.fontSize = 5.5f;
-            var rt = text.rectTransform;
-            rt.anchorMin = new Vector2(0f, 1f);
-            rt.anchorMax = new Vector2(0f, 1f);
-            rt.pivot = new Vector2(0f, 1f);
-
-            var togglePrefab = Utilities.GetTogglePrefab();
-
-            for (int i = 0; i < 4; ++i)
-                CreateToggleControl(container.transform as RectTransform, DifficultyStrings[i], i, togglePrefab.toggle);
-            CreateToggleControl(container.transform as RectTransform, "Expert+", 4, togglePrefab.toggle, false);
-
-            Object.Destroy(togglePrefab.gameObject);
+            BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.DifficultyFilterView.bsml"), viewContainer, this);
+            ViewGameObject.name = "DifficultyFilterViewContainer";
 
             _isInitialized = true;
         }
 
-        private void CreateToggleControl(RectTransform parent, string label, int index, Toggle prefab, bool createDivider=true)
-        {
-            // difficulty toggle elements are 90 wide, 10 tall
-            var text = BeatSaberUI.CreateText(parent, label, new Vector2(4f, -9.5f - (10f * index)), new Vector2(30f, 10f));
-            //text.alignment = TextAlignmentOptions.Left;       // this doesn't work for whatever reason
-            text.fontSize = 5f;
-
-            var rt = text.rectTransform;
-            rt.anchorMin = new Vector2(0f, 1f);
-            rt.anchorMax = new Vector2(0f, 1f);
-            rt.pivot = new Vector2(0f, 1f);
-
-            var toggle = Utilities.CreateToggleFromPrefab(prefab, parent);
-            rt = toggle.transform as RectTransform;
-            rt.anchorMin = Vector2.one;
-            rt.anchorMax = Vector2.one;
-            rt.pivot = new Vector2(1f, 0.5f);
-            rt.sizeDelta = new Vector2(6f, 6f);
-            rt.anchoredPosition = new Vector2(-6f, -13f - (10f * index));
-
-            toggle.onValueChanged.AddListener(delegate (bool value)
-            {
-                _stagingValues[index] = value;
-
-                SettingChanged?.Invoke();
-            });
-            _toggles[index] = toggle;
-
-            if (createDivider)
-            {
-                var divider = Utilities.CreateHorizontalDivider(parent, 0f, false);
-                divider.rectTransform.anchoredPosition = new Vector2(0f, -18f - (10f * index));
-            }
-        }
-
-        public void SetDefaultValues()
+        public void SetDefaultValuesToStaging()
         {
             if (!_isInitialized)
                 return;
 
-            for (int i = 0; i < 5; ++i)
-            {
-                _stagingValues[i] = false;
-                _toggles[i].isOn = false;
-            }
+            _easyStagingValue = false;
+            _normalStagingValue = false;
+            _hardStagingValue = false;
+            _expertStagingValue = false;
+            _expertPlusStagingValue = false;
 
+            NotifyAllPropertiesChanged();
         }
 
-        public void ResetValues()
+        public void SetAppliedValuesToStaging()
         {
             if (!_isInitialized)
                 return;
 
-            for (int i = 0; i < 5; ++i)
-            {
-                _stagingValues[i] = _appliedValues[i];
-                _toggles[i].isOn = _stagingValues[i];
-            }
+            _easyStagingValue = _easyAppliedValue;
+            _normalStagingValue = _normalAppliedValue;
+            _hardStagingValue = _hardAppliedValue;
+            _expertStagingValue = _expertAppliedValue;
+            _expertPlusStagingValue = _expertPlusAppliedValue;
+
+            NotifyAllPropertiesChanged();
+        }
+
+        public void ApplyStagingValues()
+        {
+            if (!_isInitialized)
+                return;
+
+            _easyAppliedValue = _easyStagingValue;
+            _normalAppliedValue = _normalStagingValue;
+            _hardAppliedValue = _hardStagingValue;
+            _expertAppliedValue = _expertStagingValue;
+            _expertPlusAppliedValue = _expertPlusStagingValue;
+
+            NotifyAllPropertiesChanged();
+        }
+
+        public void ApplyDefaultValues()
+        {
+            if (!_isInitialized)
+                return;
+
+            _easyAppliedValue = false;
+            _normalAppliedValue = false;
+            _hardAppliedValue = false;
+            _expertAppliedValue = false;
+            _expertPlusAppliedValue = false;
+
+            NotifyAllPropertiesChanged();
         }
 
         public void FilterSongList(ref List<BeatmapDetails> detailsList)
         {
-            if (!_isInitialized || !_appliedValues.Contains(true))
+            if (!_isInitialized || !IsFilterApplied)
                 return;
 
             for (int i = 0; i < detailsList.Count;)
@@ -165,32 +131,56 @@ namespace EnhancedSearchAndFilters.Filters
                 bool remove = true;
                 foreach (var difficultySet in detailsList[i].DifficultyBeatmapSets)
                 {
-                    var difficulties = difficultySet.DifficultyBeatmaps.Select(x => x.Difficulty.ToString()).ToArray();
+                    var difficulties = difficultySet.DifficultyBeatmaps.Select(x => (x.Difficulty, x.NotesCount != 0)).ToArray();
 
-                    for (int j = 0; j < 5; ++j)
+                    if ((!_easyAppliedValue || difficulties.Any(x => x.Difficulty == BeatmapDifficulty.Easy && x.Item2)) &&
+                        (!_normalAppliedValue || difficulties.Any(x => x.Difficulty == BeatmapDifficulty.Normal && x.Item2)) &&
+                        (!_hardAppliedValue || difficulties.Any(x => x.Difficulty == BeatmapDifficulty.Easy && x.Item2)) &&
+                        (!_easyAppliedValue || difficulties.Any(x => x.Difficulty == BeatmapDifficulty.Easy && x.Item2)) &&
+                        (!_easyAppliedValue || difficulties.Any(x => x.Difficulty == BeatmapDifficulty.Easy && x.Item2)))
                     {
-                        if (!_appliedValues[j])
-                            continue;
-                        else if (difficulties.Contains(DifficultyStrings[j]))
-                        {
-                            var index = Array.IndexOf(difficulties, DifficultyStrings[j]);
-
-                            // don't consider lightshow difficulties as valid difficulties
-                            if (difficultySet.DifficultyBeatmaps[index].NotesCount > 0)
-                            {
-                                remove = false;
-                                break;
-                            }
-                        }
-                    }
-                    if (!remove)
+                        remove = false;
                         break;
+                    }
                 }
 
                 if (remove)
                     detailsList.RemoveAt(i);
                 else
                     ++i;
+            }
+        }
+
+        public string SerializeFromStaging()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void DeserializeToStaging(string serializedSettings)
+        {
+            throw new NotImplementedException();
+        }
+
+        [UIAction("setting-changed")]
+        private void OnSettingChanged(bool value) => SettingChanged?.Invoke();
+
+        private void NotifyAllPropertiesChanged()
+        {
+            try
+            {
+                if (PropertyChanged != null)
+                {
+                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_easyStagingValue)));
+                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_normalStagingValue)));
+                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_hardStagingValue)));
+                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_expertStagingValue)));
+                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_expertPlusStagingValue)));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.log.Error($"Error Invoking PropertyChanged: {ex.Message}");
+                Logger.log.Error(ex);
             }
         }
     }

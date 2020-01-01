@@ -1,32 +1,44 @@
 ﻿using System;
+using System.Reflection;
 using System.Linq;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using VRUI;
-using CustomUI.BeatSaber;
+using HMUI;
+using BeatSaberMarkupLanguage;
+using BeatSaberMarkupLanguage.Attributes;
+using EnhancedSearchAndFilters.UI.Components;
+using BSMLUtilities = BeatSaberMarkupLanguage.Utilities;
 
 namespace EnhancedSearchAndFilters.UI.ViewControllers
 {
-    class SearchResultsNavigationController : VRUINavigationController
+    class SearchResultsNavigationController : NavigationController
     {
-        public Action BackButtonPressed;
-        public Action ForceShowButtonPressed;
-        public Action LastSearchButtonPressed;
+        public event Action ForceShowButtonPressed;
+        public event Action LastSearchButtonPressed;
 
+#pragma warning disable CS0649
+        [UIObject("header")]
         private GameObject _header;
-        private GameObject _loadingSpinner;
+
+        [UIComponent("results-text")]
         private TextMeshProUGUI _resultsText;
+        [UIComponent("force-search-button")]
         private Button _forceButton;
+        [UIComponent("last-search-button")]
         private Button _lastSearchButton;
+        [UIComponent("last-search-text")]
         private TextMeshProUGUI _lastSearchText;
+#pragma warning restore CS0649
+
+        private GameObject _loadingSpinner;
 
         private SongPreviewPlayer _songPreviewPlayer;
         private string _songPreviewPlayerCrossfadingLevelID;
         private CancellationTokenSource _cancellationTokenSource;
 
-        private const string _headerText = "Search Results";
+        [UIValue("results-text-placeholder")]
         private const string _placeholderResultsText = "Use the keyboard on the right screen\nto search for a song.\n\n---->";
 
         private static readonly Vector2 ResultsTextDefaultAnchoredPosition = Vector2.zero;
@@ -39,35 +51,24 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         private const float ResultsTextCompactFontSize = 5f;
         private static readonly Vector2 LoadingSpinnerCompactAnchoredPosition = new Vector2(-35f, 0f);
 
+        private const string RedoSearchButtonDefaultText = "<color=#FFFFCC>Redo Last Search</color>";
+        private const string RedoSearchButtonHighlightedText = "<color=#444400>Redo Last Search</color>";
+
         protected override void DidActivate(bool firstActivation, ActivationType activationType)
         {
             if (firstActivation)
             {
-                BeatSaberUI.CreateBackButton(this.rectTransform, () => BackButtonPressed?.Invoke());
-                _loadingSpinner = BeatSaberUI.CreateLoadingSpinner(this.rectTransform);
+                BSMLParser.instance.Parse(BSMLUtilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.SearchResultsNavigationView.bsml"), this.gameObject, this);
 
-                var headerRectTransform = Instantiate(Resources.FindObjectsOfTypeAll<RectTransform>()
-                    .First(x => x.name == "HeaderPanel" && x.parent.name == "PlayerSettingsViewController"), this.rectTransform);
-                _header = headerRectTransform.gameObject;
+                _loadingSpinner = Utilities.CreateLoadingSpinner(this.rectTransform);
 
-                _resultsText = BeatSaberUI.CreateText(this.rectTransform, _placeholderResultsText, Vector2.zero, Vector2.zero);
-                _resultsText.alignment = TextAlignmentOptions.Center;
                 _resultsText.enableWordWrapping = true;
-                _forceButton = BeatSaberUI.CreateUIButton(this.rectTransform, "CancelButton", new Vector2(59f, -32f), new Vector2(36f, 10f), () => ForceShowButtonPressed?.Invoke(), "Force Show Results");
 
-                _lastSearchButton = BeatSaberUI.CreateUIButton(this.rectTransform, "CancelButton", new Vector2(59f, -32f), new Vector2(36f, 10f), () => LastSearchButtonPressed?.Invoke(), "<color=#FFFFCC>Redo Last Search</color>");
-                (_lastSearchButton as HMUI.NoTransitionsButton).selectionStateDidChangeEvent += delegate (HMUI.NoTransitionsButton.SelectionState selectionState)
-                {
-                    var text = _lastSearchButton.GetComponentInChildren<TextMeshProUGUI>();
-                    if (selectionState == HMUI.NoTransitionsButton.SelectionState.Highlighted)
-                        text.text = "<color=#444400>Redo Last Search</color>";
-                    else
-                        text.text = "<color=#FFFFCC>Redo Last Search</color>";
-                };
-                _lastSearchText = BeatSaberUI.CreateText(this.rectTransform, "", new Vector2(23f, -31.5f), new Vector2(30f, 8f));
-                _lastSearchText.fontSize = 3.5f;
+                var handler = _lastSearchButton.gameObject.AddComponent<EnterExitEventHandler>();
+                handler.PointerEntered += () => _lastSearchButton.SetButtonText(RedoSearchButtonHighlightedText);
+                handler.PointerExited += () => _lastSearchButton.SetButtonText(RedoSearchButtonDefaultText);
+
                 _lastSearchText.color = new Color(1f, 1f, 1f, 0.3f);
-                _lastSearchText.alignment = TextAlignmentOptions.TopRight;
 
                 _songPreviewPlayer = Resources.FindObjectsOfTypeAll<SongPreviewPlayer>().First();
             }
@@ -147,12 +148,12 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         {
             _header.SetActive(active);
 
-            // text is always getting reset to "Player Settings" when header becomes active, so we have to set it again
-            if (active)
-            {
-                TextMeshProUGUI titleText = _header.GetComponentInChildren<TextMeshProUGUI>(true);
-                titleText.text = _headerText;
-            }
+            //// text is always getting reset to "Player Settings" when header becomes active, so we have to set it again
+            //if (active)
+            //{
+            //    TextMeshProUGUI titleText = _header.GetComponentInChildren<TextMeshProUGUI>(true);
+            //    titleText.text = _headerText;
+            //}
         }
 
         /// <summary>
@@ -235,5 +236,11 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _songPreviewPlayer.CrossfadeToDefault();
             _songPreviewPlayerCrossfadingLevelID = null;
         }
+
+        [UIAction("force-search-button-clicked")]
+        private void OnForceSearchButtonClicked() => ForceShowButtonPressed?.Invoke();
+
+        [UIAction("last-search-button-clicked")]
+        private void OnLastSearchButtonClicked() => LastSearchButtonPressed?.Invoke();
     }
 }

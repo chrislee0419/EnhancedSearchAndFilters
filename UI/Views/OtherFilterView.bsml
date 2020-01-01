@@ -1,0 +1,35 @@
+﻿<vertical id="root" child-expand-width="true" anchor-min-x="0" anchor-min-y="0" anchor-max-x="1" anchor-max-y="1">
+  <text text="Other filters" font-size="5.5" />
+  <bool-setting text="Has One Saber Mode"
+                hover-hint="Filters out songs that don't have a one saber map"
+                value="~one-saber-value"
+                apply-on-change="true"
+                on-change="mode-changed" />
+  <bool-setting text="Has No Arrows Mode"
+                hover-hint="Filters out songs that don't have a no arrows map"
+                value="~no-arrows-value"
+                apply-on-change="true"
+                on-change="mode-changed" />
+  <bool-setting text="Has 90 Degrees Mode"
+                hover-hint="Filters out songs that don't have a 90 degrees map"
+                value="~90-value"
+                apply-on-change="true"
+                on-change="mode-changed" />
+  <bool-setting text="Has 360 Degrees Mode"
+                hover-hint="Filters out songs that don't have a 360 degrees map"
+                value="~360-value"
+                apply-on-change="true"
+                on-change="mode-changed" />
+  <bool-setting text="Has Lightshow Mode"
+                hover-hint="Filters out songs that don't have a lightshow map"
+                value="~lightshow-value"
+                apply-on-change="true"
+                on-change="mode-changed" />
+  <list-setting text="Requires Mapping Extensions"
+                hover-hint="Filters out songs that don't require the 'Mapping Extensions' mod"
+                value="~mapping-extensions-value"
+                options="mapping-extensions-options"
+                apply-on-change="true"
+                on-change="mapping-extensions-changed"
+                formatter="mapping-extensions-formatter" />
+</vertical>

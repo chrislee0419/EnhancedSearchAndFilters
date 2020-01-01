@@ -5,12 +5,12 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using CustomUI.BeatSaber;
-using CustomUI.Utilities;
-using VRUI;
+using HMUI;
 using TableView = HMUI.TableView;
 using TableViewScroller = HMUI.TableViewScroller;
 using NoTransitionsButton = HMUI.NoTransitionsButton;
+using BS_Utils.Utilities;
+using BeatSaberMarkupLanguage;
 using EnhancedSearchAndFilters.Tweaks;
 using EnhancedSearchAndFilters.UI.FlowCoordinators;
 using EnhancedSearchAndFilters.UI.ViewControllers;
@@ -24,56 +24,20 @@ namespace EnhancedSearchAndFilters.UI
         Campaign
     }
 
-    class SongListUI : MonoBehaviour
+    class SongListUI : PersistentSingleton<SongListUI>
     {
         private FlowCoordinator _freePlayFlowCoordinator;
         private SearchFlowCoordinator _searchFlowCoordinator;
-        private FilterViewController _filterViewController;
+        private FilterFlowCoordinator _filterFlowCoordinator;
 
-        private LevelPackLevelsTableView _levelsTableViewContainer;
+        private LevelCollectionTableView _levelCollectionTableView;
         private TableView _levelsTableView;
         private IBeatmapLevelPack _lastPack;
 
-        public LevelPackLevelsViewController LevelsViewController { get; private set; } = null;
+        public LevelSelectionNavigationController LevelSelectionNavigationController { get; private set; } = null;
         public DismissableNavigationController ButtonParentViewController { get; private set; } = null;
 
-        public Button SearchButton { get; set; } = null;
-        public Button FilterButton { get; set; } = null;
-        public Button ClearButton { get; set; } = null;
-
-        private static readonly Vector2 DefaultSearchButtonPosition = new Vector2(12f, 35.5f);
-        private static readonly Vector2 DefaultFilterButtonPosition = new Vector2(30f, 35.5f);
-        private static readonly Vector2 DefaultClearButtonPosition = new Vector2(48f, 35.5f);
-        private static readonly Vector2 DefaultButtonSize = new Vector2(18f, 6f);
-        private const string FilterButtonText = "<color=#FFFFCC>Filter</color>";
-        private const string FilterButtonHighlightedText = "<color=#444400>Filter</color>";
-        private const string FilterButtonAppliedText = "<color=#DDFFDD>Filter\n(Applied)</color>";
-        private const string FilterButtonHighlightedAppliedText = "<color=#004400>Filter\n(Applied)</color>";
-        private const string ClearFilterButtonText = "<color=#FFFFCC>Clear\nFilters</color>";
-        private const string ClearFilterButtonHighlightedText = "<color=#444400>Clear\nFilters</color>";
-        private const string ClearFilterButtonAppliedText = "<color=#FFDDDD>Clear\nFilters</color>";
-        private const string ClearFilterButtonHighlightedAppliedText = "<color=#440000>Clear\nFilters</color>";
         public const string FilteredSongsPackName = "Filtered Songs";
-
-        private static SongListUI _instance;
-
-        public static SongListUI Instance
-        {
-            get
-            {
-                if (_instance == null)
-                {
-                    _instance = new GameObject("EnhancedSearchAndFiltersUI").AddComponent<SongListUI>();
-                    DontDestroyOnLoad(_instance.gameObject);
-                }
-
-                return _instance;
-            }
-            private set
-            {
-                _instance = value;
-            }
-        }
 
         public void OnMenuSceneLoadedFresh()
         {
@@ -81,9 +45,9 @@ namespace EnhancedSearchAndFilters.UI
             RectTransform viewControllersContainer = FindObjectsOfType<RectTransform>().First(x => x.name == "ViewControllers");
             ButtonParentViewController = viewControllersContainer.GetComponentInChildren<DismissableNavigationController>(true);
 
-            _levelsTableViewContainer = viewControllersContainer.GetComponentInChildren<LevelPackLevelsTableView>(true);
-            _levelsTableView = _levelsTableViewContainer.GetPrivateField<TableView>("_tableView");
-            LevelsViewController = viewControllersContainer.GetComponentInChildren<LevelPackLevelsViewController>(true);
+            _levelCollectionTableView = viewControllersContainer.GetComponentInChildren<LevelCollectionTableView>(true);
+            _levelsTableView = _levelCollectionTableView.GetPrivateField<TableView>("_tableView");
+            LevelSelectionNavigationController = viewControllersContainer.GetComponentInChildren<LevelSelectionNavigationController>(true);
 
             var levelPacksViewController = viewControllersContainer.GetComponentInChildren<LevelPacksViewController>(true);
             levelPacksViewController.didSelectPackEvent += LevelPackSelected;
@@ -100,17 +64,19 @@ namespace EnhancedSearchAndFilters.UI
             {
                 // delay building UI until SongBrowser elements are built (after the user selects mode)
             }
+            /* TODO: re-enable this when BeatSaverDownloader is available again (or whatever is gonna replace its UI)
             else if (BeatSaverDownloaderTweaks.ModLoaded)
             {
                 StartCoroutine(GetBeatSaverDownloaderButtons());
             }
+            */
             else
             {
-                CreateSearchButton(DefaultSearchButtonPosition, DefaultButtonSize);
-                CreateFilterButton(DefaultFilterButtonPosition, DefaultButtonSize);
-                CreateClearButton(DefaultClearButtonPosition, DefaultButtonSize);
-                ToggleButtonsActive(false);
+                ButtonPanel.instance.Setup(PluginConfig.DisableSearch, PluginConfig.DisableFilter);
             }
+
+            LevelSelectionNavigationController.didActivateEvent += (_, __) => ButtonPanel.instance.ShowPanel();
+            LevelSelectionNavigationController.didDeactivateEvent += (_) => ButtonPanel.instance.HidePanel();
         }
 
         private void OnModeSelection(FreePlayMode mode)
@@ -123,24 +89,24 @@ namespace EnhancedSearchAndFilters.UI
                 _freePlayFlowCoordinator = FindObjectOfType<SoloFreePlayFlowCoordinator>();
                 (_freePlayFlowCoordinator as SoloFreePlayFlowCoordinator).didFinishEvent += OnFreePlayFlowCoordinatorFinished;
 
-                ToggleButtonsActive(true);
-                BeatSaverDownloaderTweaks.SetTopButtons(false);
+                //ButtonPanel.instance.ShowPanel();
+                //BeatSaverDownloaderTweaks.SetTopButtons(false);
             }
             else if (mode == FreePlayMode.Party)
             {
                 _freePlayFlowCoordinator = FindObjectOfType<PartyFreePlayFlowCoordinator>();
                 (_freePlayFlowCoordinator as PartyFreePlayFlowCoordinator).didFinishEvent += OnFreePlayFlowCoordinatorFinished;
 
-                ToggleButtonsActive(true);
-                BeatSaverDownloaderTweaks.SetTopButtons(false);
+                //ButtonPanel.instance.ShowPanel();
+                //BeatSaverDownloaderTweaks.SetTopButtons(false);
             }
             else if (mode == FreePlayMode.Campaign)
             {
                 _freePlayFlowCoordinator = FindObjectOfType<CampaignFlowCoordinator>();
                 (_freePlayFlowCoordinator as CampaignFlowCoordinator).didFinishEvent += OnFreePlayFlowCoordinatorFinished;
 
-                ToggleButtonsActive(false);
-                BeatSaverDownloaderTweaks.HideTopButtons();
+                //ToggleButtonsActive(false);
+                //BeatSaverDownloaderTweaks.HideTopButtons();
             }
 
             SongBrowserTweaks.OnModeSelection();
@@ -161,13 +127,12 @@ namespace EnhancedSearchAndFilters.UI
 
             if (tries <= 0)
             {
-                Logger.log.Warn("SongBrowser buttons were not found. Creating new buttons, which may overlap with other UI elements.");
-                CreateSearchButton(DefaultSearchButtonPosition, DefaultButtonSize);
-                CreateFilterButton(DefaultFilterButtonPosition, DefaultButtonSize);
-                CreateClearButton(DefaultClearButtonPosition, DefaultButtonSize);
+                Logger.log.Warn("SongBrowser buttons could not be found. Creating default buttons panel");
+                ButtonPanel.instance.Setup(PluginConfig.DisableSearch, PluginConfig.DisableFilter);
             }
         }
 
+        /*
         private IEnumerator GetBeatSaverDownloaderButtons()
         {
             Logger.log.Info("BeatSaverDownloader mod found. Attempting to replace button behaviour and positions.");
@@ -179,8 +144,11 @@ namespace EnhancedSearchAndFilters.UI
             {
                 if (BeatSaverDownloaderTweaks.Init(newButtonSize))
                 {
-                    CreateFilterButton(new Vector2(-12f, 36.75f), newButtonSize, "CreditsButton");
-                    CreateClearButton(new Vector2(8f, 36.75f), newButtonSize, "CreditsButton");
+                    if (!PluginConfig.DisableFilter)
+                    {
+                        CreateFilterButton(new Vector2(-12f, 36.75f), newButtonSize, "CreditsButton");
+                        CreateClearButton(new Vector2(8f, 36.75f), newButtonSize, "CreditsButton");
+                    }
 
                     break;
                 }
@@ -190,14 +158,13 @@ namespace EnhancedSearchAndFilters.UI
 
             if (tries <= 0)
             {
-                Logger.log.Warn("BeatSaverDownloader buttons were not found. Creating new buttons, which may overlap with other UI elements.");
-                CreateSearchButton(DefaultSearchButtonPosition, DefaultButtonSize);
-                CreateFilterButton(DefaultFilterButtonPosition, DefaultButtonSize);
-                CreateClearButton(DefaultClearButtonPosition, DefaultButtonSize);
+                Logger.log.Warn("BeatSaverDownloader buttons could not be found. Creating default buttons panel");
+                ButtonPanel.instance.Setup();
             }
 
             ToggleButtonsActive(false);
         }
+        */
 
         private void OnFreePlayFlowCoordinatorFinished(FlowCoordinator unused)
         {
@@ -208,11 +175,11 @@ namespace EnhancedSearchAndFilters.UI
             else if (_freePlayFlowCoordinator is CampaignFlowCoordinator)
                 (_freePlayFlowCoordinator as CampaignFlowCoordinator).didFinishEvent -= OnFreePlayFlowCoordinatorFinished;
 
-            ToggleButtonsActive(false);
-            BeatSaverDownloaderTweaks.HideTopButtons();
+            //ButtonPanel.instance.HidePanel();
+            //BeatSaverDownloaderTweaks.HideTopButtons();
 
             // unapply filters before leaving the screen
-            if (_filterViewController?.IsFilterApplied == true)
+            if (_filterFlowCoordinator?.AreFiltersApplied == true)
             {
                 UnapplyFilters();
 
@@ -222,75 +189,12 @@ namespace EnhancedSearchAndFilters.UI
             _freePlayFlowCoordinator = null;
         }
 
-        public void CreateSearchButton(Vector2 anchoredPosition, Vector2 sizeDelta, string buttonTemplate = "CancelButton")
-        {
-            if (SearchButton != null || ButtonParentViewController == null)
-                return;
-
-            SearchButton = ButtonParentViewController.CreateUIButton(buttonTemplate, anchoredPosition, sizeDelta, SearchButtonPressed, "Search");
-            SearchButton.SetButtonTextSize(3f);
-            SearchButton.ToggleWordWrapping(false);
-            SearchButton.name = "EnhancedSearchButton";
-
-            Logger.log.Debug("Created search button.");
-        }
-
-        public void CreateFilterButton(Vector2 anchoredPosition, Vector2 sizeDelta, string buttonTemplate = "CancelButton")
-        {
-            if (FilterButton != null || ButtonParentViewController == null)
-                return;
-
-            FilterButton = ButtonParentViewController.CreateUIButton(buttonTemplate, anchoredPosition, sizeDelta, FilterButtonPressed, FilterButtonText);
-            FilterButton.SetButtonTextSize(3f);
-            FilterButton.ToggleWordWrapping(false);
-            FilterButton.name = "EnhancedFilterButton";
-
-            // change colour of text
-            (FilterButton as NoTransitionsButton).selectionStateDidChangeEvent += delegate (NoTransitionsButton.SelectionState selectionState)
-            {
-                var filterApplied = _filterViewController?.IsFilterApplied ?? false;
-                var text = FilterButton.GetComponentInChildren<TextMeshProUGUI>();
-
-                if (selectionState == NoTransitionsButton.SelectionState.Highlighted)
-                    text.text = filterApplied ? FilterButtonHighlightedAppliedText : FilterButtonHighlightedText;
-                else
-                    text.text = filterApplied ? FilterButtonAppliedText : FilterButtonText;
-            };
-
-            Logger.log.Debug("Created filter button.");
-        }
-
-        public void CreateClearButton(Vector2 anchoredPosition, Vector2 sizeDelta, string buttonTemplate = "CancelButton")
-        {
-            if (ClearButton != null || ButtonParentViewController == null)
-                return;
-
-            ClearButton = ButtonParentViewController.CreateUIButton(buttonTemplate, anchoredPosition, sizeDelta, ClearButtonPressed, "Clear\nFilters");
-            ClearButton.SetButtonTextSize(2.3f);
-            ClearButton.ToggleWordWrapping(false);
-            ClearButton.name = "EnhancedClearFilterButton";
-
-            // change colour of text
-            (ClearButton as NoTransitionsButton).selectionStateDidChangeEvent += delegate (NoTransitionsButton.SelectionState selectionState)
-            {
-                var filterApplied = _filterViewController?.IsFilterApplied ?? false;
-                var text = ClearButton.GetComponentInChildren<TextMeshProUGUI>();
-
-                if (selectionState == NoTransitionsButton.SelectionState.Highlighted)
-                    text.text = filterApplied ? ClearFilterButtonHighlightedAppliedText : ClearFilterButtonHighlightedText;
-                else
-                    text.text = filterApplied ? ClearFilterButtonAppliedText : ClearFilterButtonText;
-            };
-
-            Logger.log.Debug("Created clear filter button.");
-        }
-
         /// <summary>
         /// Used by SongBrowserTweaks to apply an existing filter onto another set of beatmaps.
         /// </summary>
         public List<IPreviewBeatmapLevel> ApplyFiltersForSongBrowser(IPreviewBeatmapLevel[] levels)
         {
-            return _filterViewController.ApplyFiltersForSongBrowser(levels);
+            return _filterFlowCoordinator.ApplyFiltersFromExternalViewController(levels);
         }
 
         /// <summary>
@@ -299,23 +203,13 @@ namespace EnhancedSearchAndFilters.UI
         /// <param name="songBrowserFilterSelected">Used only by the SongBrowser mod. Set this to true when another filter (Favorites/Playlist) was selected.</param>
         public void UnapplyFilters(bool songBrowserFilterSelected = false)
         {
-            if (_filterViewController != null)
-                _filterViewController.UnapplyFilters(false);
+            if (_filterFlowCoordinator != null)
+                _filterFlowCoordinator.UnapplyFilters(false);
 
-            if (!SongBrowserTweaks.ModLoaded)
-            {
-                FilterButton.SetButtonText(FilterButtonText);
-                FilterButton.SetButtonTextSize(3f);
+            ButtonPanel.instance.SetFilterStatus(false);
 
-                if ((ClearButton as NoTransitionsButton).selectionState == NoTransitionsButton.SelectionState.Highlighted)
-                    ClearButton.SetButtonText(ClearFilterButtonHighlightedText);
-                else
-                    ClearButton.SetButtonText(ClearFilterButtonText);
-            }
-            else if (SongBrowserTweaks.Initialized && !songBrowserFilterSelected)
-            {
-                LevelsViewController.SetData(_lastPack);
-            }
+            if (SongBrowserTweaks.Initialized && !songBrowserFilterSelected)
+                LevelSelectionNavigationController.SetData(_lastPack, true, true, true);
         }
 
         public void SearchButtonPressed()
@@ -328,7 +222,7 @@ namespace EnhancedSearchAndFilters.UI
             }
 
             // TODO?: toggle to search every level pack instead of just the current?
-            IBeatmapLevelPack levelPack = LevelsViewController.GetPrivateField<IBeatmapLevelPack>("_levelPack");
+            IBeatmapLevelPack levelPack = LevelSelectionNavigationController.GetPrivateField<IBeatmapLevelPack>("_levelPack");
             _searchFlowCoordinator.Activate(_freePlayFlowCoordinator, levelPack);
 
             Logger.log.Debug("'Search' button pressed.");
@@ -336,37 +230,39 @@ namespace EnhancedSearchAndFilters.UI
 
         public void FilterButtonPressed()
         {
-            if (_filterViewController == null)
+            if (_filterFlowCoordinator == null)
             {
-                _filterViewController = new GameObject("FilterViewController").AddComponent<FilterViewController>();
-                _filterViewController.BackButtonPressed += DismissFilterViewController;
-                _filterViewController.LevelsModified += FilterViewControllerSetFilteredSongs;
-                _filterViewController.FiltersUnapplied += FilterViewControllerFiltersUnapplied;
+                _filterFlowCoordinator = BeatSaberUI.CreateFlowCoordinator<FilterFlowCoordinator>();
+                _filterFlowCoordinator.BackButtonPressed += DismissFilterFlowCoordinator;
+                _filterFlowCoordinator.FilterApplied += FilterFlowCoordinatorSetFilteredSongs;
+                _filterFlowCoordinator.FiltersUnapplied += FilterFlowCoordinatorFiltersUnapplied;
             }
 
-            if (_lastPack == null || LevelsViewController.levelPack.packName != FilteredSongsPackName)
+            var levelPack = LevelSelectionNavigationController.GetPrivateField<IBeatmapLevelPack>("_levelPack");
+            if (_lastPack == null || levelPack.packName != FilteredSongsPackName)
             {
-                _lastPack = LevelsViewController.levelPack;
-                Logger.log.Debug($"Storing '{LevelsViewController.levelPack.packName}' level pack as last pack");
+                _lastPack = levelPack;
+                Logger.log.Debug($"Storing '{levelPack.packName}' level pack as last pack");
             }
 
             IPreviewBeatmapLevel[] levels = _lastPack.beatmapLevelCollection.beatmapLevels;
 
-            _filterViewController.Activate(_freePlayFlowCoordinator, levels);
+            _filterFlowCoordinator.Activate(_freePlayFlowCoordinator, levels);
 
             Logger.log.Debug("'Filter' button pressed.");
         }
 
         public void ClearButtonPressed()
         {
-            if (_filterViewController?.IsFilterApplied == true)
-                _filterViewController?.UnapplyFilters();
+            if (_filterFlowCoordinator?.AreFiltersApplied == true)
+                _filterFlowCoordinator?.UnapplyFilters();
 
             Logger.log.Debug("'Clear Filter' button pressed.");
         }
 
         public void ToggleButtonsActive(bool active)
         {
+            /* TODO: revisit this when BeatSaverDownloader is updated, since only that mod uses this function now
             if (SearchButton != null)
                 SearchButton.gameObject.SetActive(active);
             if (FilterButton != null)
@@ -376,6 +272,7 @@ namespace EnhancedSearchAndFilters.UI
 
             if (!active)
                 BeatSaverDownloaderTweaks.HideTopButtons();
+            */
         }
 
         private void LevelPackSelected(LevelPacksViewController viewController, IBeatmapLevelPack levelPack)
@@ -383,7 +280,7 @@ namespace EnhancedSearchAndFilters.UI
             if (levelPack.packName != FilteredSongsPackName)
             {
                 _lastPack = levelPack;
-                Logger.log.Debug($"Storing '{LevelsViewController.levelPack.packName}' level pack as last pack");
+                Logger.log.Debug($"Storing '{levelPack.packName}' level pack as last pack");
             }
 
             if (!SongBrowserTweaks.ModLoaded || !SongBrowserTweaks.Initialized)
@@ -401,11 +298,13 @@ namespace EnhancedSearchAndFilters.UI
         private void DismissSearchFlowCoordinator()
         {
             _freePlayFlowCoordinator.InvokeMethod("DismissFlowCoordinator", _searchFlowCoordinator, null, false);
+            ButtonPanel.instance.ShowPanel();
         }
 
-        private void DismissFilterViewController()
+        private void DismissFilterFlowCoordinator()
         {
-            _freePlayFlowCoordinator.InvokeMethod("DismissViewController", _filterViewController, null, false);
+            _freePlayFlowCoordinator.InvokeMethod("DismissFlowCoordinator", _filterFlowCoordinator, null, false);
+            ButtonPanel.instance.ShowPanel();
         }
 
         private void SelectSongFromSearchResult(IPreviewBeatmapLevel level)
@@ -413,56 +312,41 @@ namespace EnhancedSearchAndFilters.UI
             Logger.log.Debug($"Level selected from search: {level.songName} {level.songSubName} - {level.songAuthorName}");
             DismissSearchFlowCoordinator();
 
-            IPreviewBeatmapLevel[] levels = LevelsViewController.GetPrivateField<IBeatmapLevelPack>("_levelPack").beatmapLevelCollection.beatmapLevels;
+            IPreviewBeatmapLevel[] levels = LevelSelectionNavigationController.GetPrivateField<IBeatmapLevelPack>("_levelPack").beatmapLevelCollection.beatmapLevels;
 
             int row = Array.IndexOf(levels, level);
             if (row >= 0)
             {
-                if (_levelsTableViewContainer.GetPrivateField<bool>("_showLevelPackHeader"))
+                if (_levelCollectionTableView.GetPrivateField<bool>("_showLevelPackHeader"))
                     ++row;
 
                 _levelsTableView.ScrollToCellWithIdx(row, TableViewScroller.ScrollPositionType.Beginning, false);
                 _levelsTableView.SelectCellWithIdx(row);
             }
 
-            LevelsViewController.HandleLevelPackLevelsTableViewDidSelectLevel(null, level);
+            LevelSelectionNavigationController.HandleLevelCollectionViewControllerDidSelectLevel(null, level);
         }
 
-        private void FilterViewControllerSetFilteredSongs(IPreviewBeatmapLevel[] levels)
+        private void FilterFlowCoordinatorSetFilteredSongs(IPreviewBeatmapLevel[] levels)
         {
             // filter application should be handled by FilterViewController calling stuff in SongBrowserTweaks
             if (SongBrowserTweaks.Initialized)
                 return;
 
-            BeatmapLevelPack levelPack = new BeatmapLevelPack("", FilteredSongsPackName, "", LevelsViewController.levelPack.coverImage, new BeatmapLevelCollection(levels));
-            LevelsViewController.SetData(levelPack);
+            BeatmapLevelPack levelPack = new BeatmapLevelPack("", FilteredSongsPackName, "", Sprite.Create(Texture2D.whiteTexture, Rect.zero, Vector2.zero), new BeatmapLevelCollection(levels));
+            LevelSelectionNavigationController.SetData(levelPack, true, true, true);
 
-            FilterButton.SetButtonText(FilterButtonAppliedText);
-            FilterButton.SetButtonTextSize(2.3f);
-
-            ClearButton.SetButtonText(ClearFilterButtonAppliedText);
+            ButtonPanel.instance.SetFilterStatus(true);
         }
 
-        private void FilterViewControllerFiltersUnapplied()
+        private void FilterFlowCoordinatorFiltersUnapplied()
         {
-            LevelsViewController.SetData(_lastPack);
+            LevelSelectionNavigationController.SetData(_lastPack, true, true, true);
 
-            if (!SongBrowserTweaks.ModLoaded)
-            {
-                FilterButton.SetButtonText(FilterButtonText);
-                FilterButton.SetButtonTextSize(3f);
-
-                // if the clear button is shown, then that was pressed to clear filters
-                // therefore, it should currently be highlighted
-                if ((ClearButton as NoTransitionsButton).selectionState == NoTransitionsButton.SelectionState.Highlighted)
-                    ClearButton.SetButtonText(ClearFilterButtonHighlightedText);
-                else
-                    ClearButton.SetButtonText(ClearFilterButtonText);
-            }
-            else
-            {
+            if (SongBrowserTweaks.ModLoaded)
                 SongBrowserTweaks.FiltersUnapplied();
-            }
+            else
+                ButtonPanel.instance.SetFilterStatus(false);
         }
     }
 }

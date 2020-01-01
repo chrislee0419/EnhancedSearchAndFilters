@@ -2,13 +2,13 @@
 using System.Linq;
 using UnityEngine;
 using TMPro;
-using VRUI;
-using CustomUI.BeatSaber;
+using HMUI;
+using BeatSaberMarkupLanguage;
 using EnhancedSearchAndFilters.UI.Components;
 
 namespace EnhancedSearchAndFilters.UI.ViewControllers
 {
-    class SearchCompactKeyboardViewController : VRUIViewController
+    class SearchCompactKeyboardViewController : ViewController
     {
         public event Action<char> TextKeyPressed;
         public event Action DeleteButtonPressed;

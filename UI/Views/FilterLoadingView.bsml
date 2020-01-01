@@ -1,0 +1,21 @@
+﻿<bg id="loading-view-root"
+    anchor-min-x="0" anchor-min-y="0"
+    anchor-max-x="1" anchor-max-y="1"
+    size-delta-x="0" size-delta-y="0">
+  <text id="loading-text"
+        font-size="5"
+        font-align="Top"
+        anchor-min-x="0" anchor-min-y="1"
+        anchor-max-x="1" anchor-max-y="1"
+        size-delta-x="-10" size-delta-y="30"
+        anchor-pos-x="0" anchor-pos-y="-18"
+        pad="0" />
+  <text id="progress-text"
+        font-size="3.5"
+        font-align="Bottom"
+        anchor-min-x="0" anchor-min-y="0"
+        anchor-max-x="1" anchor-max-y="0"
+        size-delta-x="-10" size-delta-y="20"
+        anchor-pos-x="0" anchor-pos-y="13"
+        pad="0" />
+</bg>

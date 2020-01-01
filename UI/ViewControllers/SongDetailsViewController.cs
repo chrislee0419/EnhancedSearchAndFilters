@@ -4,14 +4,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using VRUI;
-using CustomUI.BeatSaber;
-using CustomUI.Utilities;
+using HMUI;
+using BS_Utils.Utilities;
+using BeatSaberMarkupLanguage;
 using EnhancedSearchAndFilters.SongData;
+using Image = UnityEngine.UI.Image;
 
 namespace EnhancedSearchAndFilters.UI.ViewControllers
 {
-    class SongDetailsViewController : VRUIViewController
+    class SongDetailsViewController : ViewController
     {
         public Action<IPreviewBeatmapLevel> SelectButtonPressed;
         public Action CompactKeyboardButtonPressed;
@@ -97,7 +98,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             if (level is CustomPreviewBeatmapLevel)
             {
 #pragma warning disable CS4014
-                BeatmapDetailsLoader.Instance.LoadSingleBeatmapAsync(level as CustomPreviewBeatmapLevel,
+                BeatmapDetailsLoader.instance.LoadSingleBeatmapAsync(level as CustomPreviewBeatmapLevel,
                     delegate (IBeatmapLevel beatmapLevel)
                     {
                         if (beatmapLevel != null)

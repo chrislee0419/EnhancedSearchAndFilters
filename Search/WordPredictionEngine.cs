@@ -3,21 +3,8 @@ using System.Text.RegularExpressions;
 
 namespace EnhancedSearchAndFilters.Search
 {
-    public class WordPredictionEngine
+    public class WordPredictionEngine : PersistentSingleton<WordPredictionEngine>
     {
-        private static WordPredictionEngine _instance = null;
-        public static WordPredictionEngine Instance
-        {
-            get
-            {
-                if (_instance == null)
-                {
-                    _instance = new WordPredictionEngine();
-                }
-                return _instance;
-            }
-        }
-
         // NOTE: this regex keeps apostrophes
         public static readonly Regex RemoveSymbolsRegex = new Regex("[^a-zA-Z0-9 ']");
 

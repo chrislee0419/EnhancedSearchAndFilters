@@ -1,24 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace EnhancedSearchAndFilters.Filters
 {
     public interface IFilter
     {
-        string FilterName { get; }
+        string Name { get; }
         bool IsAvailable { get; }
         FilterStatus Status { get; }
-        bool ApplyFilter { get; set; }
-        FilterControl[] Controls { get; }
+        bool IsFilterApplied { get; }
+        GameObject ViewGameObject { get; }
 
         event Action SettingChanged;
 
-        void Init();
+        void Init(GameObject viewContainer);
 
-        void SetDefaultValues();
-        void ResetValues();
+        void SetDefaultValuesToStaging();
+        void SetAppliedValuesToStaging();
+        void ApplyStagingValues();
+        void ApplyDefaultValues();
 
         void FilterSongList(ref List<SongData.BeatmapDetails> detailsList);
+
+        string SerializeFromStaging();
+        void DeserializeToStaging(string serializedSettings);
     }
 
     public enum FilterStatus

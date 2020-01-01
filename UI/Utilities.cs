@@ -1,8 +1,6 @@
 ﻿using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
-using CustomUI.Settings;
-using CustomUI.Utilities;
 using Object = UnityEngine.Object;
 
 namespace EnhancedSearchAndFilters.UI
@@ -15,7 +13,7 @@ namespace EnhancedSearchAndFilters.UI
             {
                 if (_noGlowMaterial == null)
                 {
-                    _noGlowMaterial = new Material(UIUtilities.NoGlowMaterial);
+                    _noGlowMaterial = new Material(Resources.FindObjectsOfTypeAll<Material>().First(m => m.name == "UINoGlow"));
                     _noGlowMaterial.color = new Color(1f, 1f, 1f, 1f);
 
                 }
@@ -24,50 +22,52 @@ namespace EnhancedSearchAndFilters.UI
         }
         private static Material _noGlowMaterial;
 
-        private static SubMenu _submenu = new SubMenu((Transform)null);
+        private static GameObject _loadingSpinnerPrefab;
 
-        /// <summary>
-        /// Gets the prefab that should be passed to CreateToggleFromPrefab. 
-        /// Should be used like this: 'CreateToggleFromPrefab(prefab.toggle, transform)'. 
-        /// You should manually destroy this prefab after creating all your toggles.
-        /// </summary>
-        /// <returns>A GameplayModifierToggle that contains the toggle prefab.</returns>
-        public static GameplayModifierToggle GetTogglePrefab()
-        {
-            var togglePrefab = Object.Instantiate(Resources.FindObjectsOfTypeAll<GameplayModifierToggle>().Last());
-            Object.Destroy(togglePrefab.GetPrivateField<HoverHint>("_hoverHint"));
+        //private static SubMenu _submenu = new SubMenu((Transform)null);
 
-            return togglePrefab;
-        }
+        ///// <summary>
+        ///// Gets the prefab that should be passed to CreateToggleFromPrefab. 
+        ///// Should be used like this: 'CreateToggleFromPrefab(prefab.toggle, transform)'. 
+        ///// You should manually destroy this prefab after creating all your toggles.
+        ///// </summary>
+        ///// <returns>A GameplayModifierToggle that contains the toggle prefab.</returns>
+        //public static GameplayModifierToggle GetTogglePrefab()
+        //{
+        //    var togglePrefab = Object.Instantiate(Resources.FindObjectsOfTypeAll<GameplayModifierToggle>().Last());
+        //    Object.Destroy(togglePrefab.GetPrivateField<HoverHint>("_hoverHint"));
 
-        /// <summary>
-        /// Create a toggle UI element. The prefab can be obtained through GetTogglePrefab().
-        /// </summary>
-        /// <param name="prefab">An existing toggle to instantiate from.</param>
-        /// <param name="parent">Transform to parent the newly created toggle.</param>
-        /// <returns>The newly created toggle.</returns>
-        public static Toggle CreateToggleFromPrefab(Toggle prefab, Transform parent, float toggleSize = 6f)
-        {
-            var toggle = Object.Instantiate(prefab, parent, false);
+        //    return togglePrefab;
+        //}
 
-            Object.Destroy(toggle.transform.Find("Icon").gameObject);
-            Object.Destroy(toggle.transform.Find("Text").gameObject);
+        ///// <summary>
+        ///// Create a toggle UI element. The prefab can be obtained through GetTogglePrefab().
+        ///// </summary>
+        ///// <param name="prefab">An existing toggle to instantiate from.</param>
+        ///// <param name="parent">Transform to parent the newly created toggle.</param>
+        ///// <returns>The newly created toggle.</returns>
+        //public static Toggle CreateToggleFromPrefab(Toggle prefab, Transform parent, float toggleSize = 6f)
+        //{
+        //    var toggle = Object.Instantiate(prefab, parent, false);
 
-            Navigation nav = toggle.navigation;
-            nav.mode = Navigation.Mode.None;
-            toggle.navigation = nav;
+        //    Object.Destroy(toggle.transform.Find("Icon").gameObject);
+        //    Object.Destroy(toggle.transform.Find("Text").gameObject);
 
-            toggle.onValueChanged.RemoveAllListeners();
+        //    Navigation nav = toggle.navigation;
+        //    nav.mode = Navigation.Mode.None;
+        //    toggle.navigation = nav;
 
-            var rt = toggle.transform.Find("BG") as RectTransform;
-            rt.anchorMin = new Vector2(0.5f, 0.5f);
-            rt.anchorMax = new Vector2(0.5f, 0.5f);
-            rt.pivot = new Vector2(0.5f, 0.5f);
-            rt.sizeDelta = new Vector2(toggleSize, toggleSize);
-            rt.anchoredPosition = Vector2.zero;
+        //    toggle.onValueChanged.RemoveAllListeners();
 
-            return toggle;
-        }
+        //    var rt = toggle.transform.Find("BG") as RectTransform;
+        //    rt.anchorMin = new Vector2(0.5f, 0.5f);
+        //    rt.anchorMax = new Vector2(0.5f, 0.5f);
+        //    rt.pivot = new Vector2(0.5f, 0.5f);
+        //    rt.sizeDelta = new Vector2(toggleSize, toggleSize);
+        //    rt.anchoredPosition = Vector2.zero;
+
+        //    return toggle;
+        //}
 
         /// <summary>
         /// Creates a white, horizontal divider with the default width delta of -4f.
@@ -112,92 +112,105 @@ namespace EnhancedSearchAndFilters.UI
             return divider;
         }
 
-        /// <summary>
-        /// Create a BoolViewController outside of the settings menu. 
-        /// NOTE: CustomUI.Settings.SubMenu:AddHooks() can make a call to ApplySettings.
-        /// </summary>
-        /// <param name="name">The text to be displayed for this setting.</param>
-        /// <param name="hintText">The text to be displayed when this settings is hovered over.</param>
-        /// <returns>A new BoolViewController.</returns>
-        public static BoolViewController CreateBoolViewController(string name, string hintText = "")
+        ///// <summary>
+        ///// Create a BoolViewController outside of the settings menu. 
+        ///// NOTE: CustomUI.Settings.SubMenu:AddHooks() can make a call to ApplySettings.
+        ///// </summary>
+        ///// <param name="name">The text to be displayed for this setting.</param>
+        ///// <param name="hintText">The text to be displayed when this settings is hovered over.</param>
+        ///// <returns>A new BoolViewController.</returns>
+        //public static BoolViewController CreateBoolViewController(string name, string hintText = "")
+        //{
+        //    BoolViewController viewController = _submenu.AddBool(name, hintText);
+
+        //    // remove this view controller from the global list of CustomSettings, otherwise it'll try to call Init() when we don't need it to
+        //    SubMenu.needsInit.Remove(viewController);
+
+        //    return viewController;
+        //}
+
+        ///// <summary>
+        ///// Create a ListViewController outside of the settings menu. 
+        ///// NOTE: CustomUI.Settings.SubMenu:AddHooks() can make a call to ApplySettings.
+        ///// </summary>
+        ///// <param name="name">The text to be displayed for this setting.</param>
+        ///// <param name="values">A list of values representing an option in this setting.</param>
+        ///// <param name="hintText">The text to be displayed when this settings is hovered over.</param>
+        ///// <returns>A new ListViewController.</returns>
+        //public static ListViewController CreateListViewController(string name, float[] values, string hintText = "")
+        //{
+        //    ListViewController viewController = _submenu.AddList(name, values, hintText);
+
+        //    // remove this view controller from the global list of CustomSettings, otherwise it'll try to call Init() when we don't need it to
+        //    SubMenu.needsInit.Remove(viewController);
+
+        //    return viewController;
+        //}
+
+        ///// <summary>
+        ///// Moves the decrement button, value, increment button, and toggle (if it exists) of a ListViewController outside of the "Value" transform.
+        ///// </summary>
+        ///// <param name="controller">A ListViewController that represents a filter's control's UI element.</param>
+        //public static void MoveListViewControllerElements(ListViewController controller)
+        //{
+        //    MoveIncDecViewControllerElements(controller);
+
+        //    // for min/max ListViewControllers that have an enable toggle
+        //    if (controller.transform.Find("Value/MinValueToggle") != null || controller.transform.Find("Value/MaxValueToggle") != null)
+        //    {
+        //        var toggle = controller.transform.Find("Value/MinValueToggle") as RectTransform ?? controller.transform.Find("Value/MaxValueToggle") as RectTransform;
+        //        toggle.SetParent(controller.transform);
+        //        toggle.anchorMin = new Vector2(1f, 0.5f);
+        //        toggle.anchorMax = new Vector2(1f, 0.5f);
+        //        toggle.pivot = new Vector2(1f, 0.5f);
+        //        toggle.sizeDelta = new Vector2(8f, 8f);
+        //        toggle.anchoredPosition = new Vector2(-34f, 0f);
+        //    }
+        //}
+
+        ///// <summary>
+        ///// Moves the decrement button, value, and increment button of an IncDecSettingsController outside of the "Value" transform. 
+        ///// This method is here for consistency of UI elements and because the "Value" transform has some forced horizontal layout that messes up child RectTransform positioning.
+        ///// </summary>
+        ///// <param name="controller">An IncDecSettingsController that represents a filter's control's UI element.</param>
+        //public static void MoveIncDecViewControllerElements(IncDecSettingsController controller)
+        //{
+        //    var incButton = controller.transform.Find("Value/IncButton") as RectTransform;
+        //    incButton.SetParent(controller.transform);
+        //    incButton.anchorMin = new Vector2(1f, 0.5f);
+        //    incButton.anchorMax = new Vector2(1f, 0.5f);
+        //    incButton.pivot = new Vector2(1f, 0.5f);
+        //    incButton.sizeDelta = new Vector2(8f, 8f);
+        //    incButton.anchoredPosition = Vector2.zero;
+
+        //    var text = controller.transform.Find("Value/ValueText") as RectTransform;
+        //    text.SetParent(controller.transform);
+        //    text.anchorMin = new Vector2(1f, 0.5f);
+        //    text.anchorMax = new Vector2(1f, 0.5f);
+        //    text.pivot = new Vector2(1f, 0.5f);
+        //    text.sizeDelta = new Vector2(16f, 8f);
+        //    text.anchoredPosition = new Vector2(-8f, 0f);
+
+        //    var decButton = controller.transform.Find("Value/DecButton") as RectTransform;
+        //    decButton.SetParent(controller.transform);
+        //    decButton.anchorMin = new Vector2(1f, 0.5f);
+        //    decButton.anchorMax = new Vector2(1f, 0.5f);
+        //    decButton.pivot = new Vector2(1f, 0.5f);
+        //    decButton.sizeDelta = new Vector2(8f, 8f);
+        //    decButton.anchoredPosition = new Vector2(-24f, 0f);
+        //}
+
+        public static GameObject CreateLoadingSpinner(Transform parent)
         {
-            BoolViewController viewController = _submenu.AddBool(name, hintText);
+            // copied from CustomUI, since BSML doesn't currently create loading spinners
+            // https://github.com/williums/BeatSaber-CustomUI/blob/master/BeatSaber/BeatSaberUI.cs
+            if (_loadingSpinnerPrefab == null)
+                _loadingSpinnerPrefab = Resources.FindObjectsOfTypeAll<GameObject>().Where(x => x.name == "LoadingIndicator").First();
 
-            // remove this view controller from the global list of CustomSettings, otherwise it'll try to call Init() when we don't need it to
-            SubMenu.needsInit.Remove(viewController);
+            var loadingSpinner = GameObject.Instantiate(_loadingSpinnerPrefab, parent, false);
+            loadingSpinner.name = "LoadingSpinner";
 
-            return viewController;
-        }
-
-        /// <summary>
-        /// Create a ListViewController outside of the settings menu. 
-        /// NOTE: CustomUI.Settings.SubMenu:AddHooks() can make a call to ApplySettings.
-        /// </summary>
-        /// <param name="name">The text to be displayed for this setting.</param>
-        /// <param name="values">A list of values representing an option in this setting.</param>
-        /// <param name="hintText">The text to be displayed when this settings is hovered over.</param>
-        /// <returns>A new ListViewController.</returns>
-        public static ListViewController CreateListViewController(string name, float[] values, string hintText = "")
-        {
-            ListViewController viewController = _submenu.AddList(name, values, hintText);
-
-            // remove this view controller from the global list of CustomSettings, otherwise it'll try to call Init() when we don't need it to
-            SubMenu.needsInit.Remove(viewController);
-
-            return viewController;
-        }
-
-        /// <summary>
-        /// Moves the decrement button, value, increment button, and toggle (if it exists) of a ListViewController outside of the "Value" transform.
-        /// </summary>
-        /// <param name="controller">A ListViewController that represents a filter's control's UI element.</param>
-        public static void MoveListViewControllerElements(ListViewController controller)
-        {
-            MoveIncDecViewControllerElements(controller);
-
-            // for min/max ListViewControllers that have an enable toggle
-            if (controller.transform.Find("Value/MinValueToggle") != null || controller.transform.Find("Value/MaxValueToggle") != null)
-            {
-                var toggle = controller.transform.Find("Value/MinValueToggle") as RectTransform ?? controller.transform.Find("Value/MaxValueToggle") as RectTransform;
-                toggle.SetParent(controller.transform);
-                toggle.anchorMin = new Vector2(1f, 0.5f);
-                toggle.anchorMax = new Vector2(1f, 0.5f);
-                toggle.pivot = new Vector2(1f, 0.5f);
-                toggle.sizeDelta = new Vector2(8f, 8f);
-                toggle.anchoredPosition = new Vector2(-34f, 0f);
-            }
-        }
-
-        /// <summary>
-        /// Moves the decrement button, value, and increment button of an IncDecSettingsController outside of the "Value" transform. 
-        /// This method is here for consistency of UI elements and because the "Value" transform has some forced horizontal layout that messes up child RectTransform positioning.
-        /// </summary>
-        /// <param name="controller">An IncDecSettingsController that represents a filter's control's UI element.</param>
-        public static void MoveIncDecViewControllerElements(IncDecSettingsController controller)
-        {
-            var incButton = controller.transform.Find("Value/IncButton") as RectTransform;
-            incButton.SetParent(controller.transform);
-            incButton.anchorMin = new Vector2(1f, 0.5f);
-            incButton.anchorMax = new Vector2(1f, 0.5f);
-            incButton.pivot = new Vector2(1f, 0.5f);
-            incButton.sizeDelta = new Vector2(8f, 8f);
-            incButton.anchoredPosition = Vector2.zero;
-
-            var text = controller.transform.Find("Value/ValueText") as RectTransform;
-            text.SetParent(controller.transform);
-            text.anchorMin = new Vector2(1f, 0.5f);
-            text.anchorMax = new Vector2(1f, 0.5f);
-            text.pivot = new Vector2(1f, 0.5f);
-            text.sizeDelta = new Vector2(16f, 8f);
-            text.anchoredPosition = new Vector2(-8f, 0f);
-
-            var decButton = controller.transform.Find("Value/DecButton") as RectTransform;
-            decButton.SetParent(controller.transform);
-            decButton.anchorMin = new Vector2(1f, 0.5f);
-            decButton.anchorMax = new Vector2(1f, 0.5f);
-            decButton.pivot = new Vector2(1f, 0.5f);
-            decButton.sizeDelta = new Vector2(8f, 8f);
-            decButton.anchoredPosition = new Vector2(-24f, 0f);
+            return loadingSpinner;
         }
     }
 }

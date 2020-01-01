@@ -1,0 +1,33 @@
+﻿<vertical id="root" child-expand-width="true" anchor-min-x="0" anchor-min-y="0" anchor-max-x="1" anchor-max-y="1">
+  <macro.if value="is-available">
+    <text text="Keep Songs Between Some Star Rating" font-size="5.5" />
+    <checkbox text="Enable Minimum Star Rating Filter" on-change="min-checkbox-changed" apply-on-change="true" />
+    <increment-setting id="min-increment"
+                       text="    Minimum Star Rating"
+                       hover-hint="Filter out songs that are less difficult than this star rating"
+                       value="~min-increment-value"
+                       min="~min-value"
+                       max="~max-value"
+                       increment="~inc-value"
+                       on-change="min-value-changed"
+                       apply-on-change="true" />
+    <checkbox text="Enable Maximum Star Rating Filter" on-change="max-checkbox-changed" apply-on-change="true" />
+    <increment-setting id="max-increment"
+                       text="    Maximum Star Rating"
+                       hover-hint="Filter out songs that are more difficult than this star rating"
+                       value="~max-increment-value"
+                       min="~min-value"
+                       max="~max-value"
+                       increment="~inc-value"
+                       on-change="max-value-changed"
+                       apply-on-change="true" />
+    <bool-setting text="Include Unrated Songs"
+                  hover-hint="Choose to remove or keep unrated songs"
+                  value="~unrated-value"
+                  on-change="unrated-changed"
+                  apply-on-change="true" />
+  </macro.if>
+  <macro.if value="!is-available">
+    <text text="~missing-requirements-text" font-align="Center" font-size="5.5" />
+  </macro.if>
+</vertical>

@@ -1,25 +1,27 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
-using UnityEngine.UI;
-using CustomUI.BeatSaber;
-using CustomUI.Settings;
-using EnhancedSearchAndFilters.UI;
+using BeatSaberMarkupLanguage;
+using BeatSaberMarkupLanguage.Components.Settings;
+using BeatSaberMarkupLanguage.Notify;
+using BeatSaberMarkupLanguage.Attributes;
 using EnhancedSearchAndFilters.SongData;
-using Object = UnityEngine.Object;
 
 namespace EnhancedSearchAndFilters.Filters
 {
-    class DurationFilter : IFilter
+    internal class DurationFilter : IFilter, INotifiableHost
     {
-        public string FilterName { get { return "Song Length"; } }
+        public event Action SettingChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public string Name { get { return "Song Length"; } }
         public bool IsAvailable { get { return true; } }
         public FilterStatus Status
         {
             get
             {
-                if (ApplyFilter)
+                if (IsFilterApplied)
                 {
                     if (_minEnabledAppliedValue != _minEnabledStagingValue ||
                         _maxEnabledAppliedValue != _maxEnabledStagingValue ||
@@ -39,204 +41,61 @@ namespace EnhancedSearchAndFilters.Filters
                 }
             }
         }
-        public bool ApplyFilter
-        {
-            get
-            {
-                return _minEnabledAppliedValue || _maxEnabledAppliedValue;
-            }
-            set
-            {
-                if (value)
-                {
-                    _minEnabledAppliedValue = _minEnabledStagingValue;
-                    _maxEnabledAppliedValue = _maxEnabledStagingValue;
-                    _minAppliedValue = _minStagingValue;
-                    _maxAppliedValue = _maxStagingValue;
-                }
-                else
-                {
-                    _minEnabledAppliedValue = false;
-                    _maxEnabledAppliedValue = false;
-                    _minAppliedValue = DefaultMinValue;
-                    _maxAppliedValue = DefaultMaxValue;
-                }
-            }
-        }
-        public FilterControl[] Controls { get; private set; } = new FilterControl[3];
+        public bool IsFilterApplied => _minEnabledAppliedValue || _maxEnabledAppliedValue;
 
-        public event Action SettingChanged;
+        [UIObject("root")]
+        public GameObject ViewGameObject { get; private set; }
 
-        private ListViewController _minViewController;
-        private ListViewController _maxViewController;
+#pragma warning disable CS0649
+        [UIComponent("min-increment-setting")]
+        private IncrementSetting _minSetting;
+        [UIComponent("max-increment-setting")]
+        private IncrementSetting _maxSetting;
+#pragma warning restore CS0649
 
-        private bool _isInitialized = false;
-
+        [UIValue("min-checkbox-value")]
         private bool _minEnabledStagingValue = false;
+        [UIValue("max-checkbox-value")]
         private bool _maxEnabledStagingValue = false;
+        [UIValue("min-increment-value")]
         private float _minStagingValue = DefaultMinValue;
+        [UIValue("max-increment-value")]
         private float _maxStagingValue = DefaultMaxValue;
+
         private bool _minEnabledAppliedValue = false;
         private bool _maxEnabledAppliedValue = false;
         private float _minAppliedValue = DefaultMinValue;
         private float _maxAppliedValue = DefaultMaxValue;
 
+        private bool _isInitialized = false;
+
         private const float DefaultMinValue = 60f;
         private const float DefaultMaxValue = 120f;
+        [UIValue("min-value")]
         private const float MinValue = 0f;
+        [UIValue("max-value")]
         private const float MaxValue = 1800f;       // 30 minutes
+        [UIValue("inc-value")]
         private const float IncrementValue = 15f;
 
-        public void Init()
+        public void Init(GameObject viewContainer)
         {
             if (_isInitialized)
                 return;
 
-            var togglePrefab = Utilities.GetTogglePrefab();
-
-            // title text
-            var text = BeatSaberUI.CreateText(null, "Keep Songs Between Some Length", Vector2.zero, Vector2.zero);
-            text.fontSize = 5.5f;
-            var rt = text.rectTransform;
-            rt.anchorMin = new Vector2(0f, 1f);
-            rt.anchorMax = new Vector2(0f, 1f);
-            rt.pivot = new Vector2(0f, 1f);
-
-            Controls[0] = new FilterControl(text.gameObject, new Vector2(0f, 0.95f), new Vector2(0f, 0.95f), new Vector2(0f, 1f), new Vector2(50f, 6f), Vector2.zero);
-
-            // min view controller
-            float[] values = Enumerable.Range((int)MinValue, (int)((MaxValue - MinValue) / IncrementValue) + 1).Select(x => x * IncrementValue).ToArray();
-            _minViewController = Utilities.CreateListViewController("Minimum Duration", values, "Filters out songs that are shorter than this value");
-            _minViewController.GetTextForValue += x => ConvertFloatToTimeString(x);
-            _minViewController.GetValue += () => _minStagingValue;
-            _minViewController.SetValue += delegate (float value)
-            {
-                if (_maxEnabledStagingValue && value > _maxStagingValue)
-                {
-                    _minStagingValue = _maxStagingValue;
-                    RefreshUI();
-                    return;
-                }
-
-                _minStagingValue = value;
-
-                RefreshUI(false);
-
-                SettingChanged?.Invoke();
-            };
-            _minViewController.Init();
-            _minViewController.applyImmediately = true;
-
-            var minToggle = Utilities.CreateToggleFromPrefab(togglePrefab.toggle, _minViewController.transform.Find("Value"));
-            minToggle.name = "MinValueToggle";
-            minToggle.onValueChanged.AddListener(delegate (bool value)
-            {
-                _minEnabledStagingValue = value;
-
-                if (value && _maxEnabledStagingValue && _minStagingValue > _maxStagingValue)
-                    _minStagingValue = _maxStagingValue;
-
-                RefreshUI(true, true);
-
-                SettingChanged?.Invoke();
-            });
-
-            Utilities.MoveListViewControllerElements(_minViewController);
-            Utilities.CreateHorizontalDivider(_minViewController.transform);
-
-            Controls[1] = new FilterControl(_minViewController.gameObject, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 12f), new Vector2(0f, -8f),
-                delegate ()
-                {
-                    // disabling buttons needs to be done after the view controller is enabled to override the interactable assignments of ListSettingsController:OnEnable()
-                    _minViewController.GetComponentsInChildren<Button>().First(x => x.name == "DecButton").interactable = _minEnabledStagingValue && _minStagingValue > MinValue;
-                    _maxViewController.GetComponentsInChildren<Button>().First(x => x.name == "IncButton").interactable = _minEnabledStagingValue && (!_maxEnabledStagingValue || _minStagingValue < _maxStagingValue) && _minStagingValue < MaxValue;
-                });
-
-            // max view controller
-            _maxViewController = Utilities.CreateListViewController("Maximum Duration", values, "Filters out songs that are longer than this value");
-            _maxViewController.GetTextForValue += x => ConvertFloatToTimeString(x);
-            _maxViewController.GetValue += () => _maxStagingValue;
-            _maxViewController.SetValue += delegate (float value)
-            {
-                if (_minEnabledStagingValue && value < _minStagingValue)
-                {
-                    _maxStagingValue = _minStagingValue;
-                    RefreshUI();
-                    return;
-                }
-
-                _maxStagingValue = value;
-
-                RefreshUI(false);
-
-                SettingChanged?.Invoke();
-            };
-            _maxViewController.Init();
-            _maxViewController.applyImmediately = true;
-
-            var maxToggle = Utilities.CreateToggleFromPrefab(togglePrefab.toggle, _maxViewController.transform.Find("Value"));
-            maxToggle.name = "MaxValueToggle";
-            maxToggle.onValueChanged.AddListener(delegate (bool value)
-            {
-                _maxEnabledStagingValue = value;
-
-                if (value && _minEnabledStagingValue && _maxStagingValue < _minStagingValue)
-                    _maxStagingValue = _minStagingValue;
-
-                RefreshUI(true, true);
-
-                SettingChanged?.Invoke();
-            });
-
-            Utilities.MoveListViewControllerElements(_maxViewController);
-
-            Controls[2] = new FilterControl(_maxViewController.gameObject, new Vector2(0f, 0.95f), new Vector2(1f, 0.95f), new Vector2(0.5f, 1f), new Vector2(0f, 12f), new Vector2(0f, -20f),
-                delegate ()
-                {
-                    // disabling buttons needs to be done after the view controller is enabled to override the interactable assignments of ListSettingsController:OnEnable()
-                    _maxViewController.GetComponentsInChildren<Button>().First(x => x.name == "DecButton").interactable = _maxEnabledStagingValue && (!_minEnabledStagingValue || _maxStagingValue > _minStagingValue) && _maxStagingValue > MinValue;
-                    _maxViewController.GetComponentsInChildren<Button>().First(x => x.name == "IncButton").interactable = _maxEnabledStagingValue  && _maxStagingValue < MaxValue;
-                });
-
-            Object.Destroy(togglePrefab);
+            BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.DurationFilterView.bsml"), viewContainer, this);
+            ViewGameObject.name = "DurationFilterViewContainer";
 
             _isInitialized = true;
         }
 
+        [UIAction("time-formatter")]
         private string ConvertFloatToTimeString(float duration)
         {
             return TimeSpan.FromSeconds(duration).ToString("m':'ss");
         }
 
-        private void RefreshUI(bool init = true, bool refreshValue = false)
-        {
-            if (init)
-            {
-                if (!refreshValue)
-                {
-                    // disable applyImmediately temporarily, otherwise Init() triggers a call to SetValue, which also calls RefreshUI()
-                    _minViewController.applyImmediately = false;
-                    _maxViewController.applyImmediately = false;
-                }
-
-                _minViewController.Init();
-                _maxViewController.Init();
-
-                if (!refreshValue)
-                {
-                    _minViewController.applyImmediately = true;
-                    _maxViewController.applyImmediately = true;
-                }
-            }
-
-            // reset button state
-            _minViewController.GetComponentsInChildren<Button>().First(x => x.name == "DecButton").interactable = _minEnabledStagingValue && _minStagingValue > MinValue;
-            _minViewController.GetComponentsInChildren<Button>().First(x => x.name == "IncButton").interactable = _minEnabledStagingValue && (!_maxEnabledStagingValue || _minStagingValue < _maxStagingValue) && _minStagingValue < MaxValue;
-            _maxViewController.GetComponentsInChildren<Button>().First(x => x.name == "DecButton").interactable = _maxEnabledStagingValue && (!_minEnabledStagingValue || _maxStagingValue > _minStagingValue) && _maxStagingValue > MinValue;
-            _maxViewController.GetComponentsInChildren<Button>().First(x => x.name == "IncButton").interactable = _maxEnabledStagingValue && _maxStagingValue < MaxValue;
-        }
-
-        public void SetDefaultValues()
+        public void SetDefaultValuesToStaging()
         {
             if (!_isInitialized)
                 return;
@@ -246,12 +105,10 @@ namespace EnhancedSearchAndFilters.Filters
             _minStagingValue = DefaultMinValue;
             _maxStagingValue = DefaultMaxValue;
 
-            _minViewController.GetComponentInChildren<Toggle>().isOn = false;
-            _maxViewController.GetComponentInChildren<Toggle>().isOn = false;
-            RefreshUI();
+            NotifyAllPropertiesChanged();
         }
 
-        public void ResetValues()
+        public void SetAppliedValuesToStaging()
         {
             if (!_isInitialized)
                 return;
@@ -261,14 +118,34 @@ namespace EnhancedSearchAndFilters.Filters
             _minStagingValue = _minAppliedValue;
             _maxStagingValue = _maxAppliedValue;
 
-            _minViewController.GetComponentInChildren<Toggle>().isOn = _minEnabledAppliedValue;
-            _maxViewController.GetComponentInChildren<Toggle>().isOn = _maxEnabledAppliedValue;
-            RefreshUI();
+            NotifyAllPropertiesChanged();
+        }
+
+        public void ApplyStagingValues()
+        {
+            if (!_isInitialized)
+                return;
+
+            _minEnabledAppliedValue = _minEnabledStagingValue;
+            _maxEnabledAppliedValue = _maxEnabledStagingValue;
+            _minAppliedValue = _minStagingValue;
+            _maxAppliedValue = _maxStagingValue;
+        }
+
+        public void ApplyDefaultValues()
+        {
+            if (!_isInitialized)
+                return;
+
+            _minEnabledAppliedValue = false;
+            _maxEnabledAppliedValue = false;
+            _minAppliedValue = DefaultMinValue;
+            _maxAppliedValue = DefaultMaxValue;
         }
 
         public void FilterSongList(ref List<BeatmapDetails> detailsList)
         {
-            if (!_isInitialized || (!_minEnabledAppliedValue && !_maxEnabledAppliedValue))
+            if (!_isInitialized || !IsFilterApplied)
                 return;
 
             for (int i = 0; i < detailsList.Count;)
@@ -278,6 +155,145 @@ namespace EnhancedSearchAndFilters.Filters
                     detailsList.RemoveAt(i);
                 else
                     ++i;
+            }
+        }
+
+        public string SerializeFromStaging()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void DeserializeToStaging(string serializedSettings)
+        {
+            throw new NotImplementedException();
+        }
+
+        [UIAction("min-checkbox-changed")]
+        private void OnMinCheckboxChanged()
+        {
+            _minSetting.gameObject.SetActive(_minEnabledStagingValue);
+
+            if (_minEnabledStagingValue)
+                ValidateMinValue();
+
+            SettingChanged?.Invoke();
+        }
+
+        [UIAction("min-value-changed")]
+        private void OnMinValueChanged()
+        {
+            ValidateMinValue();
+
+            SettingChanged?.Invoke();
+        }
+
+        private void ValidateMinValue()
+        {
+            try
+            {
+                if (_minEnabledStagingValue)
+                {
+                    if (_maxEnabledStagingValue)
+                    {
+                        _minSetting.maxValue = _maxStagingValue;
+
+                        if (_minStagingValue > _maxStagingValue)
+                            _minStagingValue = _maxStagingValue;
+                    }
+                    else
+                    {
+                        _minSetting.maxValue = MaxValue;
+                    }
+
+                    // notify min value changed
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(_minStagingValue)));
+                }
+                else
+                {
+                    _maxSetting.minValue = MinValue;
+
+                    // notify max value changed
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(_maxStagingValue)));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.log?.Error($"Error occurred while validating min duration value: {ex.Message}");
+                Logger.log?.Error(ex);
+            }
+        }
+
+        [UIAction("max-checkbox-changed")]
+        private void OnMaxCheckboxChanged()
+        {
+            _maxSetting.gameObject.SetActive(_maxEnabledStagingValue);
+
+            if (_maxEnabledStagingValue)
+                ValidateMaxValue();
+
+            SettingChanged?.Invoke();
+        }
+
+        [UIAction("max-value-changed")]
+        private void OnMaxValueChanged()
+        {
+            ValidateMaxValue();
+
+            SettingChanged?.Invoke();
+        }
+
+        private void ValidateMaxValue()
+        {
+            try
+            {
+                if (_maxEnabledStagingValue)
+                {
+                    if (_minEnabledStagingValue)
+                    {
+                        _maxSetting.minValue = _minStagingValue;
+
+                        if (_maxStagingValue < _minStagingValue)
+                            _maxStagingValue = _minStagingValue;
+                    }
+                    else
+                    {
+                        _maxSetting.minValue = MinValue;
+                    }
+
+                    // notify max value changed
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(_maxStagingValue)));
+                }
+                else
+                {
+                    _minSetting.maxValue = MaxValue;
+
+                    // notify min value changed
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(_maxStagingValue)));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.log.Error($"Error occurred while validating max duration value: {ex.Message}");
+                Logger.log.Error(ex);
+            }
+        }
+
+        private void NotifyAllPropertiesChanged()
+        {
+            try
+            {
+                if (PropertyChanged != null)
+                {
+                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_minEnabledStagingValue)));
+                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_maxEnabledStagingValue)));
+                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_minStagingValue)));
+                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_maxStagingValue)));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.log.Error($"Error Invoking PropertyChanged: {ex.Message}");
+                Logger.log.Error(ex);
             }
         }
     }

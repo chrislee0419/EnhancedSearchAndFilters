@@ -1,0 +1,56 @@
+﻿<vertical id="root" child-expand-width="true" anchor-min-x="0" anchor-min-y="0" anchor-max-x="1" anchor-max-y="1">
+  <text text="Filter Out Songs Where Notes Move Too Fast/Slow" font-size="5.5" />
+  <horizontal child-expand-height="true" spacing="3">
+    <vertical preferred-width="80" child-expand-width="true">
+      <checkbox text="Enable Minimum NJS Filter"
+                value="~min-checkbox-value"
+                on-change="min-checkbox-changed"
+                apply-on-change="true" />
+      <increment id="min-increment-setting"
+                 text="    Minimum NJS"
+                 hover-hint="Filters out songs that have a smaller NJS than this value"
+                 value="~min-increment-value"
+                 min="~min-value"
+                 max="~max-value"
+                 integer-only="true"
+                 on-change="min-value-changed"
+                 apply-on-change="true" />
+      <checkbox text="Enable Maximum NJS Filter"
+                value="~max-checkbox-value"
+                on-change="max-checkbox-changed"
+                apply-on-change="true" />
+      <increment id="max-increment-setting"
+                 text="    Maximum NJS"
+                 hover-hint="Filters out songs that have a larger NJS than this value"
+                 value="~max-increment-value"
+                 min="~min-value"
+                 max="~max-value"
+                 integer-only="true"
+                 on-change="max-value-changed"
+                 apply-on-change="true" />
+    </vertical>
+    <vertical bg="round-rect-panel" preferred-width="67" child-expand-width="true">
+      <text text="Difficulties To Apply NJS Filter To:" font-size="4.5" />
+      <checkbox text="Easy"
+                value="~easy-value"
+                apply-on-change="true"
+                on-change="difficulty-changed" />
+      <checkbox text="Normal"
+                value="~normal-value"
+                apply-on-change="true"
+                on-change="difficulty-changed" />
+      <checkbox text="Hard"
+                value="~hard-value"
+                apply-on-change="true"
+                on-change="difficulty-changed" />
+      <checkbox text="Expert"
+                value="~expert-value"
+                apply-on-change="true"
+                on-change="difficulty-changed" />
+      <checkbox text="Expert+"
+                value="~expert-plus-value"
+                apply-on-change="true"
+                on-change="difficulty-changed" />
+    </vertical>
+  </horizontal>
+</vertical>

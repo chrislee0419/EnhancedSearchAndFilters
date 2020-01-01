@@ -1,0 +1,43 @@
+﻿<vertical id="root" child-expand-width="true" anchor-min-x="0" anchor-min-y="0" anchor-max-x="1" anchor-max-y="1">
+  <macro.if value="is-available">
+    <text text="Keep Songs That Award PP"
+          font-size="5.5" />
+    <list-setting text="Is Ranked"
+                  value="~rank-value"
+                  options="~rank-options"
+                  apply-on-change="true"
+                  on-change="rank-changed"
+                  formatter="rank-formatter" />
+    <checkbox id="min-checkbox"
+              text="    Enable Minimum PP Filter"
+              on-change="min-checkbox-changed"
+              apply-on-change="true" />
+    <increment-setting id="min-increment"
+                       text="        Minimum PP"
+                       hover-hint="Filter out ranked songs that award less PP than this value"
+                       value="~min-increment-value"
+                       min="~min-value"
+                       max="~max-value"
+                       increment="~inc-value"
+                       integer-only="true"
+                       on-change="min-value-changed"
+                       apply-on-change="true" />
+    <checkbox id="max-checkbox"
+              text="    Enable Minimum PP Filter"
+              on-change="max-checkbox-changed"
+              apply-on-change="true" />
+    <increment-setting id="max-increment"
+                       text="        Maximum PP"
+                       hover-hint="Filter out ranked songs that award more PP than this value"
+                       value="~max-increment-value"
+                       min="~min-value"
+                       max="~max-value"
+                       increment="~inc-value"
+                       integer-only="true"
+                       on-change="max-value-changed"
+                       apply-on-change="true" />
+  </macro.if>
+  <macro.if value="!is-available">
+    <text text="~missing-requirements-text" font-align="Center" font-size="5.5" />
+  </macro.if>
+</vertical>
