@@ -38,6 +38,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         {
             if (firstActivation)
             {
+                this.name = "SongDetailsViewController";
+
                 var referenceViewController = Resources.FindObjectsOfTypeAll<StandardLevelDetailViewController>().First();
                 StandardLevelDetailView reference = referenceViewController.GetPrivateField<StandardLevelDetailView>("_standardLevelDetailView");
                 RectTransform referenceParent = reference.transform.parent as RectTransform;
@@ -210,32 +212,12 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         private void RemoveSongRequirementsButton()
         {
             // remove SongCore's info button if it exists
-            RectTransform[] buttonList = _levelParamsPanel.transform.parent.GetComponentsInChildren<RectTransform>(true)
-                .Where(delegate (RectTransform rt)
-                {
-                    Button btn = rt.GetComponent<Button>();
+            var songCoreBackground = _standardLevelDetailView.transform.Find("BSMLBackground");
 
-                    // NOTE: if the button ever gets a proper name, this will need to be changed
-                    if (btn == null || btn.name != "PlayButton(Clone)")
-                        return false;
-
-                    var text = btn.GetComponentInChildren<TextMeshProUGUI>(true);
-                    return text != null ? text.text == "?" : false;
-                }).ToArray();
-
-            // there should only be one, but we don't need it so just delete them all anyways
-            if (buttonList.Length > 0)
-            {
-                foreach (RectTransform b in buttonList)
-                {
-                    Destroy(b.gameObject);
-                    Logger.log.Debug("Removed SongCore's requirements info button from StandardLevelDetailView");
-                }
-            }
+            if (songCoreBackground == null)
+                Logger.log.Notice("Could not find (and remove) SongCore's requirements info button in custom StandardLevelDetailView object");
             else
-            {
-                Logger.log.Info("Could not find SongCore's requirements info button custom StandardLevelDetailView");
-            }
+                Destroy(songCoreBackground.gameObject);
         }
 
         // NOTE: also deletes any elements added in by other mods
@@ -252,6 +234,9 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                     rt.anchorMax = new Vector2(0.5f, 1f);
                     rt.pivot = new Vector2(0.5f, 1f);
                     rt.sizeDelta = new Vector2(20f, 0f);
+
+                    // remove the hoverhint, otherwise we get null exceptions from onpointerenter/exit
+                    Destroy(rt.GetComponentInChildren<HoverHint>());
                 }
                 else if ((rt.parent.name == "Time" || rt.parent.name == "BPM") && rt.name == "Icon")
                 {
@@ -276,6 +261,9 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                     Destroy(rt.gameObject);
                 }
             }
+
+            // remove favorites toggle
+            Destroy(_standardLevelDetailView.transform.Find("Level/FavoritesToggle").gameObject);
         }
 
         private void ModifyTextElements()
@@ -290,7 +278,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             RectTransform[] rectTransforms = statsPanel.GetComponentsInChildren<RectTransform>(true)
                 .Where(x => x.name != "Stats" && x.name != "Title" && x.name != "Value").ToArray();
 
-            float width = 14f;      // parent width = 72u
+            float width = 16f;      // parent width = 80u
             float height = 8f;      // parent height = 9u
             float xPos = 1f;
             for (int i = 0; i < rectTransforms.Length; ++i)
