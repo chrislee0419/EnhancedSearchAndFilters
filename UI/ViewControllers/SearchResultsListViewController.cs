@@ -16,6 +16,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
         private IPreviewBeatmapLevel[] _beatmapLevels = new IPreviewBeatmapLevel[0];
 
+        private RectTransform _container;
         private TableView _tableView;
         private LevelListTableCell _tableCellInstance;
 
@@ -28,20 +29,31 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 name = "SearchResultsListViewController";
                 _tableCellInstance = Resources.FindObjectsOfTypeAll<LevelListTableCell>().First(x => (x.name == "LevelListTableCell"));
 
+                this.rectTransform.anchorMin = new Vector2(0.5f, 0f);
+                this.rectTransform.anchorMax = new Vector2(0.5f, 1f);
+
+                _container = new GameObject("SearchResultsListContainer", typeof(RectTransform)).transform as RectTransform;
+                _container.anchorMin = Vector2.zero;
+                _container.anchorMax = Vector2.one;
+                _container.sizeDelta = Vector2.zero;
+                _container.SetParent(this.transform, false);
+
                 // tableview setup
                 var tableViewGO = new GameObject("SearchTableView");
                 tableViewGO.SetActive(false);
-                tableViewGO.transform.SetParent(this.transform);
-
-                var scrollRect = tableViewGO.AddComponent<ScrollRect>();
-                tableViewGO.AddComponent<RectMask2D>();
+                tableViewGO.transform.SetParent(_container, false);
                 _tableView = tableViewGO.AddComponent<TableView>();
 
                 _tableView.SetPrivateField("_preallocatedCells", new TableView.CellsGroup[0]);
                 _tableView.SetPrivateField("_isInitialized", false);
+                _tableView.SetPrivateField("_hideScrollButtonsIfNotNeeded", false);
 
                 var viewport = new GameObject("Viewport").AddComponent<RectTransform>();
                 viewport.SetParent(tableViewGO.transform, false);
+
+                viewport.gameObject.AddComponent<RectMask2D>();
+
+                var scrollRect = tableViewGO.GetComponent<ScrollRect>();
                 scrollRect.viewport = viewport;
 
                 viewport.anchorMin = Vector2.zero;
@@ -50,7 +62,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 viewport.anchoredPosition = Vector2.zero;
                 (tableViewGO.transform as RectTransform).anchorMin = Vector2.zero;
                 (tableViewGO.transform as RectTransform).anchorMax = Vector2.one;
-                (tableViewGO.transform as RectTransform).sizeDelta = Vector2.zero;
+                (tableViewGO.transform as RectTransform).sizeDelta = new Vector2(0f, -20f);
                 (tableViewGO.transform as RectTransform).anchoredPosition = Vector2.zero;
 
                 // page up/down button setup
@@ -59,21 +71,26 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 buttonGO.name = "PageUpButton";
                 (buttonGO.transform as RectTransform).anchorMin = new Vector2(0f, 1f);
                 (buttonGO.transform as RectTransform).anchorMax = Vector2.one;
-                (buttonGO.transform as RectTransform).anchoredPosition = new Vector2(0f, -1f);
+                (buttonGO.transform as RectTransform).pivot = new Vector2(0.5f, 1f);
+                (buttonGO.transform as RectTransform).anchoredPosition = Vector2.zero;
                 (buttonGO.transform as RectTransform).sizeDelta = new Vector2(0f, 10.25f);
                 (buttonGO.transform as RectTransform).localRotation = Quaternion.Euler(0f, 0f, 180f);
                 _tableView.SetPrivateField("_pageUpButton", buttonGO.GetComponent<NoTransitionsButton>());
+                buttonGO.SetActive(true);
 
                 buttonGO = Instantiate(buttonPrefab.gameObject, tableViewGO.transform, false);
                 buttonGO.name = "PageDownButton";
                 (buttonGO.transform as RectTransform).anchorMin = Vector2.zero;
                 (buttonGO.transform as RectTransform).anchorMax = new Vector2(1f, 0f);
-                (buttonGO.transform as RectTransform).anchoredPosition = new Vector2(0f, 1f);
+                (buttonGO.transform as RectTransform).pivot = new Vector2(0.5f, 1f);
+                (buttonGO.transform as RectTransform).anchoredPosition = Vector2.zero;
                 (buttonGO.transform as RectTransform).sizeDelta = new Vector2(0f, 10.25f);
                 (buttonGO.transform as RectTransform).localRotation = Quaternion.Euler(0f, 0f, 0f);
                 _tableView.SetPrivateField("_pageDownButton", buttonGO.GetComponent<NoTransitionsButton>());
+                buttonGO.SetActive(true);
 
                 _tableView.dataSource = this;
+                _tableView.didSelectCellWithIdxEvent += RowSelected;
                 tableViewGO.SetActive(true);
 
                 // fix for autoscrolling when a gamepad is attached
@@ -88,26 +105,19 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             if (!this.isActivated)
                 return;
 
-            var container = (this.transform.Find("SearchTableView") as RectTransform);
             if (PluginConfig.CompactSearchMode)
             {
-                this.rectTransform.anchorMin = new Vector2(0.5f, 0f);
-                this.rectTransform.anchorMax = new Vector2(0.5f, 1f);
-                this.rectTransform.sizeDelta = new Vector2(55f, 0f);
-                this.rectTransform.pivot = new Vector2(0.45f, 0.5f);
+                this.rectTransform.sizeDelta = new Vector2(60f, 0f);
 
-                container.sizeDelta = new Vector2(50f, 0f);
+                _container.sizeDelta = Vector2.zero;
+                _container.anchoredPosition = new Vector2(-5f, 0f);
             }
             else
             {
-                // make the list view narrower and with a slight rightward bias
-                // to fit details view controller and back button
-                this.rectTransform.anchorMin = new Vector2(0.5f, 0f);
-                this.rectTransform.anchorMax = new Vector2(0.5f, 1f);
                 this.rectTransform.sizeDelta = new Vector2(70f, 0f);
-                this.rectTransform.pivot = new Vector2(0.45f, 0.5f);
 
-                container.sizeDelta = new Vector2(60f, 0f);
+                _container.sizeDelta = new Vector2(-5f, 0f);
+                _container.anchoredPosition = Vector2.zero;
             }
         }
 
@@ -156,8 +166,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
                 foreach (UEImage i in tableCell.GetPrivateField<UEImage[]>("_beatmapCharacteristicImages"))
                     i.enabled = false;
-                tableCell.SetPrivateField("_beatmapCharacteristicAlphas", new float[0]);
                 tableCell.SetPrivateField("_beatmapCharacteristicImages", new UEImage[0]);
+                tableCell.transform.Find("FavoritesIcon").gameObject.SetActive(false);
                 tableCell.reuseIdentifier = ReuseIdentifier;
             }
 
