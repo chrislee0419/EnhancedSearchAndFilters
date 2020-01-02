@@ -15,8 +15,6 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
         public event Action SearchOptionsApplied;
 
-        private BSMLParserParams _parserParams;
-
         [UIValue("max-results-increment-value")]
         public int MaxResultsShownIncrementValue { get => PluginConfig.MaxSearchResultsValueIncrement; }
         [UIValue("max-results-min-value")]
@@ -111,6 +109,9 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         private Button _resetButton;
         [UIComponent("apply-button")]
         private Button _applyButton;
+
+        [UIParams()]
+        private BSMLParserParams _parserParams;
 #pragma warning restore CS0649
 
         [UIValue("max-results-hover-hint")]
@@ -139,10 +140,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
         protected override void DidActivate(bool firstActivation, ActivationType activationType)
         {
-            if (firstActivation)
-                _parserParams = BSMLParser.instance.Parse(Content, gameObject, this);
-
-            didActivate?.Invoke(firstActivation, activationType);
+            base.DidActivate(firstActivation, activationType);
             this.name = "SearchOptionsViewController";
 
             _resetButton.interactable = false;
