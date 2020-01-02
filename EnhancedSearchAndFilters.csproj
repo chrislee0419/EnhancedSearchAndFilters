@@ -157,8 +157,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UI\Utilities.cs" />
     <Compile Include="UI\Components\CompactSearchKeyboard.cs" />
-    <None Include="UI\ViewControllers\OLDFilterListViewController.cs" />
-    <None Include="UI\ViewControllers\OLDFilterMainViewController.cs" />
     <Compile Include="UI\ViewControllers\FilterSideViewController.cs" />
     <Compile Include="UI\ViewControllers\FilterMainViewController.cs" />
     <Compile Include="UI\ViewControllers\SearchCompactKeyboardViewController.cs" />
@@ -187,9 +185,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="UI\Views\FilterMainView.bsml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Filters\Views\DifficultyFilterView.bsml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="UI\Views\ButtonPanel.bsml" />
