@@ -36,16 +36,61 @@ namespace EnhancedSearchAndFilters.Filters
         private GameObject _viewGameObject;
 #pragma warning restore CS0649
 
-        [UIValue("easy-checkbox-value")]
         private bool _easyStagingValue = false;
-        [UIValue("normal-checkbox-value")]
+        [UIValue("easy-checkbox-value")]
+        public bool EasyStagingValue
+        {
+            get => _easyStagingValue;
+            set
+            {
+                _easyStagingValue = value;
+                SettingChanged?.Invoke();
+            }
+        }
         private bool _normalStagingValue = false;
-        [UIValue("hard-checkbox-value")]
+        [UIValue("normal-checkbox-value")]
+        public bool NormalStagingValue
+        {
+            get => _normalStagingValue;
+            set
+            {
+                _normalStagingValue = value;
+                SettingChanged?.Invoke();
+            }
+        }
         private bool _hardStagingValue = false;
-        [UIValue("expert-checkbox-value")]
+        [UIValue("hard-checkbox-value")]
+        public bool HardStagingValue
+        {
+            get => _hardStagingValue;
+            set
+            {
+                _hardStagingValue = value;
+                SettingChanged?.Invoke();
+            }
+        }
         private bool _expertStagingValue = false;
-        [UIValue("expert-plus-checkbox-value")]
+        [UIValue("expert-checkbox-value")]
+        public bool ExpertStagingValue
+        {
+            get => _expertStagingValue;
+            set
+            {
+                _expertStagingValue = value;
+                SettingChanged?.Invoke();
+            }
+        }
         private bool _expertPlusStagingValue = false;
+        [UIValue("expert-plus-checkbox-value")]
+        public bool ExpertPlusStagingValue
+        {
+            get => _expertPlusStagingValue;
+            set
+            {
+                _expertPlusStagingValue = value;
+                SettingChanged?.Invoke();
+            }
+        }
 
         private bool _easyAppliedValue = false;
         private bool _normalAppliedValue = false;
@@ -160,8 +205,5 @@ namespace EnhancedSearchAndFilters.Filters
         {
             throw new NotImplementedException();
         }
-
-        [UIAction("setting-changed")]
-        private void OnSettingChanged(bool value) => SettingChanged?.Invoke();
     }
 }
