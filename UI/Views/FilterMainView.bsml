@@ -4,26 +4,24 @@
       anchor-min-x="0" anchor-min-y="0"
       anchor-max-x="1" anchor-max-y="1"
       size-delta-x="-10" size-delta-y="-15"
-      anchor-pos-x="0" anchor-pos-y="2.5" />
+      anchor-pos-x="0" anchor-pos-y="3.5" />
   <button id="default-button"
           text="Reset To Default"
           font-size="3.5"
           on-click="default-button-clicked"
-          glow-color="#FF4444"
           anchor-min-x="0" anchor-min-y="0"
           anchor-max-x="0" anchor-max-y="0"
-          size-delta-x="24" size-delta-y="7.5"
-          anchor-pos-x="17" anchor-pos-y="4"
+          preferred-width="28" preferred-height="7.5"
+          anchor-pos-x="19" anchor-pos-y="5.5"
           pad="0" />
   <button id="clear-button"
           text="Clear Changes"
           font-size="3.5"
           on-click="clear-button-clicked"
-          glow-color="#FFAA11"
           anchor-min-x="0" anchor-min-y="0"
           anchor-max-x="0" anchor-max-y="0"
-          size-delta-x="24" size-delta-y="7.5"
-          anchor-pos-x="34" anchor-pos-y="4"
+          preferred-width="28" preferred-height="7.5"
+          anchor-pos-x="52" anchor-pos-y="5.5"
           pad="0" />
   <button id="apply-button"
           text="Apply"
@@ -31,8 +29,8 @@
           on-click="apply-button-clicked"
           anchor-min-x="1" anchor-min-y="0"
           anchor-max-x="1" anchor-max-y="0"
-          size-delta-x="28" size-delta-y="8.5"
-          anchor-pos-x="-19" anchor-pos-y="4.5"
+          preferred-width="28" preferred-height="8.5"
+          anchor-pos-x="-19" anchor-pos-y="5.5"
           pad="0" />
   <button id="unapply-button"
           text="Unapply"
@@ -40,8 +38,8 @@
           on-click="unapply-button-clicked"
           anchor-min-x="1" anchor-min-y="0"
           anchor-max-x="1" anchor-max-y="0"
-          size-delta-x="28" size-delta-y="8.5"
-          anchor-pos-x="-19" anchor-pos-y="4.5"
+          preferred-width="28" preferred-height="8.5"
+          anchor-pos-x="-19" anchor-pos-y="5.5"
           pad="0" />
   <text id="info-text"
         font-size="5"
@@ -49,5 +47,5 @@
         anchor-min-x="0" anchor-min-y="0"
         anchor-max-x="0" anchor-max-y="0"
         size-delta-x="40" size-delta-y="8.5"
-        anchor-pos-x="71" anchor-pos-y="5" />
+        anchor-pos-x="77" anchor-pos-y="5" />
 </bg>
