@@ -1,9 +1,8 @@
 ﻿<bg anchor-min-x="0" anchor-min-y="0" anchor-max-x="1" anchor-max-y="1">
-  <custom-list id="filter-list-data"
-               contents="filter-cell-list"
+  <custom-list contents="filter-cell-list"
                list-direction="Vertical"
-               list-width="70"
-               cell-size="7"
+               list-width="60"
+               cell-size="8"
                clickable-cells="true"
                select-cell="filter-cell-selected"
                anchor-min-x="1" anchor-min-y="0"
@@ -25,7 +24,8 @@
             anchor-max-x='0' anchor-max-y='1'
             size-delta-x='3' size-delta-y='0'
             anchored-pos-x='1.5' anchored-pos-y='0' />
-    <text text='~text'
+    <text id='text'
+          text=''
           font-align='Left'
           font-size='4'
           anchor-min-x='0' anchor-min-y='0'

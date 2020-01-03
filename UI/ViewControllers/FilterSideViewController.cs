@@ -1,17 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 using HMUI;
-using BeatSaberMarkupLanguage.Notify;
-using BeatSaberMarkupLanguage.Components;
 using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.ViewControllers;
 using EnhancedSearchAndFilters.Filters;
-using Image = UnityEngine.UI.Image;
-using BSMLUtilities = BeatSaberMarkupLanguage.Utilities;
 
 namespace EnhancedSearchAndFilters.UI.ViewControllers
 {
@@ -26,18 +21,12 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         private List<object> _filterCellList = new List<object>();
 
 #pragma warning disable CS0649
-        [UIComponent("filter-list-data")]
-        private CustomCellListTableData _tableData;
-
         [UIComponent("clear-button")]
         private Button _clearButton;
         [UIComponent("default-button")]
         private Button _defaultButton;
 #pragma warning restore CS0649
 
-        [UIValue("list-cell-template")]
-        private static readonly string ListCellTemplate =
-            BSMLUtilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.FilterListCellTemplate.bsml");
         [UIValue("legend-text")]
         private const string LegendText =
             "<b><i>Filter Color Legend</i></b>\n" +
@@ -46,34 +35,21 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             "<color=#55FF55>Green</color> -  Applied\n" +
             "<color=#55AAFF>Blue</color> -  Applied, but has changes";
 
-        private class FilterTableCell : INotifiableHost
+        internal class FilterTableCell
         {
-            public event PropertyChangedEventHandler PropertyChanged;
-
             public IFilter AssociatedFilter { get; private set; }
 
 #pragma warning disable CS0649
             [UIComponent("status-image")]
-            private Image _statusImg;
+            private RawImage _statusImg;
             [UIComponent("hovered-image")]
-            private Image _hoveredImg;
+            private RawImage _hoveredImg;
             [UIComponent("selected-image")]
-            private Image _selectedImg;
-#pragma warning restore CS0649
+            private RawImage _selectedImg;
 
-            [UIValue("text")]
-            private string _text;
-            public string Text
-            {
-                get => _text;
-                set
-                {
-                    if (_text == value)
-                        return;
-                    _text = value;
-                    NotifyPropertyChanged();
-                }
-            }
+            [UIComponent("text")]
+            private TextMeshProUGUI _text;
+#pragma warning restore CS0649
 
             private static readonly Color DefaultFilterColor = new Color(1f, 0.2f, 0.2f);
             private static readonly Color PendingFilterColor = new Color(1f, 1f, 0f);
@@ -87,11 +63,17 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
             public void RefreshCellContent()
             {
-                if (AssociatedFilter == null || _text == null || _statusImg == null)
+                if (AssociatedFilter == null || _statusImg == null)
                 {
                     Logger.log.Warn("Unable to refresh filter TableView cell content");
                     return;
                 }
+
+                // raw image setup (will probably need to update this in the future, since the bsml image tag
+                // is likely to change in the future)
+                _statusImg.texture = Texture2D.whiteTexture;
+                //_hoveredImg.texture = Texture2D.whiteTexture;
+                //_selectedImg.texture = Texture2D.whiteTexture;
 
                 if (AssociatedFilter.IsAvailable)
                 {
@@ -99,13 +81,13 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                     if (AssociatedFilter.Status == FilterStatus.Applied)
                         statusText = " <size=70%><color=#CCFFCC>[A]</color></size>";
                     else if (AssociatedFilter.Status == FilterStatus.AppliedAndChanged || AssociatedFilter.Status == FilterStatus.NotAppliedAndChanged)
-                        statusText = " <size=70%><color=#FFFFCC>(*)</color></size>";
+                        statusText = " <size=70%><color=#FFFFCC>[*]</color></size>";
 
-                    Text = AssociatedFilter.Name + statusText;
+                    _text.text = AssociatedFilter.Name + statusText;
                 }
                 else
                 {
-                    Text = $"<color=#FF8888><i>{AssociatedFilter.Name}</i></color>";
+                    _text.text = $"<color=#FF8888><i>{AssociatedFilter.Name}</i></color>";
                 }
 
                 if (AssociatedFilter.Status == FilterStatus.NotAppliedAndDefault)
@@ -116,19 +98,6 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                     _statusImg.color = AppliedPendingFilterColor;
                 else
                     _statusImg.color = AppliedFilterColor;
-            }
-
-            private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
-            {
-                try
-                {
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-                }
-                catch (Exception ex)
-                {
-                    Logger.log?.Error($"Error Invoking PropertyChanged: {ex.Message}");
-                    Logger.log?.Error(ex);
-                }
             }
         }
 
@@ -158,7 +127,6 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         {
             foreach (var cell in _filterCellList)
                 (cell as FilterTableCell).RefreshCellContent();
-            _tableData.tableView.ReloadData();
 
         }
 
