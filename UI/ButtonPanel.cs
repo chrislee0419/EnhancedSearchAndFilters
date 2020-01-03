@@ -63,8 +63,11 @@ namespace EnhancedSearchAndFilters.UI
                 if (!forceReinit)
                     return;
 
-                DestroyImmediate(_container);
-                _container = null;
+                if (_container != null)
+                {
+                    DestroyImmediate(_container);
+                    _container = null;
+                }
             }
 
             if (hideSearchButton && hideFilterButtons)

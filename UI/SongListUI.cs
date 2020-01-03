@@ -69,7 +69,7 @@ namespace EnhancedSearchAndFilters.UI
             */
             else
             {
-                ButtonPanel.instance.Setup(PluginConfig.DisableSearch, PluginConfig.DisableFilter);
+                ButtonPanel.instance.Setup(PluginConfig.DisableSearch, PluginConfig.DisableFilter, true);
                 ButtonPanel.instance.SearchButtonPressed += SearchButtonPressed;
                 ButtonPanel.instance.FilterButtonPressed += FilterButtonPressed;
                 ButtonPanel.instance.ClearFilterButtonPressed += ClearButtonPressed;
