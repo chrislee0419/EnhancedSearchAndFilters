@@ -46,10 +46,10 @@ namespace EnhancedSearchAndFilters.Filters
         }
         public bool IsFilterApplied => _rankedAppliedValue != RankFilterOption.Off;
 
-        [UIObject("root")]
-        public GameObject ViewGameObject { get; private set; }
-
 #pragma warning disable CS0649
+        [UIObject("root")]
+        private GameObject _viewGameObject;
+
         [UIComponent("min-checkbox")]
         private CheckboxSetting _minCheckbox;
         [UIComponent("min-increment")]
@@ -96,10 +96,12 @@ namespace EnhancedSearchAndFilters.Filters
                 return;
 
             BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.PPFilterViews.bsml"), viewContainer, this);
-            ViewGameObject.name = "PPFilterViewContainer";
+            _viewGameObject.name = "PPFilterViewContainer";
 
             _isInitialized = true;
         }
+
+        public GameObject GetView() => _viewGameObject;
 
         public void SetDefaultValuesToStaging()
         {

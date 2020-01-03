@@ -10,11 +10,11 @@ namespace EnhancedSearchAndFilters.Filters
         bool IsAvailable { get; }
         FilterStatus Status { get; }
         bool IsFilterApplied { get; }
-        GameObject ViewGameObject { get; }
 
         event Action SettingChanged;
 
         void Init(GameObject viewContainer);
+        GameObject GetView();
 
         void SetDefaultValuesToStaging();
         void SetAppliedValuesToStaging();

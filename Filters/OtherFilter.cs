@@ -54,8 +54,10 @@ namespace EnhancedSearchAndFilters.Filters
         public bool IsFilterApplied => _oneSaberAppliedValue ||_noArrowsAppliedValue || _90AppliedValue || _360AppliedValue ||
             _lightshowAppliedValue || _mappingExtensionsAppliedValue != SongRequirementFilterOption.Off;
 
+#pragma warning disable CS0649
         [UIObject("root")]
-        public GameObject ViewGameObject { get; private set; }
+        private GameObject _viewGameObject;
+#pragma warning restore CS0649
 
         [UIValue("one-saber-value")]
         private bool _oneSaberStagingValue = false;
@@ -88,9 +90,12 @@ namespace EnhancedSearchAndFilters.Filters
                 return;
 
             BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.OtherFilterView.bsml"), viewContainer, this);
-            ViewGameObject.name = "OtherFilterViewContainer";
+            _viewGameObject.name = "OtherFilterViewContainer";
+
             _isInitialized = true;
         }
+
+        public GameObject GetView() => _viewGameObject;
 
         public void SetDefaultValuesToStaging()
         {

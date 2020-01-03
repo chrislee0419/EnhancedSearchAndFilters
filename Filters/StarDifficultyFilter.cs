@@ -44,10 +44,10 @@ namespace EnhancedSearchAndFilters.Filters
         }
         public bool IsFilterApplied => _minEnabledAppliedValue || _maxEnabledAppliedValue;
 
-        [UIObject("root")]
-        public GameObject ViewGameObject { get; private set; }
-
 #pragma warning disable CS0649
+        [UIObject("root")]
+        private GameObject _viewGameObject;
+
         [UIComponent("min-increment-setting")]
         private IncrementSetting _minSetting;
         [UIComponent("max-increment-setting")]
@@ -90,10 +90,12 @@ namespace EnhancedSearchAndFilters.Filters
                 return;
 
             BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.StarDifficultyFilterView.bsml"), viewContainer, this);
-            ViewGameObject.name = "StarDifficultyFilterViewContainer";
+            _viewGameObject.name = "StarDifficultyFilterViewContainer";
 
             _isInitialized = true;
         }
+
+        public GameObject GetView() => _viewGameObject;
 
         public void SetDefaultValuesToStaging()
         {

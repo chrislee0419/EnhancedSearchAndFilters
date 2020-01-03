@@ -4,16 +4,15 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using BeatSaberMarkupLanguage;
-using BeatSaberMarkupLanguage.Notify;
+using BeatSaberMarkupLanguage.Parser;
 using BeatSaberMarkupLanguage.Attributes;
 using EnhancedSearchAndFilters.SongData;
 
 namespace EnhancedSearchAndFilters.Filters
 {
-    internal class DifficultyFilter : IFilter, INotifiableHost
+    internal class DifficultyFilter : IFilter
     {
         public event Action SettingChanged;
-        public event PropertyChangedEventHandler PropertyChanged;
 
         public string Name { get { return "Difficulty"; } }
         public bool IsAvailable { get { return true; } }
@@ -32,19 +31,21 @@ namespace EnhancedSearchAndFilters.Filters
         }
         public bool IsFilterApplied => _easyAppliedValue || _normalAppliedValue || _hardAppliedValue || _expertAppliedValue || _expertPlusAppliedValue;
 
+#pragma warning disable CS0649
         [UIObject("root")]
-        public GameObject ViewGameObject { get; private set; }
+        private GameObject _viewGameObject;
+#pragma warning restore CS0649
 
         [UIValue("easy-checkbox-value")]
-        private bool _easyStagingValue { get; set; } = false;
+        private bool _easyStagingValue = false;
         [UIValue("normal-checkbox-value")]
-        private bool _normalStagingValue { get; set; } = false;
+        private bool _normalStagingValue = false;
         [UIValue("hard-checkbox-value")]
-        private bool _hardStagingValue { get; set; } = false;
+        private bool _hardStagingValue = false;
         [UIValue("expert-checkbox-value")]
-        private bool _expertStagingValue { get; set; } = false;
+        private bool _expertStagingValue = false;
         [UIValue("expert-plus-checkbox-value")]
-        private bool _expertPlusStagingValue { get; set; } = false;
+        private bool _expertPlusStagingValue = false;
 
         private bool _easyAppliedValue = false;
         private bool _normalAppliedValue = false;
@@ -53,17 +54,20 @@ namespace EnhancedSearchAndFilters.Filters
         private bool _expertPlusAppliedValue = false;
 
         private bool _isInitialized = false;
+        private BSMLParserParams _parserParams;
 
         public void Init(GameObject viewContainer)
         {
             if (_isInitialized)
                 return;
 
-            BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.DifficultyFilterView.bsml"), viewContainer, this);
-            ViewGameObject.name = "DifficultyFilterViewContainer";
+            _parserParams = BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.DifficultyFilterView.bsml"), viewContainer, this);
+            _viewGameObject.name = "DifficultyFilterViewContainer";
 
             _isInitialized = true;
         }
+
+        public GameObject GetView() => _viewGameObject;
 
         public void SetDefaultValuesToStaging()
         {
@@ -76,7 +80,7 @@ namespace EnhancedSearchAndFilters.Filters
             _expertStagingValue = false;
             _expertPlusStagingValue = false;
 
-            NotifyAllPropertiesChanged();
+            _parserParams.EmitEvent("refresh-values");
         }
 
         public void SetAppliedValuesToStaging()
@@ -90,7 +94,7 @@ namespace EnhancedSearchAndFilters.Filters
             _expertStagingValue = _expertAppliedValue;
             _expertPlusStagingValue = _expertPlusAppliedValue;
 
-            NotifyAllPropertiesChanged();
+            _parserParams.EmitEvent("refresh-values");
         }
 
         public void ApplyStagingValues()
@@ -103,8 +107,6 @@ namespace EnhancedSearchAndFilters.Filters
             _hardAppliedValue = _hardStagingValue;
             _expertAppliedValue = _expertStagingValue;
             _expertPlusAppliedValue = _expertPlusStagingValue;
-
-            NotifyAllPropertiesChanged();
         }
 
         public void ApplyDefaultValues()
@@ -117,8 +119,6 @@ namespace EnhancedSearchAndFilters.Filters
             _hardAppliedValue = false;
             _expertAppliedValue = false;
             _expertPlusAppliedValue = false;
-
-            NotifyAllPropertiesChanged();
         }
 
         public void FilterSongList(ref List<BeatmapDetails> detailsList)
@@ -163,25 +163,5 @@ namespace EnhancedSearchAndFilters.Filters
 
         [UIAction("setting-changed")]
         private void OnSettingChanged(bool value) => SettingChanged?.Invoke();
-
-        private void NotifyAllPropertiesChanged()
-        {
-            try
-            {
-                if (PropertyChanged != null)
-                {
-                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_easyStagingValue)));
-                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_normalStagingValue)));
-                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_hardStagingValue)));
-                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_expertStagingValue)));
-                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_expertPlusStagingValue)));
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.log.Error($"Error Invoking PropertyChanged: {ex.Message}");
-                Logger.log.Error(ex);
-            }
-        }
     }
 }
