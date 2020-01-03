@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 using HMUI;
+using BeatSaberMarkupLanguage.Notify;
+using BeatSaberMarkupLanguage.Components;
 using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.ViewControllers;
 using EnhancedSearchAndFilters.Filters;
 using Image = UnityEngine.UI.Image;
+using BSMLUtilities = BeatSaberMarkupLanguage.Utilities;
 
 namespace EnhancedSearchAndFilters.UI.ViewControllers
 {
@@ -18,10 +22,12 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         public event Action<IFilter> FilterSelected;
         public event Action ClearButtonPressed;
         public event Action DefaultButtonPressed;
+        [UIValue("filter-cell-list")]
+        private List<object> _filterCellList = new List<object>();
 
 #pragma warning disable CS0649
-        [UIValue("filter-cell-list")]
-        private List<object> _filterCellList;
+        [UIComponent("filter-list-data")]
+        private CustomCellListTableData _tableData;
 
         [UIComponent("clear-button")]
         private Button _clearButton;
@@ -29,30 +35,45 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         private Button _defaultButton;
 #pragma warning restore CS0649
 
-        [UIValue("cell-template")]
-        private const string ListCellTemplate =
-            "<bg anchor-min-x='0' anchor-min-y='0' anchor-max-x='1' anchor-max-y='1' size-delta-x='0' size-delta-y='0'>\n" +
-            "<image id='status-image' anchor-min-x='0' anchor-min-y='0' anchor-max-x='0' anchor-max-y='1' size-delta-x='3' size-delta-y='0' anchored-pos-x='1.5' anchored-pos-y='0' />\n" +
-            "<text id='text' font-align='Left' font-size='4.5' anchor-min-x='0' anchor-min-y='0' anchor-max-x='1' anchor-max-y='1' size-delta-x='-5' size-delta-y='0' anchored-pos-x='1' anchored-pos-y='0' />\n" +
-            "</bg>";
+        [UIValue("list-cell-template")]
+        private static readonly string ListCellTemplate =
+            BSMLUtilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.FilterListCellTemplate.bsml");
         [UIValue("legend-text")]
         private const string LegendText =
-            "<b><i>Filter Color Legend<i><b>\n" +
+            "<b><i>Filter Color Legend</i></b>\n" +
             "<color=#FF5555>Red</color> -  Not applied\n" +
             "<color=#FFFF55>Yellow</color> -  Not applied, but has changes\n" +
             "<color=#55FF55>Green</color> -  Applied\n" +
             "<color=#55AAFF>Blue</color> -  Applied, but has changes";
 
-        private class FilterTableCell
+        private class FilterTableCell : INotifiableHost
         {
+            public event PropertyChangedEventHandler PropertyChanged;
+
             public IFilter AssociatedFilter { get; private set; }
 
 #pragma warning disable CS0649
-            [UIComponent("text")]
-            private TextMeshProUGUI _text;
             [UIComponent("status-image")]
             private Image _statusImg;
+            [UIComponent("hovered-image")]
+            private Image _hoveredImg;
+            [UIComponent("selected-image")]
+            private Image _selectedImg;
 #pragma warning restore CS0649
+
+            [UIValue("text")]
+            private string _text;
+            public string Text
+            {
+                get => _text;
+                set
+                {
+                    if (_text == value)
+                        return;
+                    _text = value;
+                    NotifyPropertyChanged();
+                }
+            }
 
             private static readonly Color DefaultFilterColor = new Color(1f, 0.2f, 0.2f);
             private static readonly Color PendingFilterColor = new Color(1f, 1f, 0f);
@@ -80,11 +101,11 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                     else if (AssociatedFilter.Status == FilterStatus.AppliedAndChanged || AssociatedFilter.Status == FilterStatus.NotAppliedAndChanged)
                         statusText = " <size=70%><color=#FFFFCC>(*)</color></size>";
 
-                    _text.text = AssociatedFilter.Name + statusText;
+                    Text = AssociatedFilter.Name + statusText;
                 }
                 else
                 {
-                    _text.text = $"<color=#FF8888><i>{AssociatedFilter.Name}</i></color>";
+                    Text = $"<color=#FF8888><i>{AssociatedFilter.Name}</i></color>";
                 }
 
                 if (AssociatedFilter.Status == FilterStatus.NotAppliedAndDefault)
@@ -96,13 +117,35 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 else
                     _statusImg.color = AppliedFilterColor;
             }
+
+            private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
+            {
+                try
+                {
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+                }
+                catch (Exception ex)
+                {
+                    Logger.log?.Error($"Error Invoking PropertyChanged: {ex.Message}");
+                    Logger.log?.Error(ex);
+                }
+            }
         }
 
         protected override void DidActivate(bool firstActivation, ActivationType type)
         {
             base.DidActivate(firstActivation, type);
+            this.name = "FilterSideViewController";
 
             SetButtonInteractivity(false, false);
+        }
+
+        public void SetFilterList(List<IFilter> filterList)
+        {
+            _filterCellList.Clear();
+
+            foreach (var filter in filterList)
+                _filterCellList.Add(new FilterTableCell(filter));
         }
 
         public void SetButtonInteractivity(bool clearInteractable, bool defaultInteractable)
@@ -115,6 +158,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         {
             foreach (var cell in _filterCellList)
                 (cell as FilterTableCell).RefreshCellContent();
+            _tableData.tableView.ReloadData();
+
         }
 
         [UIAction("filter-cell-selected")]

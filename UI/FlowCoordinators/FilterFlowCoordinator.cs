@@ -46,9 +46,18 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                 _filterSideViewController.ClearButtonPressed += ClearAllFilterChanges;
                 _filterSideViewController.DefaultButtonPressed += SetAllFiltersToDefault;
 
-                // TODO: add filters to FilterList
+                // add filters to filter list
+                _filterList.Add(new DifficultyFilter());
+                _filterList.Add(new DurationFilter());
+                _filterList.Add(new NJSFilter());
+                _filterList.Add(new PPFilter());
+                _filterList.Add(new StarDifficultyFilter());
+                _filterList.Add(new PlayerStatsFilter());
+                _filterList.Add(new OtherFilter());
 
-                ProvideInitialViewControllers(_filterMainViewController, null);
+                _filterSideViewController.SetFilterList(_filterList);
+
+                ProvideInitialViewControllers(_filterMainViewController, _filterSideViewController);
             }
         }
 

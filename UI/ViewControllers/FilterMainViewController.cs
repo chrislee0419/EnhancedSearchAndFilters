@@ -69,7 +69,6 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _unapplyButton.interactable = false;
             _unapplyButton.gameObject.SetActive(false);
 
-            // TODO: loading screen
             if (firstActivation)
             {
                 BSMLParser.instance.Parse(BeatSaberMarkupLanguage.Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.FilterLoadingView.bsml"), _viewContainer, this);
@@ -138,10 +137,10 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             if (_currentView != null)
                 _currentView.SetActive(false);
 
-            if (filter.ViewGameObject == null)
+            if (filter.GetView() == null)
                 filter.Init(this._viewContainer);
 
-            _currentView = filter.ViewGameObject;
+            _currentView = filter.GetView();
             _currentView.SetActive(true);
         }
 

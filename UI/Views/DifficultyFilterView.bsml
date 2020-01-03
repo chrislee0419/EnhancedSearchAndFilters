@@ -1,8 +1,8 @@
 ﻿<vertical id="root" child-expand-width="true" anchor-min-x="0" anchor-min-y="0" anchor-max-x="1" anchor-max-y="1">
   <text text="Keep Songs That Contain These Difficulties" font-size="5.5" />
-  <checkbox-setting text="Easy" font-size="5.5" value="easy-checkbox-value" apply-on-change="true" on-change="setting-changed" preferred-height="12" />
-  <checkbox-setting text="Normal" font-size="5.5" value="normal-checkbox-value" apply-on-change="true" on-change="setting-changed" preferred-height="12" />
-  <checkbox-setting text="Hard" font-size="5.5" value="hard-checkbox-value" apply-on-change="true" on-change="setting-changed" preferred-height="12" />
-  <checkbox-setting text="Expert" font-size="5.5" value="expert-checkbox-value" apply-on-change="true" on-change="setting-changed" preferred-height="12" />
-  <checkbox-setting text="Expert+" font-size="5.5" value="expert-plus-checkbox-value" apply-on-change="true" on-change="setting-changed" preferred-height="12" />
+  <checkbox-setting text="Easy" font-size="5.5" value="easy-checkbox-value" get-event="refresh-values" apply-on-change="true" on-change="setting-changed" preferred-height="12" />
+  <checkbox-setting text="Normal" font-size="5.5" value="normal-checkbox-value" get-event="refresh-values" apply-on-change="true" on-change="setting-changed" preferred-height="12" />
+  <checkbox-setting text="Hard" font-size="5.5" value="hard-checkbox-value" get-event="refresh-values" apply-on-change="true" on-change="setting-changed" preferred-height="12" />
+  <checkbox-setting text="Expert" font-size="5.5" value="expert-checkbox-value" get-event="refresh-values" apply-on-change="true" on-change="setting-changed" preferred-height="12" />
+  <checkbox-setting text="Expert+" font-size="5.5" value="expert-plus-checkbox-value" get-event="refresh-values" apply-on-change="true" on-change="setting-changed" preferred-height="12" />
 </vertical>
