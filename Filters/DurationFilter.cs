@@ -226,31 +226,23 @@ namespace EnhancedSearchAndFilters.Filters
         {
             // NOTE: function changing staging values without calling setters
             // (since this is intended to be used by the setters)
-            try
+            if (_minEnabledStagingValue)
             {
-                if (_minEnabledStagingValue)
+                if (_maxEnabledStagingValue)
                 {
-                    if (_maxEnabledStagingValue)
-                    {
-                        _minSetting.maxValue = _maxStagingValue;
+                    _minSetting.maxValue = _maxStagingValue;
 
-                        if (_minStagingValue > _maxStagingValue)
-                            _minStagingValue = _maxStagingValue;
-                    }
-                    else
-                    {
-                        _minSetting.maxValue = MaxValue;
-                    }
+                    if (_minStagingValue > _maxStagingValue)
+                        _minStagingValue = _maxStagingValue;
                 }
                 else
                 {
-                    _maxSetting.minValue = MinValue;
+                    _minSetting.maxValue = MaxValue;
                 }
             }
-            catch (Exception ex)
+            else
             {
-                Logger.log?.Error($"Error occurred while validating min duration value: {ex.Message}");
-                Logger.log?.Error(ex);
+                _maxSetting.minValue = MinValue;
             }
         }
 
@@ -258,31 +250,23 @@ namespace EnhancedSearchAndFilters.Filters
         {
             // NOTE: function changing staging values without calling setters
             // (since this is intended to be used by the setters)
-            try
+            if (_maxEnabledStagingValue)
             {
-                if (_maxEnabledStagingValue)
+                if (_minEnabledStagingValue)
                 {
-                    if (_minEnabledStagingValue)
-                    {
-                        _maxSetting.minValue = _minStagingValue;
+                    _maxSetting.minValue = _minStagingValue;
 
-                        if (_maxStagingValue < _minStagingValue)
-                            _maxStagingValue = _minStagingValue;
-                    }
-                    else
-                    {
-                        _maxSetting.minValue = MinValue;
-                    }
+                    if (_maxStagingValue < _minStagingValue)
+                        _maxStagingValue = _minStagingValue;
                 }
                 else
                 {
-                    _minSetting.maxValue = MaxValue;
+                    _maxSetting.minValue = MinValue;
                 }
             }
-            catch (Exception ex)
+            else
             {
-                Logger.log.Error($"Error occurred while validating max duration value: {ex.Message}");
-                Logger.log.Error(ex);
+                _minSetting.maxValue = MaxValue;
             }
         }
     }
