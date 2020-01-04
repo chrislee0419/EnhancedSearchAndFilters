@@ -1,4 +1,5 @@
 ﻿<bg anchor-min-x="0" anchor-min-y="0" anchor-max-x="1" anchor-max-y="1">
+  <!-- filter view container is 150u wide by 65u high-->
   <bg id="view-container"
       bg="round-rect-panel"
       anchor-min-x="0" anchor-min-y="0"

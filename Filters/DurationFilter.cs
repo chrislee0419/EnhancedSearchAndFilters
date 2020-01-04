@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 using BeatSaberMarkupLanguage;
+using BeatSaberMarkupLanguage.Parser;
 using BeatSaberMarkupLanguage.Components.Settings;
 using BeatSaberMarkupLanguage.Notify;
 using BeatSaberMarkupLanguage.Attributes;
@@ -10,10 +11,9 @@ using EnhancedSearchAndFilters.SongData;
 
 namespace EnhancedSearchAndFilters.Filters
 {
-    internal class DurationFilter : IFilter, INotifiableHost
+    internal class DurationFilter : IFilter
     {
         public event Action SettingChanged;
-        public event PropertyChangedEventHandler PropertyChanged;
 
         public string Name { get { return "Song Length"; } }
         public bool IsAvailable { get { return true; } }
@@ -53,14 +53,62 @@ namespace EnhancedSearchAndFilters.Filters
         private IncrementSetting _maxSetting;
 #pragma warning restore CS0649
 
-        [UIValue("min-checkbox-value")]
         private bool _minEnabledStagingValue = false;
-        [UIValue("max-checkbox-value")]
+        [UIValue("min-checkbox-value")]
+        public bool MinEnabledStagingValue
+        {
+            get => _minEnabledStagingValue;
+            set
+            {
+                _minEnabledStagingValue = value;
+                _minSetting.gameObject.SetActive(value);
+
+                if (value)
+                    ValidateMinValue();
+
+                SettingChanged?.Invoke();
+            }
+        }
         private bool _maxEnabledStagingValue = false;
-        [UIValue("min-increment-value")]
+        [UIValue("max-checkbox-value")]
+        public bool MaxEnabledStagingValue
+        {
+            get => _maxEnabledStagingValue;
+            set
+            {
+                _maxEnabledStagingValue = value;
+                _maxSetting.gameObject.SetActive(value);
+
+                if (value)
+                    ValidateMaxValue();
+
+                SettingChanged?.Invoke();
+            }
+        }
         private float _minStagingValue = DefaultMinValue;
-        [UIValue("max-increment-value")]
+        [UIValue("min-increment-value")]
+        public float MinStagingValue
+        {
+            get => _minStagingValue;
+            set
+            {
+                _minStagingValue = value;
+                ValidateMinValue();
+                SettingChanged?.Invoke();
+            }
+        }
         private float _maxStagingValue = DefaultMaxValue;
+        [UIValue("max-increment-value")]
+        public float MaxStagingValue
+        {
+            get => _maxStagingValue;
+            set
+            {
+                _maxStagingValue = value;
+                ValidateMaxValue();
+                SettingChanged?.Invoke();
+            }
+        }
 
         private bool _minEnabledAppliedValue = false;
         private bool _maxEnabledAppliedValue = false;
@@ -68,6 +116,7 @@ namespace EnhancedSearchAndFilters.Filters
         private float _maxAppliedValue = DefaultMaxValue;
 
         private bool _isInitialized = false;
+        private BSMLParserParams _parserParams;
 
         private const float DefaultMinValue = 60f;
         private const float DefaultMaxValue = 120f;
@@ -83,8 +132,11 @@ namespace EnhancedSearchAndFilters.Filters
             if (_isInitialized)
                 return;
 
-            BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.DurationFilterView.bsml"), viewContainer, this);
+            _parserParams = BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.DurationFilterView.bsml"), viewContainer, this);
             _viewGameObject.name = "DurationFilterViewContainer";
+
+            _minSetting.gameObject.SetActive(false);
+            _maxSetting.gameObject.SetActive(false);
 
             _isInitialized = true;
         }
@@ -107,7 +159,7 @@ namespace EnhancedSearchAndFilters.Filters
             _minStagingValue = DefaultMinValue;
             _maxStagingValue = DefaultMaxValue;
 
-            NotifyAllPropertiesChanged();
+            _parserParams.EmitEvent("refresh-values");
         }
 
         public void SetAppliedValuesToStaging()
@@ -120,7 +172,7 @@ namespace EnhancedSearchAndFilters.Filters
             _minStagingValue = _minAppliedValue;
             _maxStagingValue = _maxAppliedValue;
 
-            NotifyAllPropertiesChanged();
+            _parserParams.EmitEvent("refresh-values");
         }
 
         public void ApplyStagingValues()
@@ -170,27 +222,10 @@ namespace EnhancedSearchAndFilters.Filters
             throw new NotImplementedException();
         }
 
-        [UIAction("min-checkbox-changed")]
-        private void OnMinCheckboxChanged()
-        {
-            _minSetting.gameObject.SetActive(_minEnabledStagingValue);
-
-            if (_minEnabledStagingValue)
-                ValidateMinValue();
-
-            SettingChanged?.Invoke();
-        }
-
-        [UIAction("min-value-changed")]
-        private void OnMinValueChanged()
-        {
-            ValidateMinValue();
-
-            SettingChanged?.Invoke();
-        }
-
         private void ValidateMinValue()
         {
+            // NOTE: function changing staging values without calling setters
+            // (since this is intended to be used by the setters)
             try
             {
                 if (_minEnabledStagingValue)
@@ -206,16 +241,10 @@ namespace EnhancedSearchAndFilters.Filters
                     {
                         _minSetting.maxValue = MaxValue;
                     }
-
-                    // notify min value changed
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(_minStagingValue)));
                 }
                 else
                 {
                     _maxSetting.minValue = MinValue;
-
-                    // notify max value changed
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(_maxStagingValue)));
                 }
             }
             catch (Exception ex)
@@ -225,27 +254,10 @@ namespace EnhancedSearchAndFilters.Filters
             }
         }
 
-        [UIAction("max-checkbox-changed")]
-        private void OnMaxCheckboxChanged()
-        {
-            _maxSetting.gameObject.SetActive(_maxEnabledStagingValue);
-
-            if (_maxEnabledStagingValue)
-                ValidateMaxValue();
-
-            SettingChanged?.Invoke();
-        }
-
-        [UIAction("max-value-changed")]
-        private void OnMaxValueChanged()
-        {
-            ValidateMaxValue();
-
-            SettingChanged?.Invoke();
-        }
-
         private void ValidateMaxValue()
         {
+            // NOTE: function changing staging values without calling setters
+            // (since this is intended to be used by the setters)
             try
             {
                 if (_maxEnabledStagingValue)
@@ -261,40 +273,15 @@ namespace EnhancedSearchAndFilters.Filters
                     {
                         _maxSetting.minValue = MinValue;
                     }
-
-                    // notify max value changed
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(_maxStagingValue)));
                 }
                 else
                 {
                     _minSetting.maxValue = MaxValue;
-
-                    // notify min value changed
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(_maxStagingValue)));
                 }
             }
             catch (Exception ex)
             {
                 Logger.log.Error($"Error occurred while validating max duration value: {ex.Message}");
-                Logger.log.Error(ex);
-            }
-        }
-
-        private void NotifyAllPropertiesChanged()
-        {
-            try
-            {
-                if (PropertyChanged != null)
-                {
-                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_minEnabledStagingValue)));
-                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_maxEnabledStagingValue)));
-                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_minStagingValue)));
-                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_maxStagingValue)));
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.log.Error($"Error Invoking PropertyChanged: {ex.Message}");
                 Logger.log.Error(ex);
             }
         }
