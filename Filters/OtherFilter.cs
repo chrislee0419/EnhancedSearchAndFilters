@@ -235,13 +235,13 @@ namespace EnhancedSearchAndFilters.Filters
                 {
                     detailsList.RemoveAt(i);
                 }
-                else if (_90AppliedValue && !beatmap.DifficultyBeatmapSets.Any(diffSet => diffSet.CharacteristicName == ""))
+                else if (_90AppliedValue && !beatmap.DifficultyBeatmapSets.Any(diffSet => diffSet.CharacteristicName == "90Degree"))
                 {
-                    // TODO: find out what the 90 degrees difficulty beatmap set is called
+                    detailsList.RemoveAt(i);
                 }
-                else if (_360AppliedValue && !beatmap.DifficultyBeatmapSets.Any(diffSet => diffSet.CharacteristicName == ""))
+                else if (_360AppliedValue && !beatmap.DifficultyBeatmapSets.Any(diffSet => diffSet.CharacteristicName == "360Degree"))
                 {
-                    // TODO: find out what the 360 degrees difficulty beatmap set is called
+                    detailsList.RemoveAt(i);
                 }
                 else if (_mappingExtensionsAppliedValue != SongRequirementFilterOption.Off && !beatmap.IsOST)
                 {
