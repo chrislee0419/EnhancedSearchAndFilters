@@ -75,11 +75,6 @@ namespace EnhancedSearchAndFilters.Filters
                 _minIncrement.gameObject.SetActive(isRankedOption && _minEnabledStagingValue);
                 _maxIncrement.gameObject.SetActive(isRankedOption && _maxEnabledStagingValue);
 
-                if (_minEnabledStagingValue)
-                    ValidateMinValue();
-                if (_maxEnabledStagingValue)
-                    ValidateMaxValue();
-
                 SettingChanged?.Invoke();
             }
         }
@@ -93,8 +88,7 @@ namespace EnhancedSearchAndFilters.Filters
                 _minEnabledStagingValue = value;
                 _minIncrement.gameObject.SetActive(_minEnabledStagingValue);
 
-                if (_minEnabledStagingValue)
-                    ValidateMinValue();
+                ValidateMinValue();
 
                 SettingChanged?.Invoke();
             }
@@ -109,8 +103,7 @@ namespace EnhancedSearchAndFilters.Filters
                 _maxEnabledStagingValue = value;
                 _maxIncrement.gameObject.SetActive(_maxEnabledStagingValue);
 
-                if (_maxEnabledStagingValue)
-                    ValidateMaxValue();
+                ValidateMaxValue();
 
                 SettingChanged?.Invoke();
             }

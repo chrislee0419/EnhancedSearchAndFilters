@@ -69,8 +69,7 @@ namespace EnhancedSearchAndFilters.Filters
                 _minEnabledStagingValue = value;
                 _minSetting.gameObject.SetActive(_minEnabledStagingValue);
 
-                if (_minEnabledStagingValue)
-                    ValidateMinValue();
+                ValidateMinValue();
 
                 SettingChanged?.Invoke();
             }
@@ -85,8 +84,7 @@ namespace EnhancedSearchAndFilters.Filters
                 _maxEnabledStagingValue = value;
                 _maxSetting.gameObject.SetActive(_maxEnabledStagingValue);
 
-                if (_maxEnabledStagingValue)
-                    ValidateMaxValue();
+                ValidateMaxValue();
 
                 SettingChanged?.Invoke();
             }
