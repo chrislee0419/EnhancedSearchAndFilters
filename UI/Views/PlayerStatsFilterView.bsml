@@ -1,45 +1,55 @@
-﻿<vertical id="root" child-expand-width="true" anchor-min-x="0" anchor-min-y="0" anchor-max-x="1" anchor-max-y="1">
+﻿<vertical id="root" child-expand-width="true" anchor-min-x="0" anchor-min-y="0" anchor-max-x="1" anchor-max-y="1" pad="2">
   <text text="Filter According To Your Play Stats" font-size="5.5" />
-  <horizontal child-expand-height="true" spacing="3">
-    <vertical preferred-width="80" child-expand-width="true">
-      <list-setting text="Songs Completed At Least Once"
-                    hover-hint="Filters out songs that you have completed at least one difficulty/have not completed"
-                    value="~completed-value"
-                    options="~completed-options"
-                    apply-on-change="true"
-                    on-change="list-setting-changed"
-                    formatter="completed-formatter" />
-      <list-setting text="Songs With Full Combo"
-                    hover-hint="Filters out songs that you have completed with a full combo/without a full combo (ignores lightmaps)"
-                    value="~full-combo-value"
-                    options="~full-combo-options"
-                    apply-on-change="true"
-                    on-change="list-setting-changed"
-                    formatter="full-combo-formatter" />
+  <horizontal child-expand-height="true" spacing="3" pad="2">
+    <vertical preferred-width="84" child-expand-width="true" child-expand-height="true" pad-top="2">
+      <bg>
+        <list-setting text="&lt;size=78%&gt;Songs Completed At Least Once&lt;/size&gt;"
+                      hover-hint="Filters out songs that you have completed at least one difficulty/have not completed"
+                      value="completed-value"
+                      options="completed-options"
+                      apply-on-change="true"
+                      get-event="refresh-values"
+                      formatter="completed-formatter"
+                      anchor-min-x="0" anchor-min-y="1"
+                      anchor-max-x="1" anchor-max-y="1"
+                      size-delta-x="0" size-delta-y="10"
+                      anchor-pos-x="0" anchor-pos-y="-5" />
+        <list-setting text="Songs With Full Combo"
+                      hover-hint="Filters out songs that you have completed with a full combo/without a full combo (ignores lightmaps)"
+                      value="full-combo-value"
+                      options="full-combo-options"
+                      apply-on-change="true"
+                      get-event="refresh-values"
+                      formatter="full-combo-formatter"
+                      anchor-min-x="0" anchor-min-y="1"
+                      anchor-max-x="1" anchor-max-y="1"
+                      size-delta-x="0" size-delta-y="10"
+                      anchor-pos-x="0" anchor-pos-y="-15" />
+      </bg>
     </vertical>
-    <vertical bg="round-rect-panel" preferred-width="67" child-expand-width="true">
-      <text text="[Optional] Difficulties To Apply Filter To:" font-size="4.5"
+    <vertical bg="round-rect-panel" preferred-width="55" child-expand-width="true" pad="3">
+      <text text="&lt;color=#FF7777&gt;[Optional]&lt;/color&gt; Difficulties To Apply Filter To:" font-size="3.8"
             hover-hint="Check that stats for specific difficulties. Leaving all difficulties unchecked has the same behaviour as checking all difficulties." />
       <checkbox text="Easy"
-                value="~easy-value"
+                value="easy-value"
                 apply-on-change="true"
-                on-change="difficulty-changed" />
+                get-event="refresh-values" />
       <checkbox text="Normal"
-                value="~normal-value"
+                value="normal-value"
                 apply-on-change="true"
-                on-change="difficulty-changed" />
+                get-event="refresh-values" />
       <checkbox text="Hard"
-                value="~hard-value"
+                value="hard-value"
                 apply-on-change="true"
-                on-change="difficulty-changed" />
+                get-event="refresh-values" />
       <checkbox text="Expert"
-                value="~expert-value"
+                value="expert-value"
                 apply-on-change="true"
-                on-change="difficulty-changed" />
+                get-event="refresh-values" />
       <checkbox text="Expert+"
-                value="~expert-plus-value"
+                value="expert-plus-value"
                 apply-on-change="true"
-                on-change="difficulty-changed" />
+                get-event="refresh-values" />
     </vertical>
   </horizontal>
 </vertical>
