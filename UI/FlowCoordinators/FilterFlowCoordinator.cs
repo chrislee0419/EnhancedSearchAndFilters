@@ -60,6 +60,10 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 
                 ProvideInitialViewControllers(_filterMainViewController, _filterSideViewController);
             }
+            else
+            {
+                _filterMainViewController.ShowLoadingView();
+            }
         }
 
         protected override void BackButtonWasPressed(ViewController topViewController)
@@ -139,8 +143,6 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 
                     PluginConfig.ShowFirstTimeLoadingText = false;
                 });
-
-            _filterMainViewController.ShowLoadingView();
         }
 
         private void FilterSettingChanged()
