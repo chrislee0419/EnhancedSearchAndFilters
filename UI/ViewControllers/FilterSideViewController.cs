@@ -72,8 +72,11 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 // raw image setup (will probably need to update this in the future, since the bsml image tag
                 // is likely to change in the future)
                 _statusImg.texture = Texture2D.whiteTexture;
-                //_hoveredImg.texture = Texture2D.whiteTexture;
-                //_selectedImg.texture = Texture2D.whiteTexture;
+                _hoveredImg.texture = Texture2D.whiteTexture;
+                _selectedImg.texture = Texture2D.whiteTexture;
+
+                _hoveredImg.color = new Color(0.1f, 0.6f, 1.0f);
+                _selectedImg.color = new Color(0f, 0.3f, 0.7f);
 
                 if (AssociatedFilter.IsAvailable)
                 {
