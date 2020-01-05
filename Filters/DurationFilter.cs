@@ -224,49 +224,67 @@ namespace EnhancedSearchAndFilters.Filters
 
         private void ValidateMinValue()
         {
-            // NOTE: function changing staging values without calling setters
+            // NOTE: this changes staging values without calling setters
             // (since this is intended to be used by the setters)
             if (_minEnabledStagingValue)
             {
                 if (_maxEnabledStagingValue)
                 {
-                    _minSetting.maxValue = _maxStagingValue;
-
                     if (_minStagingValue > _maxStagingValue)
+                    {
                         _minStagingValue = _maxStagingValue;
+                        _parserParams.EmitEvent("refresh-values");
+                    }
+
+                    _minSetting.maxValue = _maxStagingValue;
+                    _maxSetting.minValue = _minStagingValue;
+
+                    _maxSetting.EnableDec = _maxSetting.Value > _maxSetting.minValue;
                 }
                 else
                 {
                     _minSetting.maxValue = MaxValue;
                 }
+
+                _minSetting.EnableInc = _minSetting.Value < _minSetting.maxValue;
             }
             else
             {
                 _maxSetting.minValue = MinValue;
+                _maxSetting.EnableDec = _maxSetting.Value > _maxSetting.minValue;
             }
         }
 
         private void ValidateMaxValue()
         {
-            // NOTE: function changing staging values without calling setters
+            // NOTE: this changes staging values without calling setters
             // (since this is intended to be used by the setters)
             if (_maxEnabledStagingValue)
             {
                 if (_minEnabledStagingValue)
                 {
-                    _maxSetting.minValue = _minStagingValue;
-
                     if (_maxStagingValue < _minStagingValue)
+                    {
                         _maxStagingValue = _minStagingValue;
+                        _parserParams.EmitEvent("refresh-values");
+                    }
+
+                    _maxSetting.minValue = _minStagingValue;
+                    _minSetting.maxValue = _maxStagingValue;
+
+                    _minSetting.EnableInc = _minSetting.Value < _minSetting.maxValue;
                 }
                 else
                 {
                     _maxSetting.minValue = MinValue;
                 }
+
+                _maxSetting.EnableDec = _maxSetting.Value > _maxSetting.minValue;
             }
             else
             {
                 _minSetting.maxValue = MaxValue;
+                _minSetting.EnableInc = _minSetting.Value < _minSetting.maxValue;
             }
         }
     }
