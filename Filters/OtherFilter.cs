@@ -7,16 +7,15 @@ using SongCore;
 using SongCore.Data;
 using SongCore.Utilities;
 using BeatSaberMarkupLanguage;
-using BeatSaberMarkupLanguage.Notify;
+using BeatSaberMarkupLanguage.Parser;
 using BeatSaberMarkupLanguage.Attributes;
 using EnhancedSearchAndFilters.SongData;
 
 namespace EnhancedSearchAndFilters.Filters
 {
-    class OtherFilter : IFilter, INotifiableHost
+    class OtherFilter : IFilter
     {
         public event Action SettingChanged;
-        public event PropertyChangedEventHandler PropertyChanged;
 
         public string Name { get { return "Other"; } }
         public bool IsAvailable { get { return true; } }
@@ -59,18 +58,72 @@ namespace EnhancedSearchAndFilters.Filters
         private GameObject _viewGameObject;
 #pragma warning restore CS0649
 
-        [UIValue("one-saber-value")]
         private bool _oneSaberStagingValue = false;
-        [UIValue("no-arrows-value")]
+        [UIValue("one-saber-value")]
+        public bool OneSaberStagingValue
+        {
+            get => _oneSaberStagingValue;
+            set
+            {
+                _oneSaberStagingValue = value;
+                SettingChanged?.Invoke();
+            }
+        }
         private bool _noArrowsStagingValue = false;
-        [UIValue("90-value")]
+        [UIValue("no-arrows-value")]
+        public bool NoArrowsStagingValue
+        {
+            get => _noArrowsStagingValue;
+            set
+            {
+                _noArrowsStagingValue = value;
+                SettingChanged?.Invoke();
+            }
+        }
         private bool _90StagingValue = false;
-        [UIValue("360-value")]
+        [UIValue("90-value")]
+        public bool Mode90StagingValue
+        {
+            get => _90StagingValue;
+            set
+            {
+                _90StagingValue = value;
+                SettingChanged?.Invoke();
+            }
+        }
         private bool _360StagingValue = false;
-        [UIValue("lightshow-value")]
+        [UIValue("360-value")]
+        public bool Mode360StagingValue
+        {
+            get => _360StagingValue;
+            set
+            {
+                _360StagingValue = value;
+                SettingChanged?.Invoke();
+            }
+        }
         private bool _lightshowStagingValue = false;
-        [UIValue("mapping-extensions-value")]
+        [UIValue("lightshow-value")]
+        public bool LightshowStagingValue
+        {
+            get => _lightshowStagingValue;
+            set
+            {
+                _lightshowStagingValue = value;
+                SettingChanged?.Invoke();
+            }
+        }
         private SongRequirementFilterOption _mappingExtensionsStagingValue = SongRequirementFilterOption.Off;
+        [UIValue("mapping-extensions-value")]
+        public SongRequirementFilterOption MappingExtensionsStagingValue
+        {
+            get => _mappingExtensionsStagingValue;
+            set
+            {
+                _mappingExtensionsStagingValue = value;
+                SettingChanged?.Invoke();
+            }
+        }
 
         private bool _oneSaberAppliedValue = false;
         private bool _noArrowsAppliedValue = false;
@@ -80,6 +133,7 @@ namespace EnhancedSearchAndFilters.Filters
         private SongRequirementFilterOption _mappingExtensionsAppliedValue = SongRequirementFilterOption.Off;
 
         private bool _isInitialized = false;
+        private BSMLParserParams _parserParams;
 
         [UIValue("mapping-extensions-options")]
         private static readonly List<object> MappingExtensionsOptions = Enum.GetValues(typeof(SongRequirementFilterOption)).Cast<SongRequirementFilterOption>().Select(x => (object)x).ToList();
@@ -89,7 +143,7 @@ namespace EnhancedSearchAndFilters.Filters
             if (_isInitialized)
                 return;
 
-            BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.OtherFilterView.bsml"), viewContainer, this);
+            _parserParams = BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.OtherFilterView.bsml"), viewContainer, this);
             _viewGameObject.name = "OtherFilterViewContainer";
 
             _isInitialized = true;
@@ -109,7 +163,7 @@ namespace EnhancedSearchAndFilters.Filters
             _lightshowStagingValue = false;
             _mappingExtensionsStagingValue = SongRequirementFilterOption.Off;
 
-            NotifyAllPropertiesChanged();
+            _parserParams.EmitEvent("refresh-values");
         }
 
         public void SetAppliedValuesToStaging()
@@ -124,7 +178,7 @@ namespace EnhancedSearchAndFilters.Filters
             _lightshowStagingValue = _lightshowAppliedValue;
             _mappingExtensionsStagingValue = _mappingExtensionsAppliedValue;
 
-            NotifyAllPropertiesChanged();
+            _parserParams.EmitEvent("refresh-values");
         }
 
         public void ApplyStagingValues()
@@ -232,12 +286,6 @@ namespace EnhancedSearchAndFilters.Filters
             throw new NotImplementedException();
         }
 
-        [UIAction("mode-changed")]
-        private void OnModeChanged(bool value) => SettingChanged?.Invoke();
-
-        [UIAction("mapping-extensions-changed")]
-        private void OnMappingExtensionsChanged(object value) => SettingChanged?.Invoke();
-
         [UIAction("mapping-extensions-formatter")]
         private string MappingExtensionsFormatter(object value)
         {
@@ -251,27 +299,6 @@ namespace EnhancedSearchAndFilters.Filters
                     return "Required";
                 default:
                     return "ERROR!";
-            }
-        }
-
-        private void NotifyAllPropertiesChanged()
-        {
-            try
-            {
-                if (PropertyChanged != null)
-                {
-                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_oneSaberStagingValue)));
-                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_noArrowsStagingValue)));
-                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_90StagingValue)));
-                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_360StagingValue)));
-                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_lightshowStagingValue)));
-                    PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(_mappingExtensionsStagingValue)));
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.log.Error($"Error Invoking PropertyChanged: {ex.Message}");
-                Logger.log.Error(ex);
             }
         }
     }
