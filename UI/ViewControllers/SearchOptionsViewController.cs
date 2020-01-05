@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 using UnityEngine.UI;
-using BeatSaberMarkupLanguage;
+using TMPro;
 using BeatSaberMarkupLanguage.Parser;
 using BeatSaberMarkupLanguage.ViewControllers;
 using BeatSaberMarkupLanguage.Attributes;
@@ -190,6 +191,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             SongFieldsStagingValue = PluginConfig.SongFieldsToSearch;
             CompactModeStagingValue = PluginConfig.CompactSearchMode;
 
+            _resetButton.GetComponentInChildren<TextMeshProUGUI>().color = Color.white;
+
             _resetButton.interactable = false;
             _applyButton.interactable = false;
 
@@ -204,6 +207,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             PluginConfig.SplitQueryByWords = SplitQueryStagingValue;
             PluginConfig.SongFieldsToSearch = SongFieldsStagingValue;
             PluginConfig.CompactSearchMode = CompactModeStagingValue;
+
+            _applyButton.GetComponentInChildren<TextMeshProUGUI>().color = Color.white;
 
             _resetButton.interactable = false;
             _applyButton.interactable = false;

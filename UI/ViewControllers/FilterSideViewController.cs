@@ -139,12 +139,14 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         [UIAction("clear-button-clicked")]
         private void OnClearButtonClicked()
         {
+            _clearButton.GetComponentInChildren<TextMeshProUGUI>().color = Color.white;
             ClearButtonPressed?.Invoke();
         }
 
         [UIAction("default-button-clicked")]
         private void OnDefaultButtonClicked()
         {
+            _defaultButton.GetComponentInChildren<TextMeshProUGUI>().color = Color.white;
             DefaultButtonPressed?.Invoke();
         }
     }

@@ -243,6 +243,10 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         private void OnForceSearchButtonClicked() => ForceShowButtonPressed?.Invoke();
 
         [UIAction("last-search-button-clicked")]
-        private void OnLastSearchButtonClicked() => LastSearchButtonPressed?.Invoke();
+        private void OnLastSearchButtonClicked()
+        {
+            _lastSearchButton.SetButtonText(RedoSearchButtonDefaultText);
+            LastSearchButtonPressed?.Invoke();
+        }
     }
 }

@@ -162,15 +162,31 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         }
 
         [UIAction("default-button-clicked")]
-        private void OnDefaultButtonClicked() => DefaultButtonPressed?.Invoke();
+        private void OnDefaultButtonClicked()
+        {
+            _defaultButton.GetComponentInChildren<TextMeshProUGUI>().color = Color.white;
+            DefaultButtonPressed?.Invoke();
+        }
 
         [UIAction("clear-button-clicked")]
-        private void OnClearButtonClicked() => ClearButtonPressed?.Invoke();
+        private void OnClearButtonClicked()
+        {
+            _clearButton.GetComponentInChildren<TextMeshProUGUI>().color = Color.white;
+            ClearButtonPressed?.Invoke();
+        }
 
         [UIAction("apply-button-clicked")]
-        private void OnApplyButtonClicked() => ApplyButtonPressed?.Invoke();
+        private void OnApplyButtonClicked()
+        {
+            _applyButton.GetComponentInChildren<TextMeshProUGUI>().color = Color.white;
+            ApplyButtonPressed?.Invoke();
+        }
 
         [UIAction("unapply-button-clicked")]
-        private void OnUnapplyButtonClicked() => UnapplyButtonPressed?.Invoke();
+        private void OnUnapplyButtonClicked()
+        {
+            _unapplyButton.GetComponentInChildren<TextMeshProUGUI>().color = Color.white;
+            UnapplyButtonPressed?.Invoke();
+        }
     }
 }
