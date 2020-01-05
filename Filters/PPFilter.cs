@@ -24,11 +24,7 @@ namespace EnhancedSearchAndFilters.Filters
             {
                 if (IsFilterApplied)
                 {
-                    if (_rankedAppliedValue != _rankedStagingValue ||
-                        _minEnabledAppliedValue != _minEnabledStagingValue ||
-                        _maxEnabledAppliedValue != _maxEnabledStagingValue ||
-                        _minAppliedValue != _minStagingValue ||
-                        _maxAppliedValue != _maxStagingValue)
+                    if (HasChanges)
                         return FilterStatus.AppliedAndChanged;
                     else
                         return FilterStatus.Applied;
@@ -39,11 +35,21 @@ namespace EnhancedSearchAndFilters.Filters
                 }
                 else
                 {
-                    return FilterStatus.NotAppliedAndDefault;
+                    return FilterStatus.NotApplied;
                 }
             }
         }
         public bool IsFilterApplied => _rankedAppliedValue != RankFilterOption.Off;
+        public bool HasChanges => _rankedAppliedValue != _rankedStagingValue ||
+            _minEnabledAppliedValue != _minEnabledStagingValue ||
+            _maxEnabledAppliedValue != _maxEnabledStagingValue ||
+            _minAppliedValue != _minStagingValue ||
+            _maxAppliedValue != _maxStagingValue;
+        public bool IsStagingDefaultValues => _rankedStagingValue == RankFilterOption.Off &&
+            _minEnabledStagingValue == false &&
+            _maxEnabledStagingValue == false &&
+            _minStagingValue == DefaultMinValue &&
+            _maxStagingValue == DefaultMaxValue;
 
 #pragma warning disable CS0649
         [UIObject("root")]
@@ -184,6 +190,11 @@ namespace EnhancedSearchAndFilters.Filters
             _minStagingValue = DefaultMinValue;
             _maxStagingValue = DefaultMaxValue;
 
+            _minCheckbox.gameObject.SetActive(false);
+            _minIncrement.gameObject.SetActive(false);
+            _maxCheckbox.gameObject.SetActive(false);
+            _maxIncrement.gameObject.SetActive(false);
+
             _parserParams.EmitEvent("refresh-values");
         }
 
@@ -197,6 +208,12 @@ namespace EnhancedSearchAndFilters.Filters
             _maxEnabledStagingValue = _maxEnabledAppliedValue;
             _minStagingValue = _minAppliedValue;
             _maxStagingValue = _maxAppliedValue;
+
+            bool isRankedOption = _rankedStagingValue == RankFilterOption.Ranked;
+            _minCheckbox.gameObject.SetActive(isRankedOption);
+            _minIncrement.gameObject.SetActive(isRankedOption && _minEnabledStagingValue);
+            _maxCheckbox.gameObject.SetActive(isRankedOption);
+            _maxIncrement.gameObject.SetActive(isRankedOption && _maxEnabledStagingValue);
 
             _parserParams.EmitEvent("refresh-values");
         }

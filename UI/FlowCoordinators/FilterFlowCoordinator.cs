@@ -85,14 +85,15 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 
         private void RefreshUI()
         {
-            bool anyApplied = _filterList.Any(x => x.Status == FilterStatus.Applied);
-            bool anyChanged = _filterList.Any(x => x.Status == FilterStatus.AppliedAndChanged || x.Status == FilterStatus.NotAppliedAndChanged);
-            bool currentChanged = _currentFilter.Status == FilterStatus.AppliedAndChanged || _currentFilter.Status == FilterStatus.NotAppliedAndChanged;
-            bool currentDefault = _currentFilter.Status == FilterStatus.NotAppliedAndDefault;
+            bool anyAppliedNoChanges = _filterList.Any(x => x.Status == FilterStatus.Applied);
+            bool anyChanged = _filterList.Any(x => x.HasChanges);
+            bool allDefaults = _filterList.All(x => x.IsStagingDefaultValues);
+            bool currentChanged = _currentFilter.HasChanges;
+            bool currentDefault = _currentFilter.IsStagingDefaultValues;
 
-            _filterMainViewController.SetButtonInteractivity(anyApplied || anyChanged, currentChanged, !currentDefault);
-            _filterMainViewController.SetApplyUnapplyButton(!anyApplied || anyChanged);
-            _filterSideViewController.SetButtonInteractivity(anyChanged, anyApplied || anyChanged);
+            _filterMainViewController.SetButtonInteractivity(anyAppliedNoChanges || anyChanged, currentChanged, !currentDefault);
+            _filterMainViewController.SetApplyUnapplyButton(!anyAppliedNoChanges);
+            _filterSideViewController.SetButtonInteractivity(anyChanged, !allDefaults);
             _filterSideViewController.RefreshFilterList();
         }
 

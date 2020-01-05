@@ -25,33 +25,35 @@ namespace EnhancedSearchAndFilters.Filters
             {
                 if (IsFilterApplied)
                 {
-                    if (_oneSaberAppliedValue != _oneSaberStagingValue ||
-                        _noArrowsAppliedValue != _noArrowsStagingValue ||
-                        _90AppliedValue != _90StagingValue ||
-                        _360AppliedValue != _360StagingValue ||
-                        _lightshowAppliedValue != _lightshowStagingValue ||
-                        _mappingExtensionsAppliedValue != _mappingExtensionsStagingValue)
+                    if (HasChanges)
                         return FilterStatus.AppliedAndChanged;
                     else
                         return FilterStatus.Applied;
                 }
-                else if (_oneSaberStagingValue ||
-                         _noArrowsStagingValue ||
-                         _90StagingValue ||
-                         _360StagingValue ||
-                         _lightshowStagingValue ||
-                         _mappingExtensionsStagingValue != SongRequirementFilterOption.Off)
+                else if (!IsStagingDefaultValues)
                 {
                     return FilterStatus.NotAppliedAndChanged;
                 }
                 else
                 {
-                    return FilterStatus.NotAppliedAndDefault;
+                    return FilterStatus.NotApplied;
                 }
             }
         }
         public bool IsFilterApplied => _oneSaberAppliedValue ||_noArrowsAppliedValue || _90AppliedValue || _360AppliedValue ||
             _lightshowAppliedValue || _mappingExtensionsAppliedValue != SongRequirementFilterOption.Off;
+        public bool HasChanges => _oneSaberAppliedValue != _oneSaberStagingValue ||
+            _noArrowsAppliedValue != _noArrowsStagingValue ||
+            _90AppliedValue != _90StagingValue ||
+            _360AppliedValue != _360StagingValue ||
+            _lightshowAppliedValue != _lightshowStagingValue ||
+            _mappingExtensionsAppliedValue != _mappingExtensionsStagingValue;
+        public bool IsStagingDefaultValues => _oneSaberStagingValue == false &&
+            _noArrowsStagingValue == false &&
+            _90StagingValue == false &&
+            _360StagingValue == false &&
+            _lightshowStagingValue == false &&
+            _mappingExtensionsStagingValue == SongRequirementFilterOption.Off;
 
 #pragma warning disable CS0649
         [UIObject("root")]

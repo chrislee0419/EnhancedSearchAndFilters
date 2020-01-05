@@ -93,7 +93,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                     _text.text = $"<color=#FF8888><i>{AssociatedFilter.Name}</i></color>";
                 }
 
-                if (AssociatedFilter.Status == FilterStatus.NotAppliedAndDefault)
+                if (AssociatedFilter.Status == FilterStatus.NotApplied)
                     _statusImg.color = DefaultFilterColor;
                 else if (AssociatedFilter.Status == FilterStatus.NotAppliedAndChanged)
                     _statusImg.color = PendingFilterColor;

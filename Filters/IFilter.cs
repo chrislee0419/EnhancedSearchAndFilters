@@ -10,6 +10,8 @@ namespace EnhancedSearchAndFilters.Filters
         bool IsAvailable { get; }
         FilterStatus Status { get; }
         bool IsFilterApplied { get; }
+        bool HasChanges { get; }
+        bool IsStagingDefaultValues { get; }
 
         event Action SettingChanged;
 
@@ -29,7 +31,7 @@ namespace EnhancedSearchAndFilters.Filters
 
     public enum FilterStatus
     {
-        NotAppliedAndDefault,
+        NotApplied,
         NotAppliedAndChanged,
         Applied,
         AppliedAndChanged

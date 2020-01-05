@@ -22,13 +22,7 @@ namespace EnhancedSearchAndFilters.Filters
             {
                 if (IsFilterApplied)
                 {
-                    if (_hasCompletedStagingValue != _hasCompletedAppliedValue ||
-                        _hasFullComboStagingValue != _hasFullComboAppliedValue ||
-                        _easyStagingValue != _easyAppliedValue ||
-                        _normalStagingValue != _normalAppliedValue ||
-                        _hardStagingValue != _hardAppliedValue ||
-                        _expertStagingValue != _expertAppliedValue ||
-                        _expertPlusStagingValue != _expertPlusAppliedValue)
+                    if (HasChanges)
                         return FilterStatus.AppliedAndChanged;
                     else
                         return FilterStatus.Applied;
@@ -40,11 +34,25 @@ namespace EnhancedSearchAndFilters.Filters
                 }
                 else
                 {
-                    return FilterStatus.NotAppliedAndDefault;
+                    return FilterStatus.NotApplied;
                 }
             }
         }
         public bool IsFilterApplied => _hasCompletedAppliedValue != SongCompletedFilterOption.Off || _hasFullComboAppliedValue != SongFullComboFilterOption.Off;
+        public bool HasChanges => _hasCompletedStagingValue != _hasCompletedAppliedValue ||
+            _hasFullComboStagingValue != _hasFullComboAppliedValue ||
+            _easyStagingValue != _easyAppliedValue ||
+            _normalStagingValue != _normalAppliedValue ||
+            _hardStagingValue != _hardAppliedValue ||
+            _expertStagingValue != _expertAppliedValue ||
+            _expertPlusStagingValue != _expertPlusAppliedValue;
+        public bool IsStagingDefaultValues => _hasCompletedStagingValue == SongCompletedFilterOption.Off &&
+            _hasFullComboStagingValue == SongFullComboFilterOption.Off &&
+            _easyStagingValue == false &&
+            _normalStagingValue == false &&
+            _hardStagingValue == false &&
+            _expertStagingValue == false &&
+            _expertPlusStagingValue == false;
 
 #pragma warning disable CS0649
         [UIObject("root")]

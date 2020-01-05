@@ -5,7 +5,6 @@ using UnityEngine;
 using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.Parser;
 using BeatSaberMarkupLanguage.Components.Settings;
-using BeatSaberMarkupLanguage.Notify;
 using BeatSaberMarkupLanguage.Attributes;
 using EnhancedSearchAndFilters.SongData;
 
@@ -23,10 +22,7 @@ namespace EnhancedSearchAndFilters.Filters
             {
                 if (IsFilterApplied)
                 {
-                    if (_minEnabledAppliedValue != _minEnabledStagingValue ||
-                        _maxEnabledAppliedValue != _maxEnabledStagingValue ||
-                        _minAppliedValue != _minStagingValue ||
-                        _maxAppliedValue != _maxStagingValue)
+                    if (HasChanges)
                         return FilterStatus.AppliedAndChanged;
                     else
                         return FilterStatus.Applied;
@@ -37,11 +33,19 @@ namespace EnhancedSearchAndFilters.Filters
                 }
                 else
                 {
-                    return FilterStatus.NotAppliedAndDefault;
+                    return FilterStatus.NotApplied;
                 }
             }
         }
         public bool IsFilterApplied => _minEnabledAppliedValue || _maxEnabledAppliedValue;
+        public bool HasChanges => _minEnabledAppliedValue != _minEnabledStagingValue ||
+            _maxEnabledAppliedValue != _maxEnabledStagingValue ||
+            _minAppliedValue != _minStagingValue ||
+            _maxAppliedValue != _maxStagingValue;
+        public bool IsStagingDefaultValues => _minEnabledStagingValue == false &&
+            _maxEnabledStagingValue == false &&
+            _minStagingValue == DefaultMinValue &&
+            _maxStagingValue == DefaultMaxValue;
 
 #pragma warning disable CS0649
         [UIObject("root")]
@@ -157,6 +161,9 @@ namespace EnhancedSearchAndFilters.Filters
             _minStagingValue = DefaultMinValue;
             _maxStagingValue = DefaultMaxValue;
 
+            _minSetting.gameObject.SetActive(false);
+            _maxSetting.gameObject.SetActive(false);
+
             _parserParams.EmitEvent("refresh-values");
         }
 
@@ -169,6 +176,9 @@ namespace EnhancedSearchAndFilters.Filters
             _maxEnabledStagingValue = _maxEnabledAppliedValue;
             _minStagingValue = _minAppliedValue;
             _maxStagingValue = _maxAppliedValue;
+
+            _minSetting.gameObject.SetActive(_minEnabledStagingValue);
+            _maxSetting.gameObject.SetActive(_maxEnabledStagingValue);
 
             _parserParams.EmitEvent("refresh-values");
         }

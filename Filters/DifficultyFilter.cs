@@ -19,17 +19,23 @@ namespace EnhancedSearchAndFilters.Filters
         public FilterStatus Status {
             get
             {
-                if (_easyStagingValue != _easyAppliedValue ||
-                    _normalStagingValue != _normalAppliedValue ||
-                    _hardStagingValue != _hardAppliedValue ||
-                    _expertStagingValue != _expertAppliedValue ||
-                    _expertPlusStagingValue != _expertPlusAppliedValue)
+                if (HasChanges)
                     return IsFilterApplied ? FilterStatus.AppliedAndChanged : FilterStatus.NotAppliedAndChanged;
                 else
-                    return IsFilterApplied ? FilterStatus.Applied : FilterStatus.NotAppliedAndDefault;
+                    return IsFilterApplied ? FilterStatus.Applied : FilterStatus.NotApplied;
             }
         }
         public bool IsFilterApplied => _easyAppliedValue || _normalAppliedValue || _hardAppliedValue || _expertAppliedValue || _expertPlusAppliedValue;
+        public bool HasChanges => _easyStagingValue != _easyAppliedValue ||
+            _normalStagingValue != _normalAppliedValue ||
+            _hardStagingValue != _hardAppliedValue ||
+            _expertStagingValue != _expertAppliedValue ||
+            _expertPlusStagingValue != _expertPlusAppliedValue;
+        public bool IsStagingDefaultValues => _easyStagingValue == false &&
+            _normalStagingValue == false &&
+            _hardStagingValue == false &&
+            _expertStagingValue == false &&
+            _expertPlusStagingValue == false;
 
 #pragma warning disable CS0649
         [UIObject("root")]

@@ -22,15 +22,7 @@ namespace EnhancedSearchAndFilters.Filters
             {
                 if (IsFilterApplied)
                 {
-                    if (_minEnabledStagingValue != _minEnabledAppliedValue ||
-                        _maxEnabledStagingValue != _maxEnabledAppliedValue ||
-                        _minStagingValue != _minAppliedValue ||
-                        _maxStagingValue != _maxAppliedValue ||
-                        _easyStagingValue != _easyAppliedValue ||
-                        _normalStagingValue != _normalAppliedValue ||
-                        _hardStagingValue != _hardAppliedValue ||
-                        _expertStagingValue != _expertAppliedValue ||
-                        _expertPlusStagingValue != _expertPlusAppliedValue)
+                    if (HasChanges)
                         return FilterStatus.AppliedAndChanged;
                     else
                         return FilterStatus.Applied;
@@ -42,12 +34,30 @@ namespace EnhancedSearchAndFilters.Filters
                 }
                 else
                 {
-                    return FilterStatus.NotAppliedAndDefault;
+                    return FilterStatus.NotApplied;
                 }
             }
         }
         public bool IsFilterApplied => (_minEnabledAppliedValue || _maxEnabledAppliedValue) &&
             (_easyAppliedValue || _normalAppliedValue || _hardAppliedValue || _expertAppliedValue || _expertPlusAppliedValue);
+        public bool HasChanges => _minEnabledStagingValue != _minEnabledAppliedValue ||
+            _maxEnabledStagingValue != _maxEnabledAppliedValue ||
+            _minStagingValue != _minAppliedValue ||
+            _maxStagingValue != _maxAppliedValue ||
+            _easyStagingValue != _easyAppliedValue ||
+            _normalStagingValue != _normalAppliedValue ||
+            _hardStagingValue != _hardAppliedValue ||
+            _expertStagingValue != _expertAppliedValue ||
+            _expertPlusStagingValue != _expertPlusAppliedValue;
+        public bool IsStagingDefaultValues => _minEnabledStagingValue == false &&
+            _maxEnabledStagingValue == false &&
+            _minStagingValue == DefaultMinValue &&
+            _maxStagingValue == DefaultMaxValue &&
+            _easyStagingValue == false &&
+            _normalStagingValue == false &&
+            _hardStagingValue == false &&
+            _expertStagingValue == false &&
+            _expertPlusStagingValue == false;
 
 #pragma warning disable CS0649
         [UIObject("root")]
@@ -220,6 +230,9 @@ namespace EnhancedSearchAndFilters.Filters
             _expertStagingValue = false;
             _expertPlusStagingValue = false;
 
+            _minSetting.gameObject.SetActive(false);
+            _maxSetting.gameObject.SetActive(false);
+
             _parserParams.EmitEvent("refresh-values");
         }
 
@@ -237,6 +250,9 @@ namespace EnhancedSearchAndFilters.Filters
             _hardStagingValue = _hardAppliedValue;
             _expertStagingValue = _expertAppliedValue;
             _expertPlusStagingValue = _expertPlusAppliedValue;
+
+            _minSetting.gameObject.SetActive(_minEnabledStagingValue);
+            _maxSetting.gameObject.SetActive(_maxEnabledStagingValue);
 
             _parserParams.EmitEvent("refresh-values");
         }
