@@ -127,7 +127,16 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                 delegate (BeatmapDetails[] levels)
                 {
                     // on finish
-                    FilterSelected(_currentFilter != null ? _currentFilter : _filterList.First());
+                    if (_currentFilter != null)
+                    {
+                        FilterSelected(_currentFilter);
+                        _filterSideViewController.SelectCell(_filterList.IndexOf(_currentFilter));
+                    }
+                    else
+                    {
+                        FilterSelected(_filterList.First());
+                        _filterSideViewController.SelectCell(0);
+                    }
                     RefreshUI();
 
                     _beatmapDetails = new Dictionary<BeatmapDetails, IPreviewBeatmapLevel>(_unfilteredLevels.Length);

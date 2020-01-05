@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using HMUI;
+using BeatSaberMarkupLanguage.Components;
 using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.ViewControllers;
 using EnhancedSearchAndFilters.Filters;
@@ -25,6 +26,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         private Button _clearButton;
         [UIComponent("default-button")]
         private Button _defaultButton;
+        [UIComponent("filter-list")]
+        private CustomCellListTableData _tableData;
 #pragma warning restore CS0649
 
         [UIValue("legend-text")]
@@ -118,6 +121,14 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
             foreach (var filter in filterList)
                 _filterCellList.Add(new FilterTableCell(filter));
+        }
+
+        public void SelectCell(int index)
+        {
+            if (_tableData == null || index < 0 || index >= _filterCellList.Count)
+                return;
+
+            _tableData.tableView.SelectCellWithIdx(index);
         }
 
         public void SetButtonInteractivity(bool clearInteractable, bool defaultInteractable)

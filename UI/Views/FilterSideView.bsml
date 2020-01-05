@@ -1,5 +1,6 @@
 ﻿<bg anchor-min-x="0" anchor-min-y="0" anchor-max-x="1" anchor-max-y="1">
-  <custom-list contents="filter-cell-list"
+  <custom-list id="filter-list"
+               contents="filter-cell-list"
                list-direction="Vertical"
                list-width="60"
                cell-size="8"
