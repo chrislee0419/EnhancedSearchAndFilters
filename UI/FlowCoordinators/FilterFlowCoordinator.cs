@@ -88,7 +88,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             bool anyApplied = _filterList.Any(x => x.Status == FilterStatus.Applied);
             bool anyChanged = _filterList.Any(x => x.Status == FilterStatus.AppliedAndChanged || x.Status == FilterStatus.NotAppliedAndChanged);
             bool currentChanged = _currentFilter.Status == FilterStatus.AppliedAndChanged || _currentFilter.Status == FilterStatus.NotAppliedAndChanged;
-            bool currentDefault = _currentFilter.Status == FilterStatus.NotAppliedAndChanged;
+            bool currentDefault = _currentFilter.Status == FilterStatus.NotAppliedAndDefault;
 
             _filterMainViewController.SetButtonInteractivity(anyApplied || anyChanged, currentChanged, !currentDefault);
             _filterMainViewController.SetApplyUnapplyButton(!anyApplied || anyChanged);
