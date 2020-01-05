@@ -96,7 +96,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             bool currentDefault = _currentFilter.IsStagingDefaultValues;
 
             _filterMainViewController.SetButtonInteractivity(anyAppliedNoChanges || anyChanged, currentChanged, !currentDefault);
-            _filterMainViewController.SetApplyUnapplyButton(!anyAppliedNoChanges);
+            _filterMainViewController.SetApplyUnapplyButton(!anyAppliedNoChanges || anyChanged);
             _filterSideViewController.SetButtonInteractivity(anyChanged, !allDefaults);
             _filterSideViewController.RefreshFilterList();
         }
@@ -279,6 +279,8 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             _filterMainViewController.ShowFilterContentView(selectedFilter);
             selectedFilter.SettingChanged += FilterSettingChanged;
             _currentFilter = selectedFilter;
+
+            RefreshUI();
         }
 
         private void ClearAllFilterChanges()
