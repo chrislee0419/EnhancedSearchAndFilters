@@ -43,10 +43,10 @@
           anchor-pos-x="-19" anchor-pos-y="5.5"
           pad="0" />
   <text id="info-text"
-        font-size="5"
+        font-size="3.5"
         font-align="Left"
         anchor-min-x="0" anchor-min-y="0"
         anchor-max-x="0" anchor-max-y="0"
         size-delta-x="40" size-delta-y="8.5"
-        anchor-pos-x="77" anchor-pos-y="5" />
+        anchor-pos-x="92" anchor-pos-y="5" />
 </bg>

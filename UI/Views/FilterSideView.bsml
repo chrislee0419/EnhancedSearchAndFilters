@@ -7,8 +7,8 @@
                select-cell="filter-cell-selected"
                anchor-min-x="1" anchor-min-y="0"
                anchor-max-x="1" anchor-max-y="1"
-               size-delta-x="70" size-delta-y="-10"
-               anchor-pos-x="-40" anchor-pos-y="0">
+               size-delta-x="60" size-delta-y="-10"
+               anchor-pos-x="-38" anchor-pos-y="-5">
     <image id='hovered-image'
             tags='hovered'
             anchor-min-x='0' anchor-min-y='0'
@@ -36,11 +36,11 @@
   <bg bg="round-rect-panel"
       anchor-min-x="0" anchor-min-y="1"
       anchor-max-x="0" anchor-max-y="1"
-      size-delta-x="35" size-delta-y="22"
-      anchor-pos-x="22.5" anchor-pos-y="-16">
+      size-delta-x="40" size-delta-y="24"
+      anchor-pos-x="25" anchor-pos-y="-16">
     <text text="~legend-text"
           font-align="TopLeft"
-          font-size="2.5"
+          font-size="2.8"
           anchor-min-x="0" anchor-min-y="0"
           anchor-max-x="1" anchor-max-y="1"
           size-delta-x="-4" size-delta-y="-4" />
@@ -49,20 +49,20 @@
             child-expand-width="true"
             anchor-min-x="0" anchor-min-y="0"
             anchor-max-x="0" anchor-max-y="0"
-            size-delta-x="35" size-delta-y="44"
-            anchor-pos-x="22.5" anchor-pos-y="27"
+            size-delta-x="40" size-delta-y="42"
+            anchor-pos-x="25" anchor-pos-y="26"
             pad="2" spacing="2">
     <button id="clear-button"
             text="Clear All Changes"
             font-size="3.5"
             on-click="clear-button-clicked"
-            preferred-width="30" preferred-height="9.5"
+            preferred-width="35" preferred-height="9.5"
             pad="2"/>
     <button id="default-button"
             text="Reset All To Defaults"
             font-size="3.2"
             on-click="default-button-clicked"
-            preferred-width="30" preferred-height="9.5"
+            preferred-width="35" preferred-height="9.5"
             pad="2"/>
   </vertical>
 </bg>
