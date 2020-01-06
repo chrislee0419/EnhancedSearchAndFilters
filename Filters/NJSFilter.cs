@@ -333,13 +333,14 @@ namespace EnhancedSearchAndFilters.Filters
             bool difficultyFound = false;
             foreach (var difficultyBeatmapSet in difficultyBeatmapSets)
             {
-                var difficultyBeatmap = difficultyBeatmapSet.DifficultyBeatmaps.Cast<SimplifiedDifficultyBeatmap?>().FirstOrDefault(x => x.Value.Difficulty == difficulty);
-                if (!(difficultyBeatmap is null))
+                if (difficultyBeatmapSet.DifficultyBeatmaps.Any(x => x.Difficulty == difficulty))
                 {
                     difficultyFound = true;
 
-                    if ((!_minEnabledAppliedValue || difficultyBeatmap.Value.NoteJumpMovementSpeed >= _minAppliedValue) &&
-                        (!_maxEnabledAppliedValue || difficultyBeatmap.Value.NoteJumpMovementSpeed <= _maxAppliedValue))
+                    var difficultyBeatmap = difficultyBeatmapSet.DifficultyBeatmaps.First(x => x.Difficulty == difficulty);
+
+                    if ((!_minEnabledAppliedValue || difficultyBeatmap.NoteJumpMovementSpeed >= _minAppliedValue) &&
+                        (!_maxEnabledAppliedValue || difficultyBeatmap.NoteJumpMovementSpeed <= _maxAppliedValue))
                         return true;
                 }
             }
