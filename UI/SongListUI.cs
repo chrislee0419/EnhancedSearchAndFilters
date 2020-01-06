@@ -29,26 +29,24 @@ namespace EnhancedSearchAndFilters.UI
 
         private LevelCollectionTableView _levelCollectionTableView;
         private TableView _levelsTableView;
-        private IBeatmapLevelPack _lastPack;
+        private IAnnotatedBeatmapLevelCollection _lastPack;
 
         public LevelSelectionNavigationController LevelSelectionNavigationController { get; private set; } = null;
-        public DismissableNavigationController ButtonParentViewController { get; private set; } = null;
+        //public DismissableNavigationController ButtonParentViewController { get; private set; } = null;
 
+        public const string FilteredSongsCollectionName = "EnhancedFilterFilteredSongs";
         public const string FilteredSongsPackName = "Filtered Songs";
 
         public void OnMenuSceneLoadedFresh()
         {
             // get view controller which will contain our buttons
             RectTransform viewControllersContainer = FindObjectsOfType<RectTransform>().First(x => x.name == "ViewControllers");
-            ButtonParentViewController = viewControllersContainer.GetComponentInChildren<DismissableNavigationController>(true);
+            //ButtonParentViewController = viewControllersContainer.GetComponentInChildren<DismissableNavigationController>(true);
 
             _levelCollectionTableView = viewControllersContainer.GetComponentInChildren<LevelCollectionTableView>(true);
             _levelsTableView = _levelCollectionTableView.GetPrivateField<TableView>("_tableView");
             LevelSelectionNavigationController = viewControllersContainer.GetComponentInChildren<LevelSelectionNavigationController>(true);
 
-            var levelPacksViewController = viewControllersContainer.GetComponentInChildren<LevelPacksViewController>(true);
-            levelPacksViewController.didSelectPackEvent += LevelPackSelected;
-            
             Button soloFreePlayButton = Resources.FindObjectsOfTypeAll<Button>().First(x => x.name == "SoloFreePlayButton");
             Button partyFreePlayButton = Resources.FindObjectsOfTypeAll<Button>().First(x => x.name == "PartyFreePlayButton");
             Button campaignButton = Resources.FindObjectsOfTypeAll<Button>().First(x => x.name == "CampaignButton");
@@ -70,6 +68,9 @@ namespace EnhancedSearchAndFilters.UI
             else
             {
                 ButtonPanel.instance.Setup(PluginConfig.DisableSearch, PluginConfig.DisableFilter, true);
+                ButtonPanel.instance.SearchButtonPressed -= SearchButtonPressed;
+                ButtonPanel.instance.FilterButtonPressed -= FilterButtonPressed;
+                ButtonPanel.instance.ClearFilterButtonPressed -= ClearButtonPressed;
                 ButtonPanel.instance.SearchButtonPressed += SearchButtonPressed;
                 ButtonPanel.instance.FilterButtonPressed += FilterButtonPressed;
                 ButtonPanel.instance.ClearFilterButtonPressed += ClearButtonPressed;
@@ -89,7 +90,8 @@ namespace EnhancedSearchAndFilters.UI
                 _freePlayFlowCoordinator = FindObjectOfType<SoloFreePlayFlowCoordinator>();
                 (_freePlayFlowCoordinator as SoloFreePlayFlowCoordinator).didFinishEvent += OnFreePlayFlowCoordinatorFinished;
 
-                //ButtonPanel.instance.ShowPanel();
+                StartCoroutine(PrepareLevelPackSelectedEvent());
+
                 //BeatSaverDownloaderTweaks.SetTopButtons(false);
             }
             else if (mode == FreePlayMode.Party)
@@ -97,7 +99,8 @@ namespace EnhancedSearchAndFilters.UI
                 _freePlayFlowCoordinator = FindObjectOfType<PartyFreePlayFlowCoordinator>();
                 (_freePlayFlowCoordinator as PartyFreePlayFlowCoordinator).didFinishEvent += OnFreePlayFlowCoordinatorFinished;
 
-                //ButtonPanel.instance.ShowPanel();
+                StartCoroutine(PrepareLevelPackSelectedEvent());
+
                 //BeatSaverDownloaderTweaks.SetTopButtons(false);
             }
             else if (mode == FreePlayMode.Campaign)
@@ -110,6 +113,27 @@ namespace EnhancedSearchAndFilters.UI
             }
 
             SongBrowserTweaks.OnModeSelection();
+        }
+
+        private IEnumerator PrepareLevelPackSelectedEvent()
+        {
+            yield return null;
+
+            for (int tries = 10; tries > 0; --tries)
+            {
+                try
+                {
+                    var levelFilteringNavigationController = FindObjectsOfType<LevelFilteringNavigationController>().First();
+                    levelFilteringNavigationController.didSelectAnnotatedBeatmapLevelCollectionEvent -= LevelPackSelected;
+                    levelFilteringNavigationController.didSelectAnnotatedBeatmapLevelCollectionEvent += LevelPackSelected;
+                    yield break;
+                }
+                catch { }
+
+                yield return new WaitForSeconds(0.5f);
+            }
+
+            Logger.log.Warn("Unable to get PlaylistsViewController. Filters may not work as intended");
         }
 
         private IEnumerator GetSongBrowserButtons()
@@ -175,7 +199,6 @@ namespace EnhancedSearchAndFilters.UI
             else if (_freePlayFlowCoordinator is CampaignFlowCoordinator)
                 (_freePlayFlowCoordinator as CampaignFlowCoordinator).didFinishEvent -= OnFreePlayFlowCoordinatorFinished;
 
-            //ButtonPanel.instance.HidePanel();
             //BeatSaverDownloaderTweaks.HideTopButtons();
 
             // unapply filters before leaving the screen
@@ -209,7 +232,7 @@ namespace EnhancedSearchAndFilters.UI
             ButtonPanel.instance.SetFilterStatus(false);
 
             if (SongBrowserTweaks.Initialized && !songBrowserFilterSelected)
-                LevelSelectionNavigationController.SetData(_lastPack, true, true, true);
+                LevelSelectionNavigationController.SetData(_lastPack, true, true, true, "");
         }
 
         public void SearchButtonPressed()
@@ -243,7 +266,7 @@ namespace EnhancedSearchAndFilters.UI
             }
 
             var levelPack = LevelSelectionNavigationController.GetPrivateField<IBeatmapLevelPack>("_levelPack");
-            if (_lastPack == null || levelPack.packName != FilteredSongsPackName)
+            if (_lastPack == null || levelPack.packName != FilteredSongsCollectionName)
             {
                 _lastPack = levelPack;
                 Logger.log.Debug($"Storing '{levelPack.packName}' level pack as last pack");
@@ -279,12 +302,12 @@ namespace EnhancedSearchAndFilters.UI
             */
         }
 
-        private void LevelPackSelected(LevelPacksViewController viewController, IBeatmapLevelPack levelPack)
+        private void LevelPackSelected(LevelFilteringNavigationController navController, IAnnotatedBeatmapLevelCollection levelPack, string noDataText, BeatmapCharacteristicSO preferredCharacteristic)
         {
-            if (levelPack.packName != FilteredSongsPackName)
+            if (levelPack.collectionName != FilteredSongsCollectionName)
             {
                 _lastPack = levelPack;
-                Logger.log.Debug($"Storing '{levelPack.packName}' level pack as last pack");
+                Logger.log.Debug($"Storing '{levelPack.collectionName}' level pack as last pack");
             }
 
             if (!SongBrowserTweaks.ModLoaded || !SongBrowserTweaks.Initialized)
@@ -337,7 +360,7 @@ namespace EnhancedSearchAndFilters.UI
             if (SongBrowserTweaks.Initialized)
                 return;
 
-            BeatmapLevelPack levelPack = new BeatmapLevelPack("", FilteredSongsPackName, "", Sprite.Create(Texture2D.whiteTexture, Rect.zero, Vector2.zero), new BeatmapLevelCollection(levels));
+            BeatmapLevelPack levelPack = new BeatmapLevelPack("", FilteredSongsPackName, FilteredSongsCollectionName, Sprite.Create(Texture2D.whiteTexture, Rect.zero, Vector2.zero), new BeatmapLevelCollection(levels));
             LevelSelectionNavigationController.SetData(levelPack, true, true, true);
 
             ButtonPanel.instance.SetFilterStatus(true);
@@ -345,7 +368,7 @@ namespace EnhancedSearchAndFilters.UI
 
         private void FilterFlowCoordinatorFiltersUnapplied()
         {
-            LevelSelectionNavigationController.SetData(_lastPack, true, true, true);
+            LevelSelectionNavigationController.SetData(_lastPack, true, true, true, "");
 
             if (SongBrowserTweaks.ModLoaded)
                 SongBrowserTweaks.FiltersUnapplied();
