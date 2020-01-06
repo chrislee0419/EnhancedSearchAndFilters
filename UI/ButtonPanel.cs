@@ -150,6 +150,7 @@ namespace EnhancedSearchAndFilters.UI
         {
             Logger.log.Debug("Clear Filter button pressed");
             ClearFilterButtonPressed?.Invoke();
+            SetFilterStatus(false);
         }
 
         public void ShowPanel(bool immediately = false)
