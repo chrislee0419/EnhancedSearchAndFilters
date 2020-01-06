@@ -257,6 +257,9 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 
             AreFiltersApplied = false;
             RefreshUI();
+
+            if (sendEvent)
+                FiltersUnapplied?.Invoke();
         }
 
         private void ClearCurrentFilterChanges()
