@@ -10,17 +10,17 @@
                anchor-max-x="1" anchor-max-y="1"
                size-delta-x="60" size-delta-y="-10"
                anchor-pos-x="-38" anchor-pos-y="-5">
-    <image id='hovered-image'
+    <raw-image id='hovered-image'
             tags='hovered'
             anchor-min-x='0' anchor-min-y='0'
             anchor-max-x='1' anchor-max-y='1'
             size-delta-x='0' size-delta-y='0' />
-    <image id='selected-image'
+    <raw-image id='selected-image'
             tags='selected'
             anchor-min-x='0' anchor-min-y='0'
             anchor-max-x='1' anchor-max-y='1'
             size-delta-x='0' size-delta-y='0' />
-    <image id='status-image'
+    <raw-image id='status-image'
             anchor-min-x='0' anchor-min-y='0'
             anchor-max-x='0' anchor-max-y='1'
             size-delta-x='3' size-delta-y='0'

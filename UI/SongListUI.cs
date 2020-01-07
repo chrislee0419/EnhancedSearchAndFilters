@@ -232,7 +232,7 @@ namespace EnhancedSearchAndFilters.UI
             ButtonPanel.instance.SetFilterStatus(false);
 
             if (SongBrowserTweaks.Initialized && !songBrowserFilterSelected)
-                LevelSelectionNavigationController.SetData(_lastPack, true, true, true, "");
+                LevelSelectionNavigationController.SetData(_lastPack, true, true, true, null);
         }
 
         public void SearchButtonPressed()
@@ -302,7 +302,7 @@ namespace EnhancedSearchAndFilters.UI
             */
         }
 
-        private void LevelPackSelected(LevelFilteringNavigationController navController, IAnnotatedBeatmapLevelCollection levelPack, string noDataText, BeatmapCharacteristicSO preferredCharacteristic)
+        private void LevelPackSelected(LevelFilteringNavigationController navController, IAnnotatedBeatmapLevelCollection levelPack, GameObject noDataInfoPrefab, BeatmapCharacteristicSO preferredCharacteristic)
         {
             if (levelPack.collectionName != FilteredSongsCollectionName)
             {
@@ -369,7 +369,7 @@ namespace EnhancedSearchAndFilters.UI
 
         private void FilterFlowCoordinatorFiltersUnapplied()
         {
-            LevelSelectionNavigationController.SetData(_lastPack, true, true, true, "");
+            LevelSelectionNavigationController.SetData(_lastPack, true, true, true, null);
 
             if (SongBrowserTweaks.ModLoaded)
                 SongBrowserTweaks.FiltersUnapplied();

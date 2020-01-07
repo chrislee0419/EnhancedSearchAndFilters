@@ -455,7 +455,7 @@ namespace EnhancedSearchAndFilters.SongData
                 MediaLoader, MediaLoader,
                 level.levelID, level.songName, level.songSubName, level.songAuthorName, level.levelAuthorName,
                 level.beatsPerMinute, level.songTimeOffset, level.shuffle, level.shufflePeriod, level.previewStartTime,
-                level.previewDuration, level.environmentInfo, level.allDirectionsEnvironmentInfo, level.beatmapCharacteristics);
+                level.previewDuration, level.environmentInfo, level.allDirectionsEnvironmentInfo, level.previewDifficultyBeatmapSets);
 
             CustomBeatmapLevel customLevel = new CustomBeatmapLevel(copiedLevel, null, null);
             BeatmapLevelData beatmapData = await LevelLoader.LoadBeatmapLevelDataAsync(level.customLevelPath, customLevel, level.standardLevelInfoSaveData, token).ConfigureAwait(false);
