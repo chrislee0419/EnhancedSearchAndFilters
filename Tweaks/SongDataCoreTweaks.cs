@@ -88,13 +88,41 @@ namespace EnhancedSearchAndFilters.Tweaks
                 //       (or even vastly shorter if there is a long period of no notes at the end of a beatmap)
                 //       despite that, i'll keep this limitation since the difference should usually be minimal
                 //       and the speedup compared to loading beatmap details for the first time is fairly massive
-                float duration = song.metadata.characteristics.First().Value.difficulties.Select(x => x.Value == null ? 0f : float.Parse(x.Value.length)).Max();
+                Func<KeyValuePair<string, BeatSaverSongCharacteristics>, float> getDuration = delegate (KeyValuePair<string, BeatSaverSongCharacteristics> characteristics)
+                {
+                    var characteristicDurations = characteristics.Value.difficulties.Select(delegate (KeyValuePair<string, BeatSaverSongCharacteristicData> data)
+                    {
+                        if (data.Value == null)
+                            return 0f;
+                        else if (float.TryParse(data.Value.length, out float result))
+                            return result;
+                        else
+                            return 0f;
+                    });
+
+                    return characteristicDurations.Any() ? characteristicDurations.Max() : 0f;
+                };
+                var durations = song.metadata.characteristics.Select(getDuration);
+                float duration;
+
+                if (durations.Any(x => x > 0f))
+                {
+                    duration = durations.Max();
+                }
+                else
+                {
+                    Logger.log.Warn($"Unable to acquire valid song duration for level ID '{levelID}' from information provided by SongDataCore");
+
+                    beatmapDetails = null;
+                    return false;
+                }
 
                 SimplifiedDifficultyBeatmapSet[] difficultyBeatmapSets = song.metadata.characteristics.Select(delegate (KeyValuePair<string, BeatSaverSongCharacteristics> characteristicSetPair)
                 {
                     string loadedCharacteristicName = characteristicSetPair.Value.name.ToLower();
                     string actualCharacteristicName = null;
 
+                    // NOTE: (TODO?) double check this for 90 degree and 360 degree modes
                     if (loadedCharacteristicName == "standard")
                         actualCharacteristicName = "Standard";
                     else if (loadedCharacteristicName == "onesaber")
