@@ -18,26 +18,38 @@ namespace EnhancedSearchAndFilters.SongData
         public bool IsCaching { get; private set; } = false;
         public bool SongsAreCached { get; private set; } = false;
 
-        private static BeatmapLevelsModel _beatmapLevelsModel;
-        private static BeatmapLevelsModel BeatmapLevelsModel
+        private CustomLevelLoader _levelLoader;
+        private CustomLevelLoader LevelLoader
         {
             get
             {
-                if (_beatmapLevelsModel == null)
-                    _beatmapLevelsModel = Resources.FindObjectsOfTypeAll<StandardLevelDetailViewController>().First().GetPrivateField<BeatmapLevelsModel>("_beatmapLevelsModel");
+                if (_levelLoader == null)
+                {
+                    var beatmapLevelsModel = Resources.FindObjectsOfTypeAll<StandardLevelDetailViewController>().First().GetPrivateField<BeatmapLevelsModel>("_beatmapLevelsModel");
+                    var customLevelLoader = beatmapLevelsModel.GetPrivateField<CustomLevelLoader>("_customLevelLoader");
 
-                return _beatmapLevelsModel;
+                    _levelLoader = Instantiate(customLevelLoader, this.transform);
+                }
+
+                return _levelLoader;
             }
         }
-        private static CustomLevelLoader _customLevelLoader;
-        private static CustomLevelLoader CustomLevelLoader
+
+        private CachedMediaAsyncLoader _mediaLoader;
+        private CachedMediaAsyncLoader MediaLoader
         {
             get
             {
-                if (_customLevelLoader == null)
-                    _customLevelLoader = BeatmapLevelsModel.GetPrivateField<CustomLevelLoader>("_customLevelLoader");
+                if (_mediaLoader == null)
+                {
+                    var beatmapLevelsModel = Resources.FindObjectsOfTypeAll<StandardLevelDetailViewController>().First().GetPrivateField<BeatmapLevelsModel>("_beatmapLevelsModel");
+                    var customLevelLoader = beatmapLevelsModel.GetPrivateField<CustomLevelLoader>("_customLevelLoader");
+                    var cachedMediaAsyncLoader = customLevelLoader.GetPrivateField<CachedMediaAsyncLoader>("_cachedMediaAsyncLoaderSO");
 
-                return _customLevelLoader;
+                    _mediaLoader = Instantiate(cachedMediaAsyncLoader, this.transform);
+                }
+
+                return _mediaLoader;
             }
         }
 
@@ -434,8 +446,19 @@ namespace EnhancedSearchAndFilters.SongData
 
         private async Task<CustomBeatmapLevel> LoadCustomBeatmapLevelAsync(CustomPreviewBeatmapLevel level, CancellationToken token)
         {
-            CustomBeatmapLevel customLevel = new CustomBeatmapLevel(level, null, null);
-            BeatmapLevelData beatmapData = await CustomLevelLoader.LoadBeatmapLevelDataAsync(level.customLevelPath, customLevel, level.standardLevelInfoSaveData, token).ConfigureAwait(false);
+            // recreate the CustomPreviewBeatmapLevel, but replace the original CachedMediaAsyncLoader with our own copy
+            // this is necessary since game version 1.6.0, otherwise custom level cover image loading breaks in the LevelCollectionViewController
+            // the problem seems to occur because this mod loads/caches information on another separate thread, and there is some
+            // kind of incompatibility with the original supplied CachedMediaAsyncLoader with multithreading
+            CustomPreviewBeatmapLevel copiedLevel = new CustomPreviewBeatmapLevel(level.defaultCoverImageTexture2D,
+                level.standardLevelInfoSaveData, level.customLevelPath,
+                MediaLoader, MediaLoader,
+                level.levelID, level.songName, level.songSubName, level.songAuthorName, level.levelAuthorName,
+                level.beatsPerMinute, level.songTimeOffset, level.shuffle, level.shufflePeriod, level.previewStartTime,
+                level.previewDuration, level.environmentInfo, level.allDirectionsEnvironmentInfo, level.beatmapCharacteristics);
+
+            CustomBeatmapLevel customLevel = new CustomBeatmapLevel(copiedLevel, null, null);
+            BeatmapLevelData beatmapData = await LevelLoader.LoadBeatmapLevelDataAsync(level.customLevelPath, customLevel, level.standardLevelInfoSaveData, token).ConfigureAwait(false);
             customLevel.SetBeatmapLevelData(beatmapData);
 
             return customLevel;
