@@ -317,7 +317,8 @@ namespace EnhancedSearchAndFilters.UI
                 // that being said, without SongBrowser, we are still going to cancel filters upon switching level packs
                 // because i'd rather the player have to go into the FilterViewController,
                 // so that it can check if all the beatmap details have been loaded
-                Logger.log.Debug("Another level pack has been selected, unapplying filters");
+                if (_filterFlowCoordinator?.AreFiltersApplied ?? false)
+                    Logger.log.Debug("Another level pack has been selected, unapplying filters");
                 UnapplyFilters();
             }
         }
