@@ -127,6 +127,8 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                 delegate (BeatmapDetails[] levels)
                 {
                     // on finish
+                    _filterSideViewController.SetFilterListVisibility(true);
+
                     if (_currentFilter != null)
                     {
                         FilterSelected(_currentFilter);

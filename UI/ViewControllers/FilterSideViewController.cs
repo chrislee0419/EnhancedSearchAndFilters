@@ -113,6 +113,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             this.name = "FilterSideViewController";
 
             SetButtonInteractivity(false, false);
+            SetFilterListVisibility(false);
         }
 
         public void SetFilterList(List<IFilter> filterList)
@@ -135,6 +136,14 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         {
             _clearButton.interactable = clearInteractable;
             _defaultButton.interactable = defaultInteractable;
+        }
+
+        public void SetFilterListVisibility(bool visible)
+        {
+            if (_tableData == null)
+                return;
+
+            _tableData.gameObject.SetActive(visible);
         }
 
         public void RefreshFilterList()
