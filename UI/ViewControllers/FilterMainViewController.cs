@@ -51,11 +51,11 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         private int _coroutinesActive = 0;
 
         private const string FirstLoadText =
-            "<color=#FF5555>Loading custom song details for the first time...</color>\n\n" +
-            "This first load may take several minutes, depending on the number of custom songs you have\n" +
-            "(it usually takes about 10 to 15 seconds for every 100 songs).\n\n" +
-            "<color=#CCFFCC>You may back out of this screen and have the loading occur in the background</color>,\n" +
-            "however, loading will pause when playing a level.";
+            "<color=#FF5555>Loading custom song details for the first time...</color>\n" +
+            "<size=75%>\nThis first load may take several minutes, depending on the number of custom songs you have\n" +
+            "(it usually takes about 10 to 15 seconds for every 100 songs).</size>\n\n\n" +
+            "<size=75%><color=#CCFFCC>You may back out of this screen and have the loading occur in the background</color>,\n" +
+            "however, loading will pause when playing a level.</size>";
         private const string LoadText = "Loading song details...";
         private const float InfoTextDisplayTime = 10f;
 
@@ -75,17 +75,19 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
                 var loadingSpinnerPrefab = Resources.FindObjectsOfTypeAll<GameObject>().Where(x => x.name == "LoadingIndicator").First();
                 _loadingSpinner = Instantiate(loadingSpinnerPrefab, _loadingView.transform, false);
-                _loadingSpinner.name = "EnhancedFiltersLoadingSpinner";
+                _loadingSpinner.name = "FilterLoadingSpinner";
 
                 var rt = (_loadingSpinner.transform as RectTransform);
                 rt.anchorMin = new Vector2(0.5f, 0.5f);
                 rt.anchorMax = new Vector2(0.5f, 0.5f);
-                rt.anchoredPosition = new Vector2(0.5f, 0.5f);
+                rt.anchoredPosition = Vector2.zero;
 
                 _loadingSpinner.SetActive(true);
+                _loadingView.SetActive(false);
             }
 
-            _loadingView.SetActive(false);
+            if (_currentView != null)
+                _currentView.SetActive(false);
             _infoText.gameObject.SetActive(false);
         }
 

@@ -3,7 +3,7 @@
     anchor-max-x="1" anchor-max-y="1"
     size-delta-x="0" size-delta-y="0">
   <text id="loading-text"
-        font-size="5"
+        font-size="4.8"
         font-align="Top"
         anchor-min-x="0" anchor-min-y="1"
         anchor-max-x="1" anchor-max-y="1"

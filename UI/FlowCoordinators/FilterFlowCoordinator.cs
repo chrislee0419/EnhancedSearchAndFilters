@@ -60,10 +60,6 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 
                 ProvideInitialViewControllers(_filterMainViewController, _filterSideViewController);
             }
-            else
-            {
-                _filterMainViewController.ShowLoadingView();
-            }
         }
 
         protected override void BackButtonWasPressed(ViewController topViewController)
@@ -111,12 +107,14 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                 // first time loading should load all custom levels for cache
                 var allCustomLevels = SongCore.Loader.CustomLevels.Values.Select(x => x as IPreviewBeatmapLevel).ToList();
                 allCustomLevels.AddRange(_unfilteredLevels);
-                levelsToLoad = allCustomLevels.ToArray();
+                levelsToLoad = allCustomLevels.Distinct().ToArray();
             }
             else
             {
                 levelsToLoad = _unfilteredLevels;
             }
+
+            _filterMainViewController.ShowLoadingView();
 
             BeatmapDetailsLoader.instance.LoadBeatmaps(levelsToLoad,
                 delegate (int loaded)
