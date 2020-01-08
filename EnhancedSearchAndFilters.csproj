@@ -153,6 +153,7 @@
     <Compile Include="UI\Components\SearchKeyboard.cs" />
     <Compile Include="UI\FlowCoordinators\FilterFlowCoordinator.cs" />
     <Compile Include="UI\FlowCoordinators\SearchFlowCoordinator.cs" />
+    <Compile Include="UI\SettingsMenu.cs" />
     <Compile Include="UI\SongListUI.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UI\Utilities.cs" />
@@ -187,7 +188,7 @@
     <EmbeddedResource Include="UI\Views\FilterMainView.bsml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="UI\Views\ButtonPanel.bsml" />
+    <EmbeddedResource Include="UI\Views\ButtonPanelView.bsml" />
     <EmbeddedResource Include="UI\Views\SearchOptionsView.bsml" />
     <EmbeddedResource Include="UI\Views\SearchResultsNavigationView.bsml" />
   </ItemGroup>
@@ -196,6 +197,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="UI\Views\FilterSideView.bsml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UI\Views\SettingsView.bsml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -65,15 +65,23 @@ namespace EnhancedSearchAndFilters.UI
                 StartCoroutine(GetBeatSaverDownloaderButtons());
             }
             */
-            else
+            else if (!PluginConfig.DisableSearch || !PluginConfig.DisableFilters)
             {
-                ButtonPanel.instance.Setup(PluginConfig.DisableSearch, PluginConfig.DisableFilter, true);
+                Logger.log.Warn("Creating button panel");
+
+                ButtonPanel.instance.Setup(PluginConfig.DisableSearch, PluginConfig.DisableFilters, true);
+
                 ButtonPanel.instance.SearchButtonPressed -= SearchButtonPressed;
                 ButtonPanel.instance.FilterButtonPressed -= FilterButtonPressed;
                 ButtonPanel.instance.ClearFilterButtonPressed -= ClearButtonPressed;
                 ButtonPanel.instance.SearchButtonPressed += SearchButtonPressed;
                 ButtonPanel.instance.FilterButtonPressed += FilterButtonPressed;
                 ButtonPanel.instance.ClearFilterButtonPressed += ClearButtonPressed;
+            }
+            else
+            {
+                Logger.log.Warn("Disabling button panel");
+                ButtonPanel.instance.DisablePanel();
             }
 
             LevelSelectionNavigationController.didActivateEvent += (_, __) => ButtonPanel.instance.ShowPanel();
@@ -152,7 +160,7 @@ namespace EnhancedSearchAndFilters.UI
             if (tries <= 0)
             {
                 Logger.log.Warn("SongBrowser buttons could not be found. Creating default buttons panel");
-                ButtonPanel.instance.Setup(PluginConfig.DisableSearch, PluginConfig.DisableFilter);
+                ButtonPanel.instance.Setup(PluginConfig.DisableSearch, PluginConfig.DisableFilters);
             }
         }
 

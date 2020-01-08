@@ -5,9 +5,11 @@ using UnityEngine.SceneManagement;
 using IPALogger = IPA.Logging.Logger;
 using IPAPluginManager = IPA.Loader.PluginManager;
 using SongCore;
+using BeatSaberMarkupLanguage.Settings;
 using BS_Utils.Utilities;
 using EnhancedSearchAndFilters.Tweaks;
 using EnhancedSearchAndFilters.SongData;
+using EnhancedSearchAndFilters.UI;
 using WordPredictionEngine = EnhancedSearchAndFilters.Search.WordPredictionEngine;
 
 namespace EnhancedSearchAndFilters
@@ -25,6 +27,8 @@ namespace EnhancedSearchAndFilters
             Loader.DeletingSong += SongCoreLoaderDeletingSong;
             Loader.LoadingStartedEvent += SongCoreLoaderLoadingStarted;
             Loader.SongsLoadedEvent += SongCoreLoaderFinishedLoading;
+
+            BSMLSettings.instance.AddSettingsMenu("<size=75%>Enhanced Search And Filters</size>", "EnhancedSearchAndFilters.UI.Views.SettingsView.bsml", SettingsMenu.instance);
         }
 
         public void OnApplicationQuit()
@@ -73,7 +77,7 @@ namespace EnhancedSearchAndFilters
             // reset initialization status if settings were applied
             SongBrowserTweaks.Initialized = false;
 
-            UI.SongListUI.instance.OnMenuSceneLoadedFresh();
+            SongListUI.instance.OnMenuSceneLoadedFresh();
         }
         public void SongCoreLoaderDeletingSong()
         {

@@ -78,7 +78,7 @@ namespace EnhancedSearchAndFilters.SongData
         /// </summary>
         public void StartPopulatingCache(bool force = false)
         {
-            if (IsLoading || (SongsAreCached && !force && !IsCaching) || PluginConfig.DisableFilter)
+            if (IsLoading || (SongsAreCached && !force && !IsCaching) || PluginConfig.DisableFilters)
                 return;
 
             if (!IsCaching)
@@ -156,7 +156,7 @@ namespace EnhancedSearchAndFilters.SongData
         /// </summary>
         public void SaveCacheToFile()
         {
-            if (PluginConfig.DisableFilter)
+            if (PluginConfig.DisableFilters)
                 return;
 
             List<BeatmapDetails> cache = _cache.Values.ToList();

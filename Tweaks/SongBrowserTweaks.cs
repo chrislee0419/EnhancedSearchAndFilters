@@ -77,7 +77,7 @@ namespace EnhancedSearchAndFilters.Tweaks
                 Logger.log.Info("Enhanced search functionality is disabled. SongBrowser's \"Search\" button is not modified");
             }
 
-            if (!PluginConfig.DisableFilter)
+            if (!PluginConfig.DisableFilters)
             {
                 foreach (var button in filterButtons)
                 {

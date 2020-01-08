@@ -128,7 +128,7 @@ namespace EnhancedSearchAndFilters
             }
         }
 
-        public static bool DisableFilter
+        public static bool DisableFilters
         {
             get
             {

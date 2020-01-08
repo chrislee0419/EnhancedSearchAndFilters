@@ -67,6 +67,10 @@ namespace EnhancedSearchAndFilters.UI
                 {
                     DestroyImmediate(_container);
                     _container = null;
+
+                    _searchButton = null;
+                    _filterButton = null;
+                    _clearFilterButton = null;
                 }
             }
 
@@ -94,23 +98,25 @@ namespace EnhancedSearchAndFilters.UI
 
             _hideSearchButton = hideSearchButton;
             _hideFilterButtons = hideFilterButtons;
-            BSMLParser.instance.Parse(BeatSaberMarkupLanguage.Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.ButtonPanel.bsml"), _container, this);
+            BSMLParser.instance.Parse(BeatSaberMarkupLanguage.Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.ButtonPanelView.bsml"), _container, this);
 
             // replace the ugly looking button with the marginally better looking keyboard button (RoundRectBig)
+            // also, add ability to check pointer enter/exit events to filter/clear buttons to change colour
             var replacementButtonImage = Resources.FindObjectsOfTypeAll<TextMeshProButton>().First(x => x.name == "KeyboardButton").GetComponentInChildren<Image>().sprite;
-            var buttonBg = _searchButton?.GetComponentInChildren<Image>();
-            if (buttonBg != null)
-                buttonBg.sprite = replacementButtonImage;
-            buttonBg = _filterButton?.GetComponentInChildren<Image>();
-            if (buttonBg != null)
-                buttonBg.sprite = replacementButtonImage;
-            buttonBg = _clearFilterButton?.GetComponentInChildren<Image>();
-            if (buttonBg != null)
-                buttonBg.sprite = replacementButtonImage;
+            Image buttonBg;
 
-            // add ability to check pointer enter/exit events to filter buttons to change colour
+            if (_searchButton != null)
+            {
+                buttonBg = _searchButton.GetComponentInChildren<Image>();
+                if (buttonBg != null)
+                    buttonBg.sprite = replacementButtonImage;
+            }
             if (_filterButton != null)
             {
+                buttonBg = _filterButton.GetComponentInChildren<Image>();
+                if (buttonBg != null)
+                    buttonBg.sprite = replacementButtonImage;
+
                 _filterButton.gameObject.AddComponent<EnterExitEventHandler>();
                 var handler = _filterButton.gameObject.GetComponent<EnterExitEventHandler>();
 
@@ -119,6 +125,10 @@ namespace EnhancedSearchAndFilters.UI
             }
             if (_clearFilterButton != null)
             {
+                buttonBg = _clearFilterButton.GetComponentInChildren<Image>();
+                if (buttonBg != null)
+                    buttonBg.sprite = replacementButtonImage;
+
                 _clearFilterButton?.gameObject.AddComponent<EnterExitEventHandler>();
                 var handler = _clearFilterButton.gameObject.GetComponent<EnterExitEventHandler>();
 
@@ -129,6 +139,20 @@ namespace EnhancedSearchAndFilters.UI
             _initialized = true;
 
             HidePanel(true);
+        }
+
+        public void DisablePanel()
+        {
+            if (!_initialized)
+                return;
+
+            if (_container != null)
+            {
+                DestroyImmediate(_container);
+                _container = null;
+            }
+
+            _initialized = false;
         }
 
         [UIAction("search-button-clicked")]

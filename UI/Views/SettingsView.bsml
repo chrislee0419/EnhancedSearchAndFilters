@@ -1,0 +1,7 @@
+﻿<settings-container>
+  <horizontal pad="2" preferred-height="8">
+    <text text="To apply these settings, you must use the 'OK' button instead of the 'Apply' button." font-size="3.5"/>
+  </horizontal>
+  <checkbox text="Disable Search" value="disable-search" />
+  <checkbox text="Disable Filters" value="disable-filters" />
+</settings-container>
