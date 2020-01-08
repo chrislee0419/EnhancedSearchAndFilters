@@ -263,7 +263,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             }
 
             // remove favorites toggle
-            Destroy(_standardLevelDetailView.transform.Find("Level/FavoritesToggle").gameObject);
+            Destroy(_standardLevelDetailView.transform.Find("LevelInfo/FavoritesToggle").gameObject);
         }
 
         private void ModifyTextElements()
