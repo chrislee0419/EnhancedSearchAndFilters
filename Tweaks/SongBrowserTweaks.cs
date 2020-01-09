@@ -3,8 +3,8 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using BS_Utils.Utilities;
-using BeatSaberMarkupLanguage;
 using SongBrowser;
+using SongBrowser.Internals;
 using SongBrowser.UI;
 using SongBrowser.DataAccess;
 using EnhancedSearchAndFilters.UI;
@@ -17,6 +17,10 @@ namespace EnhancedSearchAndFilters.Tweaks
         public static bool Initialized { get; set; } = false;
 
         private static object _songBrowserUI = null;
+
+        private static Button _searchButton;
+        private static Button _filterButton;
+        private static Button _clearFiltersButton;
 
         public static bool Init()
         {
@@ -35,25 +39,25 @@ namespace EnhancedSearchAndFilters.Tweaks
         private static bool _Init()
         {
             // acquire all the UI elements we need to change before modifying
+            LevelCollectionViewController levelCollectionViewController;
             Button xButton;
             Button filterByButton;
-            Button clearFilterButton;
+            Button[] existingFilterButtons;
 
-            Button searchButton;
-            Button[] filterButtons;
-
-            var levelsViewController = SongListUI.instance.LevelSelectionNavigationController;
+            var levelSelectionNavigationController = SongListUI.instance.LevelSelectionNavigationController;
             try
             {
+                levelCollectionViewController = levelSelectionNavigationController.GetPrivateField<LevelCollectionViewController>("_levelCollectionViewController");
+
                 _songBrowserUI = Resources.FindObjectsOfTypeAll<SongBrowserUI>().First();
 
-                searchButton = levelsViewController.GetComponentsInChildren<Button>(true).First(x => x.name == "FilterSearchButton");
-                filterButtons = levelsViewController.GetComponentsInChildren<Button>(true).Where(x => x.name.StartsWith("Filter") && x.name.EndsWith("Button")).ToArray();
+                _searchButton = levelCollectionViewController.GetComponentsInChildren<Button>(true).First(x => x.name == "FilterSearchButton");
+                existingFilterButtons = levelCollectionViewController.GetComponentsInChildren<Button>(true).Where(x => x.name.StartsWith("Filter") && x.name.EndsWith("Button")).ToArray();
 
                 // these buttons are found using their respective x positions (will need to be changed if button position changes)
-                xButton = levelsViewController.GetComponentsInChildren<Button>(true).First(x => x.name == "CustomUIButton" && (x.transform as RectTransform).anchoredPosition.x == -32.5f);
-                filterByButton = levelsViewController.GetComponentsInChildren<Button>(true).First(x => x.name == "CustomUIButton" && (x.transform as RectTransform).anchoredPosition.x == 30.5);
-                clearFilterButton = levelsViewController.GetComponentsInChildren<Button>(true).First(x => x.name == "CustomUIButton" && (x.transform as RectTransform).anchoredPosition.x == 54.5f);
+                xButton = levelCollectionViewController.GetComponentsInChildren<Button>(true).First(x => x.name == "CustomUIButton" && (x.transform as RectTransform).anchoredPosition.x == -32.5f);
+                filterByButton = levelCollectionViewController.GetComponentsInChildren<Button>(true).First(x => x.name == "CustomUIButton" && (x.transform as RectTransform).anchoredPosition.x == 30.5);
+                _clearFiltersButton = levelCollectionViewController.GetComponentsInChildren<Button>(true).First(x => x.name == "CustomUIButton" && (x.transform as RectTransform).anchoredPosition.x == 54.5f);
             }
             catch (InvalidOperationException)
             {
@@ -64,11 +68,11 @@ namespace EnhancedSearchAndFilters.Tweaks
             // SongBrowser filter buttons
             if (!PluginConfig.DisableSearch)
             {
-                searchButton.onClick.RemoveAllListeners();
-                searchButton.onClick.AddListener(delegate ()
+                _searchButton.onClick.RemoveAllListeners();
+                _searchButton.onClick.AddListener(delegate ()
                 {
                     SongListUI.instance.SearchButtonPressed();
-                    //SongListUI.instance.FilterButton.gameObject.SetActive(false);
+                    _filterButton.gameObject.SetActive(false);
                     _songBrowserUI.InvokeMethod("RefreshOuterUIState", new object[] { UIState.Main });
                 });
             }
@@ -79,7 +83,7 @@ namespace EnhancedSearchAndFilters.Tweaks
 
             if (!PluginConfig.DisableFilters)
             {
-                foreach (var button in filterButtons)
+                foreach (var button in existingFilterButtons)
                 {
                     if (button.name == "FilterSearchButton")
                         continue;
@@ -87,31 +91,32 @@ namespace EnhancedSearchAndFilters.Tweaks
                     button.onClick.AddListener(delegate ()
                     {
                         // search button should be hidden already via RefreshOuterUIState
-                        //SongListUI.instance.FilterButton.gameObject.SetActive(false);
+                        _filterButton.gameObject.SetActive(false);
                         SongListUI.instance.UnapplyFilters(true);
                     });
                 }
 
-                //Button filterButton = BeatSaberUI.CreateUIButton(levelsViewController.rectTransform, "ApplyButton", new Vector2(-18f + (12.75f * filterButtons.Length), 37f), new Vector2(16.75f, 5f),
-                //    delegate ()
-                //    {
-                //        SongListUI.instance.FilterButtonPressed();
-                //        SongListUI.instance.FilterButton.gameObject.SetActive(false);
-                //        _songBrowserUI.InvokePrivateMethod("RefreshOuterUIState", new object[] { UIState.Main });
-                //    },
-                //    "Other Filters");
-                //filterButton.SetButtonTextSize(2.25f);
-                //filterButton.GetComponentsInChildren<HorizontalLayoutGroup>().First(btn => btn.name == "Content").padding = new RectOffset(4, 4, 2, 2);
-                //filterButton.ToggleWordWrapping(false);
-                //filterButton.gameObject.SetActive(false);
+                // create this mod's filter button
+                _filterButton = BeatSaberUI.CreateUIButton(levelCollectionViewController.rectTransform, "ApplyButton", new Vector2(-18f + (12.75f * existingFilterButtons.Length), 37f), new Vector2(16.75f, 5f),
+                    delegate ()
+                    {
+                        SongListUI.instance.FilterButtonPressed();
+                        _filterButton.gameObject.SetActive(false);
+                        _songBrowserUI.InvokeMethod("RefreshOuterUIState", new object[] { UIState.Main });
+                    },
+                    "Other Filters");
+                _filterButton.SetButtonTextSize(2.25f);
+                _filterButton.GetComponentsInChildren<HorizontalLayoutGroup>().First(btn => btn.name == "Content").padding = new RectOffset(4, 4, 2, 2);
+                _filterButton.ToggleWordWrapping(false);
+                _filterButton.gameObject.SetActive(false);
 
                 // SongBrowser outer UI buttons
                 filterByButton.onClick.AddListener(delegate ()
                 {
-                    //SongListUI.instance.FilterButton.gameObject.SetActive(true);
+                    _filterButton.gameObject.SetActive(true);
                 });
-                clearFilterButton.onClick.RemoveAllListeners();
-                clearFilterButton.onClick.AddListener(delegate ()
+                _clearFiltersButton.onClick.RemoveAllListeners();
+                _clearFiltersButton.onClick.AddListener(delegate ()
                 {
                     if ((_songBrowserUI as SongBrowserUI).Model.Settings.filterMode == SongFilterMode.Custom)
                         SongListUI.instance.ClearButtonPressed();
@@ -121,7 +126,7 @@ namespace EnhancedSearchAndFilters.Tweaks
                 });
                 xButton.onClick.AddListener(delegate ()
                 {
-                    //SongListUI.instance.FilterButton.gameObject.SetActive(false);
+                    _filterButton.gameObject.SetActive(false);
                 });
 
                 // custom filter handler when the same level pack is selected
@@ -138,9 +143,6 @@ namespace EnhancedSearchAndFilters.Tweaks
                     (_songBrowserUI as SongBrowserUI).ProcessSongList();
                     (_songBrowserUI as SongBrowserUI).RefreshSongUI();
                 }
-
-                //SongListUI.instance.FilterButton = filterButton;
-                //SongListUI.instance.ClearButton = clearFilterButton;
             }
             else
             {
@@ -169,7 +171,7 @@ namespace EnhancedSearchAndFilters.Tweaks
             (_songBrowserUI as SongBrowserUI).CancelFilter();
 
             (_songBrowserUI as SongBrowserUI).Model.Settings.filterMode = SongFilterMode.Custom;
-            //SongListUI.instance.ClearButton.SetButtonText("Other");
+            _clearFiltersButton.SetButtonText("Other");
             (_songBrowserUI as SongBrowserUI).ProcessSongList();
             (_songBrowserUI as SongBrowserUI).RefreshSongUI();
 
@@ -215,7 +217,7 @@ namespace EnhancedSearchAndFilters.Tweaks
                 return;
 
             // UIState is always reset to Main, so we need to disable the filter button
-            //SongListUI.instance.FilterButton.gameObject.SetActive(false);
+            _filterButton.gameObject.SetActive(false);
         }
     }
 }

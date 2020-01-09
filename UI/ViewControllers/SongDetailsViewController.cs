@@ -49,9 +49,13 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 this.rectTransform.anchoredPosition = Vector2.zero;
                 this.rectTransform.sizeDelta = new Vector2(80f, 0f);
 
+                if (Tweaks.SongBrowserTweaks.ModLoaded)
+                    Logger.log.Notice("SongBrowser detected. Instantiating StandardLevelDetailView with SongBrowser's modifications. This may result in various NullReferenceExceptions being thrown (and caught) by UnityEngine. These exceptions appear to have no effect on regular operation and can be ignored.");
                 _standardLevelDetailView = Instantiate(reference, this.transform, false);
                 _standardLevelDetailView.gameObject.SetActive(true);
                 _standardLevelDetailView.name = "SearchResultLevelDetail";
+                if (Tweaks.SongBrowserTweaks.ModLoaded)
+                    Logger.log.Notice("Finished instantiating StandardLevelDetailView");
 
                 _levelParamsPanel = _standardLevelDetailView.GetPrivateField<LevelParamsPanel>("_levelParamsPanel");
                 _songNameText = _standardLevelDetailView.GetPrivateField<TextMeshProUGUI>("_songNameText");
