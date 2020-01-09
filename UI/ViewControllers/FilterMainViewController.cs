@@ -72,6 +72,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             if (firstActivation)
             {
                 BSMLParser.instance.Parse(BeatSaberMarkupLanguage.Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.FilterLoadingView.bsml"), _viewContainer, this);
+                this.name = "FilterMainViewController";
+                _viewContainer.name = "FilterViewContainer";
 
                 var loadingSpinnerPrefab = Resources.FindObjectsOfTypeAll<GameObject>().Where(x => x.name == "LoadingIndicator").First();
                 _loadingSpinner = Instantiate(loadingSpinnerPrefab, _loadingView.transform, false);

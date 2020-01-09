@@ -27,6 +27,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         {
             if (firstActivation)
             {
+                this.name = "SearchKeyboardViewController";
+
                 _predictionBar = new GameObject("EnhancedSearchPredictionBar").AddComponent<PredictionBar>();
                 _predictionBar.Initialize(this.transform, 4f, 19f, -50f, 50f);
                 _predictionBar.PredictionPressed += delegate (string query)

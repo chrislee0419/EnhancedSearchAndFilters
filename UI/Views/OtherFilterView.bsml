@@ -1,4 +1,4 @@
-﻿<vertical id="root" child-expand-width="true" anchor-min-x="0" anchor-min-y="0" anchor-max-x="1" anchor-max-y="1" size-delta-x="0" size-delta-y="0" top-pad="2">
+﻿<vertical id="root" child-expand-width="true" anchor-min-x="0" anchor-min-y="0" anchor-max-x="1" anchor-max-y="1" size-delta-x="0" size-delta-y="-2" anchor-pos-y="-1" top-pad="2">
   <text text="Other Filters" font-size="5.5" />
   <bool-setting text="Has One Saber Mode"
                 value="one-saber-value"

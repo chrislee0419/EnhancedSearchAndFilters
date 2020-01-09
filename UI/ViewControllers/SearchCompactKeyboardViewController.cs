@@ -28,6 +28,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         {
             if (firstActivation)
             {
+                this.name = "SearchCompactKeyboardViewController";
+
                 this.rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
                 this.rectTransform.anchorMax = this.rectTransform.anchorMin;
                 this.rectTransform.pivot = this.rectTransform.anchorMin;
