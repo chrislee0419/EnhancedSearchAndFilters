@@ -67,7 +67,7 @@ namespace EnhancedSearchAndFilters.UI
             */
             else if (!PluginConfig.DisableSearch || !PluginConfig.DisableFilters)
             {
-                Logger.log.Warn("Creating button panel");
+                Logger.log.Debug("Creating button panel");
 
                 ButtonPanel.instance.Setup(PluginConfig.DisableSearch, PluginConfig.DisableFilters, true);
 
@@ -80,7 +80,7 @@ namespace EnhancedSearchAndFilters.UI
             }
             else
             {
-                Logger.log.Warn("Disabling button panel");
+                Logger.log.Debug("Disabling button panel");
                 ButtonPanel.instance.DisablePanel();
             }
 
