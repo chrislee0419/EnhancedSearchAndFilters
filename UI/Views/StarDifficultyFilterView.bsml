@@ -16,6 +16,7 @@
                 size-delta-x="100" size-delta-y="10"
                 anchor-pos-x="0" anchor-pos-y="-12" />
       <increment-setting id="min-increment-setting"
+                         active="false"
                          text="        Minimum Star Rating"
                          hover-hint="Filter out songs that are less difficult than this star rating"
                          value="min-increment-value"
@@ -37,6 +38,7 @@
                 size-delta-x="100" size-delta-y="10"
                 anchor-pos-x="0" anchor-pos-y="-32" />
       <increment-setting id="max-increment-setting"
+                         active="false"
                          text="        Maximum Star Rating"
                          hover-hint="Filter out songs that are more difficult than this star rating"
                          value="max-increment-value"

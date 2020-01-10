@@ -18,6 +18,7 @@
                     size-delta-x="100" size-delta-y="10"
                     anchor-pos-x="0" anchor-pos-y="-7" />
       <checkbox id="min-checkbox"
+                active="false"
                 text="        Enable Minimum PP Filter"
                 value="min-checkbox-value"
                 get-event="refresh-values"
@@ -27,6 +28,7 @@
                 size-delta-x="100" size-delta-y="10"
                 anchor-pos-x="0" anchor-pos-y="-22" />
       <increment-setting id="min-increment"
+                         active="false"
                          text="                Minimum PP"
                          hover-hint="Filter out ranked songs that award less PP than this value"
                          value="min-increment-value"
@@ -41,6 +43,7 @@
                          size-delta-x="100" size-delta-y="10"
                          anchor-pos-x="0" anchor-pos-y="-27" />
       <checkbox id="max-checkbox"
+                active="false"
                 text="        Enable Maximum PP Filter"
                 value="max-checkbox-value"
                 get-event="refresh-values"
@@ -50,6 +53,7 @@
                 size-delta-x="100" size-delta-y="10"
                 anchor-pos-x="0" anchor-pos-y="-42" />
       <increment-setting id="max-increment"
+                         active="false"
                          text="               Maximum PP"
                          hover-hint="Filter out ranked songs that award more PP than this value"
                          value="max-increment-value"

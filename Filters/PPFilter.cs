@@ -169,11 +169,6 @@ namespace EnhancedSearchAndFilters.Filters
             _parserParams = BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.PPFilterView.bsml"), viewContainer, this);
             _viewGameObject.name = "PPFilterViewContainer";
 
-            _minCheckbox.gameObject.SetActive(false);
-            _minIncrement.gameObject.SetActive(false);
-            _maxCheckbox.gameObject.SetActive(false);
-            _maxIncrement.gameObject.SetActive(false);
-
             _isInitialized = true;
         }
 

@@ -14,6 +14,7 @@
             size-delta-x="100" size-delta-y="12"
             anchor-pos-x="0" anchor-pos-y="-18" />
   <increment-setting id="min-increment-setting"
+                     active="false"
                      text="        Minimum Duration"
                      hover-hint="Filters out songs that are shorter than this value"
                      value="min-increment-value"
@@ -36,6 +37,7 @@
             size-delta-x="100" size-delta-y="12"
             anchor-pos-x="0" anchor-pos-y="-42" />
   <increment-setting id="max-increment-setting"
+                     active="false"
                      text="        Maximum Duration"
                      hover-hint="Filters out songs that are longer than this value"
                      value="max-increment-value"

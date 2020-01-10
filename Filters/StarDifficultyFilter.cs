@@ -154,9 +154,6 @@ namespace EnhancedSearchAndFilters.Filters
             _parserParams = BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.StarDifficultyFilterView.bsml"), viewContainer, this);
             _viewGameObject.name = "StarDifficultyFilterViewContainer";
 
-            _minSetting.gameObject.SetActive(false);
-            _maxSetting.gameObject.SetActive(false);
-
             _isInitialized = true;
         }
 

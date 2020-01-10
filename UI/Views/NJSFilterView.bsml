@@ -12,6 +12,7 @@
                   size-delta-x="0" size-delta-y="10"
                   anchor-pos-x="0" anchor-pos-y="-5" />
         <increment-setting id="min-increment-setting"
+                           active="false"
                            text="        Minimum NJS"
                            hover-hint="Filters out songs that have a smaller NJS than this value"
                            value="min-increment-value"
@@ -33,6 +34,7 @@
                   size-delta-x="0" size-delta-y="10"
                   anchor-pos-x="0" anchor-pos-y="-25" />
         <increment-setting id="max-increment-setting"
+                           active="false"
                            text="        Maximum NJS"
                            hover-hint="Filters out songs that have a larger NJS than this value"
                            value="max-increment-value"
