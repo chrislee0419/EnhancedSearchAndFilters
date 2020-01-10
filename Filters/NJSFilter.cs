@@ -77,10 +77,7 @@ namespace EnhancedSearchAndFilters.Filters
             set
             {
                 _minEnabledStagingValue = value;
-                _minSetting.gameObject.SetActive(_minEnabledStagingValue);
-
                 ValidateMinValue();
-
                 SettingChanged?.Invoke();
             }
         }
@@ -92,10 +89,7 @@ namespace EnhancedSearchAndFilters.Filters
             set
             {
                 _maxEnabledStagingValue = value;
-                _maxSetting.gameObject.SetActive(_maxEnabledStagingValue);
-
                 ValidateMaxValue();
-
                 SettingChanged?.Invoke();
             }
         }
@@ -189,7 +183,6 @@ namespace EnhancedSearchAndFilters.Filters
         private bool _expertAppliedValue = false;
         private bool _expertPlusAppliedValue = false;
 
-        private bool _isInitialized = false;
         private BSMLParserParams _parserParams;
 
         private const int DefaultMinValue = 10;
@@ -201,13 +194,11 @@ namespace EnhancedSearchAndFilters.Filters
 
         public void Init(GameObject viewContainer)
         {
-            if (_isInitialized)
+            if (_viewGameObject != null)
                 return;
 
             _parserParams = BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.NJSFilterView.bsml"), viewContainer, this);
             _viewGameObject.name = "NJSFilterViewContainer";
-
-            _isInitialized = true;
         }
 
         public void Cleanup()
@@ -223,9 +214,6 @@ namespace EnhancedSearchAndFilters.Filters
 
         public void SetDefaultValuesToStaging()
         {
-            if (!_isInitialized)
-                return;
-
             _minEnabledStagingValue = false;
             _maxEnabledStagingValue = false;
             _minStagingValue = DefaultMinValue;
@@ -236,17 +224,17 @@ namespace EnhancedSearchAndFilters.Filters
             _expertStagingValue = false;
             _expertPlusStagingValue = false;
 
-            _minSetting.gameObject.SetActive(false);
-            _maxSetting.gameObject.SetActive(false);
+            if (_viewGameObject != null)
+            {
+                _minSetting.gameObject.SetActive(false);
+                _maxSetting.gameObject.SetActive(false);
 
-            _parserParams.EmitEvent("refresh-values");
+                _parserParams.EmitEvent("refresh-values");
+            }
         }
 
         public void SetAppliedValuesToStaging()
         {
-            if (!_isInitialized)
-                return;
-
             _minEnabledStagingValue = _minEnabledAppliedValue;
             _maxEnabledStagingValue = _maxEnabledAppliedValue;
             _minStagingValue = _minAppliedValue;
@@ -257,17 +245,17 @@ namespace EnhancedSearchAndFilters.Filters
             _expertStagingValue = _expertAppliedValue;
             _expertPlusStagingValue = _expertPlusAppliedValue;
 
-            _minSetting.gameObject.SetActive(_minEnabledStagingValue);
-            _maxSetting.gameObject.SetActive(_maxEnabledStagingValue);
+            if (_viewGameObject != null)
+            {
+                _minSetting.gameObject.SetActive(_minEnabledStagingValue);
+                _maxSetting.gameObject.SetActive(_maxEnabledStagingValue);
 
-            _parserParams.EmitEvent("refresh-values");
+                _parserParams.EmitEvent("refresh-values");
+            }
         }
 
         public void ApplyStagingValues()
         {
-            if (!_isInitialized)
-                return;
-
             _minEnabledAppliedValue = _minEnabledStagingValue;
             _maxEnabledAppliedValue = _maxEnabledStagingValue;
             _minAppliedValue = _minStagingValue;
@@ -281,9 +269,6 @@ namespace EnhancedSearchAndFilters.Filters
 
         public void ApplyDefaultValues()
         {
-            if (!_isInitialized)
-                return;
-
             _minEnabledAppliedValue = false;
             _maxEnabledAppliedValue = false;
             _minAppliedValue = DefaultMinValue;
@@ -297,7 +282,7 @@ namespace EnhancedSearchAndFilters.Filters
 
         public void FilterSongList(ref List<BeatmapDetails> detailsList)
         {
-            if (!_isInitialized || !IsFilterApplied)
+            if (!IsFilterApplied)
                 return;
 
             for (int i = 0; i < detailsList.Count;)
@@ -355,20 +340,77 @@ namespace EnhancedSearchAndFilters.Filters
             return !difficultyFound;
         }
 
-        public string SerializeFromAppliedValues()
+        public List<FilterSettingsKeyValuePair> GetAppliedValuesAsPairs()
         {
-            throw new NotImplementedException();
+            return FilterSettingsKeyValuePair.CreateFilterSettingsList(
+                "minEnabled", _minEnabledAppliedValue,
+                "minValue", _minAppliedValue,
+                "maxEnabled", _maxEnabledAppliedValue,
+                "maxValue", _maxAppliedValue,
+                "easy", _easyAppliedValue,
+                "normal", _normalAppliedValue,
+                "hard", _hardAppliedValue,
+                "expert", _expertAppliedValue,
+                "expertPlus", _expertPlusAppliedValue);
         }
 
-        public void DeserializeToStaging(string serializedSettings)
+        public void SetStagingValuesFromPairs(List<FilterSettingsKeyValuePair> settingsList)
         {
-            throw new NotImplementedException();
+            SetDefaultValuesToStaging();
+
+            foreach (var pair in settingsList)
+            {
+                if (bool.TryParse(pair.Value, out bool boolValue))
+                {
+                    switch (pair.Key)
+                    {
+                        case "minEnabled":
+                            _minEnabledStagingValue = boolValue;
+                            break;
+                        case "maxEnabled":
+                            _maxEnabledStagingValue = boolValue;
+                            break;
+                        case "easy":
+                            _easyStagingValue = boolValue;
+                            break;
+                        case "normal":
+                            _normalStagingValue = boolValue;
+                            break;
+                        case "hard":
+                            _hardStagingValue = boolValue;
+                            break;
+                        case "expert":
+                            _expertStagingValue = boolValue;
+                            break;
+                        case "expertPlus":
+                            _expertPlusStagingValue = boolValue;
+                            break;
+                    }
+                }
+                else if (int.TryParse(pair.Value, out int intValue))
+                {
+                    if (pair.Key == "minValue")
+                        _minStagingValue = intValue;
+                    else if (pair.Key == "maxValue")
+                        _maxStagingValue = intValue;
+                }
+            }
+
+            ValidateMinValue();
+            ValidateMaxValue();
+            if (_viewGameObject != null)
+                _parserParams.EmitEvent("refresh-values");
         }
 
         private void ValidateMinValue()
         {
             // NOTE: this changes staging values without calling setters
             // (since this is intended to be used by the setters)
+            if (_viewGameObject == null)
+                return;
+
+            _minSetting.gameObject.SetActive(_minEnabledStagingValue);
+
             if (_minEnabledStagingValue)
             {
                 if (_maxEnabledStagingValue)
@@ -402,6 +444,11 @@ namespace EnhancedSearchAndFilters.Filters
         {
             // NOTE: this changes staging values without calling setters
             // (since this is intended to be used by the setters)
+            if (_viewGameObject == null)
+                return;
+
+            _maxSetting.gameObject.SetActive(_maxEnabledStagingValue);
+
             if (_maxEnabledStagingValue)
             {
                 if (_minEnabledStagingValue)

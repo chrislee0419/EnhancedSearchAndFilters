@@ -134,7 +134,6 @@ namespace EnhancedSearchAndFilters.Filters
         private bool _lightshowAppliedValue = false;
         private SongRequirementFilterOption _mappingExtensionsAppliedValue = SongRequirementFilterOption.Off;
 
-        private bool _isInitialized = false;
         private BSMLParserParams _parserParams;
 
         [UIValue("mapping-extensions-options")]
@@ -142,13 +141,11 @@ namespace EnhancedSearchAndFilters.Filters
 
         public void Init(GameObject viewContainer)
         {
-            if (_isInitialized)
+            if (_viewGameObject != null)
                 return;
 
             _parserParams = BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.OtherFilterView.bsml"), viewContainer, this);
             _viewGameObject.name = "OtherFilterViewContainer";
-
-            _isInitialized = true;
         }
 
         public void Cleanup()
@@ -164,9 +161,6 @@ namespace EnhancedSearchAndFilters.Filters
 
         public void SetDefaultValuesToStaging()
         {
-            if (!_isInitialized)
-                return;
-
             _oneSaberStagingValue = false;
             _noArrowsStagingValue = false;
             _90StagingValue = false;
@@ -174,14 +168,12 @@ namespace EnhancedSearchAndFilters.Filters
             _lightshowStagingValue = false;
             _mappingExtensionsStagingValue = SongRequirementFilterOption.Off;
 
-            _parserParams.EmitEvent("refresh-values");
+            if (_viewGameObject != null)
+                _parserParams.EmitEvent("refresh-values");
         }
 
         public void SetAppliedValuesToStaging()
         {
-            if (!_isInitialized)
-                return;
-
             _oneSaberStagingValue = _oneSaberAppliedValue;
             _noArrowsStagingValue = _noArrowsAppliedValue;
             _90StagingValue = _90AppliedValue;
@@ -189,14 +181,12 @@ namespace EnhancedSearchAndFilters.Filters
             _lightshowStagingValue = _lightshowAppliedValue;
             _mappingExtensionsStagingValue = _mappingExtensionsAppliedValue;
 
-            _parserParams.EmitEvent("refresh-values");
+            if (_viewGameObject != null)
+                _parserParams.EmitEvent("refresh-values");
         }
 
         public void ApplyStagingValues()
         {
-            if (!_isInitialized)
-                return;
-
             _oneSaberAppliedValue = _oneSaberStagingValue;
             _noArrowsAppliedValue = _noArrowsStagingValue;
             _90AppliedValue = _90StagingValue;
@@ -207,9 +197,6 @@ namespace EnhancedSearchAndFilters.Filters
 
         public void ApplyDefaultValues()
         {
-            if (!_isInitialized)
-                return;
-
             _oneSaberAppliedValue = false;
             _noArrowsAppliedValue = false;
             _90AppliedValue = false;
@@ -220,7 +207,7 @@ namespace EnhancedSearchAndFilters.Filters
 
         public void FilterSongList(ref List<BeatmapDetails> detailsList)
         {
-            if (!_isInitialized || !IsFilterApplied)
+            if (!IsFilterApplied)
                 return;
 
             List<CustomPreviewBeatmapLevel> customLevels = null;
@@ -287,14 +274,52 @@ namespace EnhancedSearchAndFilters.Filters
             }
         }
 
-        public string SerializeFromAppliedValues()
+        public List<FilterSettingsKeyValuePair> GetAppliedValuesAsPairs()
         {
-            throw new NotImplementedException();
+            return FilterSettingsKeyValuePair.CreateFilterSettingsList(
+                "oneSaber", _oneSaberAppliedValue,
+                "noArrows", _noArrowsAppliedValue,
+                "90Degree", _90AppliedValue,
+                "360Degree", _360AppliedValue,
+                "lightshow", _lightshowAppliedValue,
+                "mappingExtensions", _mappingExtensionsAppliedValue);
         }
 
-        public void DeserializeToStaging(string serializedSettings)
+        public void SetStagingValuesFromPairs(List<FilterSettingsKeyValuePair> settingsList)
         {
-            throw new NotImplementedException();
+            SetDefaultValuesToStaging();
+
+            foreach (var pair in settingsList)
+            {
+                if (bool.TryParse(pair.Value, out bool boolValue))
+                {
+                    switch (pair.Key)
+                    {
+                        case "oneSaber":
+                            _oneSaberStagingValue = boolValue;
+                            break;
+                        case "noArrows":
+                            _noArrowsStagingValue = boolValue;
+                            break;
+                        case "90Degree":
+                            _90StagingValue = boolValue;
+                            break;
+                        case "360Degree":
+                            _360StagingValue = boolValue;
+                            break;
+                        case "lightshow":
+                            _lightshowStagingValue = boolValue;
+                            break;
+                    }
+                }
+                else if (pair.Key == "mappingExtensions" && Enum.TryParse(pair.Value, out SongRequirementFilterOption reqValue))
+                {
+                    _mappingExtensionsStagingValue = reqValue;
+                }
+            }
+
+            if (_viewGameObject != null)
+                _parserParams.EmitEvent("refresh-values");
         }
 
         [UIAction("mapping-extensions-formatter")]

@@ -65,10 +65,7 @@ namespace EnhancedSearchAndFilters.Filters
             set
             {
                 _minEnabledStagingValue = value;
-                _minSetting.gameObject.SetActive(value);
-
                 ValidateMinValue();
-
                 SettingChanged?.Invoke();
             }
         }
@@ -80,16 +77,13 @@ namespace EnhancedSearchAndFilters.Filters
             set
             {
                 _maxEnabledStagingValue = value;
-                _maxSetting.gameObject.SetActive(value);
-
                 ValidateMaxValue();
-
                 SettingChanged?.Invoke();
             }
         }
-        private float _minStagingValue = DefaultMinValue;
+        private int _minStagingValue = DefaultMinValue;
         [UIValue("min-increment-value")]
-        public float MinStagingValue
+        public int MinStagingValue
         {
             get => _minStagingValue;
             set
@@ -99,9 +93,9 @@ namespace EnhancedSearchAndFilters.Filters
                 SettingChanged?.Invoke();
             }
         }
-        private float _maxStagingValue = DefaultMaxValue;
+        private int _maxStagingValue = DefaultMaxValue;
         [UIValue("max-increment-value")]
-        public float MaxStagingValue
+        public int MaxStagingValue
         {
             get => _maxStagingValue;
             set
@@ -114,30 +108,27 @@ namespace EnhancedSearchAndFilters.Filters
 
         private bool _minEnabledAppliedValue = false;
         private bool _maxEnabledAppliedValue = false;
-        private float _minAppliedValue = DefaultMinValue;
-        private float _maxAppliedValue = DefaultMaxValue;
+        private int _minAppliedValue = DefaultMinValue;
+        private int _maxAppliedValue = DefaultMaxValue;
 
-        private bool _isInitialized = false;
         private BSMLParserParams _parserParams;
 
-        private const float DefaultMinValue = 60f;
-        private const float DefaultMaxValue = 120f;
+        private const int DefaultMinValue = 60;
+        private const int DefaultMaxValue = 120;
         [UIValue("min-value")]
-        private const float MinValue = 0f;
+        private const int MinValue = 0;
         [UIValue("max-value")]
-        private const float MaxValue = 1800f;       // 30 minutes
+        private const int MaxValue = 1800;       // 30 minutes
         [UIValue("inc-value")]
-        private const float IncrementValue = 15f;
+        private const int IncrementValue = 15;
 
         public void Init(GameObject viewContainer)
         {
-            if (_isInitialized)
+            if (_viewGameObject != null)
                 return;
 
             _parserParams = BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.DurationFilterView.bsml"), viewContainer, this);
             _viewGameObject.name = "DurationFilterViewContainer";
-
-            _isInitialized = true;
         }
 
         public void Cleanup()
@@ -159,41 +150,38 @@ namespace EnhancedSearchAndFilters.Filters
 
         public void SetDefaultValuesToStaging()
         {
-            if (!_isInitialized)
-                return;
-
             _minEnabledStagingValue = false;
             _maxEnabledStagingValue = false;
             _minStagingValue = DefaultMinValue;
             _maxStagingValue = DefaultMaxValue;
 
-            _minSetting.gameObject.SetActive(false);
-            _maxSetting.gameObject.SetActive(false);
+            if (_viewGameObject != null)
+            {
+                _minSetting.gameObject.SetActive(false);
+                _maxSetting.gameObject.SetActive(false);
 
-            _parserParams.EmitEvent("refresh-values");
+                _parserParams.EmitEvent("refresh-values");
+            }
         }
 
         public void SetAppliedValuesToStaging()
         {
-            if (!_isInitialized)
-                return;
-
             _minEnabledStagingValue = _minEnabledAppliedValue;
             _maxEnabledStagingValue = _maxEnabledAppliedValue;
             _minStagingValue = _minAppliedValue;
             _maxStagingValue = _maxAppliedValue;
 
-            _minSetting.gameObject.SetActive(_minEnabledStagingValue);
-            _maxSetting.gameObject.SetActive(_maxEnabledStagingValue);
+            if (_viewGameObject != null)
+            {
+                _minSetting.gameObject.SetActive(_minEnabledStagingValue);
+                _maxSetting.gameObject.SetActive(_maxEnabledStagingValue);
 
-            _parserParams.EmitEvent("refresh-values");
+                _parserParams.EmitEvent("refresh-values");
+            }
         }
 
         public void ApplyStagingValues()
         {
-            if (!_isInitialized)
-                return;
-
             _minEnabledAppliedValue = _minEnabledStagingValue;
             _maxEnabledAppliedValue = _maxEnabledStagingValue;
             _minAppliedValue = _minStagingValue;
@@ -202,9 +190,6 @@ namespace EnhancedSearchAndFilters.Filters
 
         public void ApplyDefaultValues()
         {
-            if (!_isInitialized)
-                return;
-
             _minEnabledAppliedValue = false;
             _maxEnabledAppliedValue = false;
             _minAppliedValue = DefaultMinValue;
@@ -213,7 +198,7 @@ namespace EnhancedSearchAndFilters.Filters
 
         public void FilterSongList(ref List<BeatmapDetails> detailsList)
         {
-            if (!_isInitialized || !IsFilterApplied)
+            if (!IsFilterApplied)
                 return;
 
             for (int i = 0; i < detailsList.Count;)
@@ -226,20 +211,52 @@ namespace EnhancedSearchAndFilters.Filters
             }
         }
 
-        public string SerializeFromAppliedValues()
+        public List<FilterSettingsKeyValuePair> GetAppliedValuesAsPairs()
         {
-            throw new NotImplementedException();
+            return FilterSettingsKeyValuePair.CreateFilterSettingsList(
+                "minEnabled", _minEnabledAppliedValue,
+                "minValue", _minAppliedValue,
+                "maxEnabled", _maxEnabledAppliedValue,
+                "maxValue", _maxAppliedValue);
         }
 
-        public void DeserializeToStaging(string serializedSettings)
+        public void SetStagingValuesFromPairs(List<FilterSettingsKeyValuePair> settingsList)
         {
-            throw new NotImplementedException();
+            SetDefaultValuesToStaging();
+
+            foreach (var pair in settingsList)
+            {
+                if (bool.TryParse(pair.Value, out bool boolValue))
+                {
+                    if (pair.Key == "minEnabled")
+                        _minEnabledStagingValue = boolValue;
+                    else if (pair.Key == "maxEnabled")
+                        _maxEnabledStagingValue = boolValue;
+                }
+                else if (int.TryParse(pair.Value, out int intValue))
+                {
+                    if (pair.Key == "minValue")
+                        _minStagingValue = intValue;
+                    else if (pair.Key == "maxValue")
+                        _maxStagingValue = intValue;
+                }
+            }
+
+            ValidateMinValue();
+            ValidateMaxValue();
+            if (_viewGameObject != null)
+                _parserParams.EmitEvent("refresh-values");
         }
 
         private void ValidateMinValue()
         {
             // NOTE: this changes staging values without calling setters
             // (since this is intended to be used by the setters)
+            if (_viewGameObject == null)
+                return;
+
+            _minSetting.gameObject.SetActive(_minEnabledStagingValue);
+
             if (_minEnabledStagingValue)
             {
                 if (_maxEnabledStagingValue)
@@ -273,6 +290,11 @@ namespace EnhancedSearchAndFilters.Filters
         {
             // NOTE: this changes staging values without calling setters
             // (since this is intended to be used by the setters)
+            if (_viewGameObject == null)
+                return;
+
+            _maxSetting.gameObject.SetActive(_maxEnabledStagingValue);
+
             if (_maxEnabledStagingValue)
             {
                 if (_minEnabledStagingValue)

@@ -145,7 +145,6 @@ namespace EnhancedSearchAndFilters.Filters
         private bool _expertAppliedValue = false;
         private bool _expertPlusAppliedValue = false;
 
-        private bool _isInitialized = false;
         private BSMLParserParams _parserParams;
 
         [UIValue("completed-options")]
@@ -155,13 +154,11 @@ namespace EnhancedSearchAndFilters.Filters
 
         public void Init(GameObject viewContainer)
         {
-            if (_isInitialized)
+            if (_viewGameObject != null)
                 return;
 
             _parserParams = BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.PlayerStatsFilterView.bsml"), viewContainer, this);
             _viewGameObject.name = "PlayerStatsFilterViewContainer";
-
-            _isInitialized = true;
         }
 
         public void Cleanup()
@@ -177,9 +174,6 @@ namespace EnhancedSearchAndFilters.Filters
 
         public void SetDefaultValuesToStaging()
         {
-            if (!_isInitialized)
-                return;
-
             _hasCompletedStagingValue = SongCompletedFilterOption.Off;
             _hasFullComboStagingValue = SongFullComboFilterOption.Off;
             _easyStagingValue = false;
@@ -188,14 +182,12 @@ namespace EnhancedSearchAndFilters.Filters
             _expertStagingValue = false;
             _expertPlusStagingValue = false;
 
-            _parserParams.EmitEvent("refresh-values");
+            if (_viewGameObject != null)
+                _parserParams.EmitEvent("refresh-values");
         }
 
         public void SetAppliedValuesToStaging()
         {
-            if (!_isInitialized)
-                return;
-
             _hasCompletedStagingValue = _hasCompletedAppliedValue;
             _hasFullComboStagingValue = _hasFullComboAppliedValue;
             _easyStagingValue = _easyAppliedValue;
@@ -204,14 +196,12 @@ namespace EnhancedSearchAndFilters.Filters
             _expertStagingValue = _expertAppliedValue;
             _expertPlusStagingValue = _expertPlusAppliedValue;
 
-            _parserParams.EmitEvent("refresh-values");
+            if (_viewGameObject != null)
+                _parserParams.EmitEvent("refresh-values");
         }
 
         public void ApplyStagingValues()
         {
-            if (!_isInitialized)
-                return;
-
             _hasCompletedAppliedValue = _hasCompletedStagingValue;
             _hasFullComboAppliedValue = _hasFullComboStagingValue;
             _easyAppliedValue = _easyStagingValue;
@@ -223,9 +213,6 @@ namespace EnhancedSearchAndFilters.Filters
 
         public void ApplyDefaultValues()
         {
-            if (!_isInitialized)
-                return;
-
             _hasCompletedAppliedValue = SongCompletedFilterOption.Off;
             _hasFullComboAppliedValue = SongFullComboFilterOption.Off;
             _easyAppliedValue = false;
@@ -237,7 +224,7 @@ namespace EnhancedSearchAndFilters.Filters
 
         public void FilterSongList(ref List<BeatmapDetails> detailsList)
         {
-            if (!_isInitialized || !IsFilterApplied)
+            if (!IsFilterApplied)
                 return;
 
             List<BeatmapDifficulty> diffList = new List<BeatmapDifficulty>(5);
@@ -282,14 +269,57 @@ namespace EnhancedSearchAndFilters.Filters
                 detailsList.Remove(level);
         }
 
-        public string SerializeFromAppliedValues()
+        public List<FilterSettingsKeyValuePair> GetAppliedValuesAsPairs()
         {
-            throw new NotImplementedException();
+            return FilterSettingsKeyValuePair.CreateFilterSettingsList(
+                "completed", _hasCompletedAppliedValue,
+                "fullCombo", _hasFullComboAppliedValue,
+                "easy", _easyAppliedValue,
+                "normal", _normalAppliedValue,
+                "hard", _hardAppliedValue,
+                "expert", _expertAppliedValue,
+                "expertPlus", _expertPlusAppliedValue);
         }
 
-        public void DeserializeToStaging(string serializedSettings)
+        public void SetStagingValuesFromPairs(List<FilterSettingsKeyValuePair> settingsList)
         {
-            throw new NotImplementedException();
+            SetDefaultValuesToStaging();
+
+            foreach (var pair in settingsList)
+            {
+                if (bool.TryParse(pair.Value, out bool boolValue))
+                {
+                    switch (pair.Key)
+                    {
+                        case "easy":
+                            _easyStagingValue = boolValue;
+                            break;
+                        case "normal":
+                            _normalStagingValue = boolValue;
+                            break;
+                        case "hard":
+                            _hardStagingValue = boolValue;
+                            break;
+                        case "expert":
+                            _expertStagingValue = boolValue;
+                            break;
+                        case "expertPlus":
+                            _expertPlusStagingValue = boolValue;
+                            break;
+                    }
+                }
+                else if (pair.Key == "completed" && Enum.TryParse(pair.Value, out SongCompletedFilterOption completedValue))
+                {
+                    _hasCompletedStagingValue = completedValue;
+                }
+                else if (pair.Key == "fullCombo" && Enum.TryParse(pair.Value, out SongFullComboFilterOption fcValue))
+                {
+                    _hasFullComboStagingValue = fcValue;
+                }
+            }
+
+            if (_viewGameObject != null)
+                _parserParams.EmitEvent("refresh-values");
         }
 
         [UIAction("completed-formatter")]

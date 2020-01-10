@@ -104,18 +104,15 @@ namespace EnhancedSearchAndFilters.Filters
         private bool _expertAppliedValue = false;
         private bool _expertPlusAppliedValue = false;
 
-        private bool _isInitialized = false;
         private BSMLParserParams _parserParams;
 
         public void Init(GameObject viewContainer)
         {
-            if (_isInitialized)
+            if (_viewGameObject != null)
                 return;
 
             _parserParams = BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.DifficultyFilterView.bsml"), viewContainer, this);
             _viewGameObject.name = "DifficultyFilterViewContainer";
-
-            _isInitialized = true;
         }
 
         public void Cleanup()
@@ -131,37 +128,30 @@ namespace EnhancedSearchAndFilters.Filters
 
         public void SetDefaultValuesToStaging()
         {
-            if (!_isInitialized)
-                return;
-
             _easyStagingValue = false;
             _normalStagingValue = false;
             _hardStagingValue = false;
             _expertStagingValue = false;
             _expertPlusStagingValue = false;
 
-            _parserParams.EmitEvent("refresh-values");
+            if (_viewGameObject != null)
+                _parserParams.EmitEvent("refresh-values");
         }
 
         public void SetAppliedValuesToStaging()
         {
-            if (!_isInitialized)
-                return;
-
             _easyStagingValue = _easyAppliedValue;
             _normalStagingValue = _normalAppliedValue;
             _hardStagingValue = _hardAppliedValue;
             _expertStagingValue = _expertAppliedValue;
             _expertPlusStagingValue = _expertPlusAppliedValue;
 
-            _parserParams.EmitEvent("refresh-values");
+            if (_viewGameObject != null)
+                _parserParams.EmitEvent("refresh-values");
         }
 
         public void ApplyStagingValues()
         {
-            if (!_isInitialized)
-                return;
-
             _easyAppliedValue = _easyStagingValue;
             _normalAppliedValue = _normalStagingValue;
             _hardAppliedValue = _hardStagingValue;
@@ -171,9 +161,6 @@ namespace EnhancedSearchAndFilters.Filters
 
         public void ApplyDefaultValues()
         {
-            if (!_isInitialized)
-                return;
-
             _easyAppliedValue = false;
             _normalAppliedValue = false;
             _hardAppliedValue = false;
@@ -183,7 +170,7 @@ namespace EnhancedSearchAndFilters.Filters
 
         public void FilterSongList(ref List<BeatmapDetails> detailsList)
         {
-            if (!_isInitialized || !IsFilterApplied)
+            if (!IsFilterApplied)
                 return;
 
             for (int i = 0; i < detailsList.Count;)
@@ -211,14 +198,47 @@ namespace EnhancedSearchAndFilters.Filters
             }
         }
 
-        public string SerializeFromAppliedValues()
+        public List<FilterSettingsKeyValuePair> GetAppliedValuesAsPairs()
         {
-            throw new NotImplementedException();
+            return FilterSettingsKeyValuePair.CreateFilterSettingsList(
+                "easy", _easyAppliedValue,
+                "normal", _normalAppliedValue,
+                "hard", _hardAppliedValue,
+                "expert", _expertAppliedValue,
+                "expertPlus", _expertPlusAppliedValue);
         }
 
-        public void DeserializeToStaging(string serializedSettings)
+        public void SetStagingValuesFromPairs(List<FilterSettingsKeyValuePair> settingsList)
         {
-            throw new NotImplementedException();
+            SetDefaultValuesToStaging();
+
+            foreach (var pair in settingsList)
+            {
+                if (!bool.TryParse(pair.Value, out bool value))
+                    continue;
+
+                switch (pair.Key)
+                {
+                    case "easy":
+                        _easyStagingValue = value;
+                        break;
+                    case "normal":
+                        _normalStagingValue = value;
+                        break;
+                    case "hard":
+                        _hardStagingValue = value;
+                        break;
+                    case "expert":
+                        _expertStagingValue = value;
+                        break;
+                    case "expertPlus":
+                        _expertPlusStagingValue = value;
+                        break;
+                }
+            }
+
+            if (_viewGameObject != null)
+                _parserParams.EmitEvent("refresh-values");
         }
     }
 }

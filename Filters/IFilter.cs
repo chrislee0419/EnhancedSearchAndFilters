@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace EnhancedSearchAndFilters.Filters
@@ -44,16 +45,17 @@ namespace EnhancedSearchAndFilters.Filters
         void FilterSongList(ref List<SongData.BeatmapDetails> detailsList);
 
         /// <summary>
-        /// Serialize the applied values to a string.
+        /// Convert the currently applied values to strings and stored them as key-value pairs. 
+        /// Both the key and value should only contain alphanumeric characters.
         /// </summary>
-        /// <returns>A string that represents the applied values.</returns>
-        string SerializeFromAppliedValues();
+        /// <returns>A List of FilterSettingsKeyValuePairs that represent the applied values.</returns>
+        List<FilterSettingsKeyValuePair> GetAppliedValuesAsPairs();
 
         /// <summary>
-        /// Set the staging values according to a serialized string.
+        /// Set the staging values according to key-value pairs.
         /// </summary>
-        /// <param name="serializedSettings">A string that represents the values to be staged to this filter's settings.</param>
-        void DeserializeToStaging(string serializedSettings);
+        /// <param name="settingsList">A string that represents the values to be staged to this filter's settings.</param>
+        void SetStagingValuesFromPairs(List<FilterSettingsKeyValuePair> settingsList);
     }
 
     public enum FilterStatus
@@ -62,5 +64,57 @@ namespace EnhancedSearchAndFilters.Filters
         NotAppliedAndChanged,
         Applied,
         AppliedAndChanged
+    }
+
+    public class FilterSettingsKeyValuePair
+    {
+        private string _key;
+        public string Key
+        {
+            get => _key;
+            set
+            {
+                if (!AlphanumericRegex.IsMatch(value))
+                    throw new ArgumentException("The key of a filter setting should only contain alphanumeric characters.");
+
+                _key = value;
+            }
+        }
+
+        private string _value;
+        public string Value {
+            get => _value;
+            set
+            {
+                if (!AlphanumericRegex.IsMatch(value))
+                    throw new ArgumentException("The value of a filter setting should only contain alphanumeric characters.");
+
+                _value = value;
+            }
+        }
+
+        public static readonly Regex AlphanumericRegex = new Regex("^[A-Za-z0-9]+$");
+
+        public FilterSettingsKeyValuePair(string key, object value)
+        {
+            Key = key;
+            Value = value.ToString();
+        }
+
+        /// <summary>
+        /// Create a List of key-value pairs that represent a filter's settings and their associated values.
+        /// </summary>
+        /// <param name="items">A list of keys (string) and their associated values (objects). 
+        /// The parameters should be provided so that each key string is followed immediately by its associated value.</param>
+        /// <returns>A list of FilterSettingsKeyValuePair objects.</returns>
+        public static List<FilterSettingsKeyValuePair> CreateFilterSettingsList(params object[] items)
+        {
+            List<FilterSettingsKeyValuePair> settingsList = new List<FilterSettingsKeyValuePair>(items.Length / 2);
+
+            for (int k = 0, v = 1; k < items.Length && v < items.Length; k += 2, v += 2)
+                settingsList.Add(new FilterSettingsKeyValuePair(items[k].ToString(), items[v]));
+
+            return settingsList;
+        }
     }
 }

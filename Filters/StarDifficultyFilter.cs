@@ -68,10 +68,7 @@ namespace EnhancedSearchAndFilters.Filters
             set
             {
                 _minEnabledStagingValue = value;
-                _minSetting.gameObject.SetActive(_minEnabledStagingValue);
-
                 ValidateMinValue();
-
                 SettingChanged?.Invoke();
             }
         }
@@ -83,10 +80,7 @@ namespace EnhancedSearchAndFilters.Filters
             set
             {
                 _maxEnabledStagingValue = value;
-                _maxSetting.gameObject.SetActive(_maxEnabledStagingValue);
-
                 ValidateMaxValue();
-
                 SettingChanged?.Invoke();
             }
         }
@@ -132,7 +126,6 @@ namespace EnhancedSearchAndFilters.Filters
         private float _maxAppliedValue = DefaultMaxValue;
         private bool _includeUnratedAppliedValue = false;
 
-        private bool _isInitialized = false;
         private BSMLParserParams _parserParams;
 
         private const float DefaultMinValue = 3f;
@@ -148,13 +141,11 @@ namespace EnhancedSearchAndFilters.Filters
 
         public void Init(GameObject viewContainer)
         {
-            if (_isInitialized)
+            if (_viewGameObject != null)
                 return;
 
             _parserParams = BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.StarDifficultyFilterView.bsml"), viewContainer, this);
             _viewGameObject.name = "StarDifficultyFilterViewContainer";
-
-            _isInitialized = true;
         }
 
         public void Cleanup()
@@ -170,7 +161,7 @@ namespace EnhancedSearchAndFilters.Filters
 
         public void SetDefaultValuesToStaging()
         {
-            if (!_isInitialized || !IsAvailable)
+            if (!IsAvailable)
                 return;
 
             _minEnabledStagingValue = false;
@@ -179,15 +170,18 @@ namespace EnhancedSearchAndFilters.Filters
             _maxStagingValue = DefaultMaxValue;
             _includeUnratedStagingValue = false;
 
-            _minSetting.gameObject.SetActive(false);
-            _maxSetting.gameObject.SetActive(false);
+            if (_viewGameObject != null)
+            {
+                _minSetting.gameObject.SetActive(false);
+                _maxSetting.gameObject.SetActive(false);
 
-            _parserParams.EmitEvent("refresh-values");
+                _parserParams.EmitEvent("refresh-values");
+            }
         }
 
         public void SetAppliedValuesToStaging()
         {
-            if (!_isInitialized || !IsAvailable)
+            if (!IsAvailable)
                 return;
 
             _minEnabledStagingValue = _minEnabledAppliedValue;
@@ -196,15 +190,18 @@ namespace EnhancedSearchAndFilters.Filters
             _maxStagingValue = _maxAppliedValue;
             _includeUnratedStagingValue = _includeUnratedAppliedValue;
 
-            _minSetting.gameObject.SetActive(_minEnabledStagingValue);
-            _maxSetting.gameObject.SetActive(_maxEnabledStagingValue);
+            if (_viewGameObject != null)
+            {
+                _minSetting.gameObject.SetActive(_minEnabledStagingValue);
+                _maxSetting.gameObject.SetActive(_maxEnabledStagingValue);
 
-            _parserParams.EmitEvent("refresh-values");
+                _parserParams.EmitEvent("refresh-values");
+            }
         }
 
         public void ApplyStagingValues()
         {
-            if (!_isInitialized || !IsAvailable)
+            if (!IsAvailable)
                 return;
 
             _minEnabledAppliedValue = _minEnabledStagingValue;
@@ -217,7 +214,7 @@ namespace EnhancedSearchAndFilters.Filters
 
         public void ApplyDefaultValues()
         {
-            if (!_isInitialized || !IsAvailable)
+            if (!IsAvailable)
                 return;
 
             _minEnabledAppliedValue = false;
@@ -229,7 +226,7 @@ namespace EnhancedSearchAndFilters.Filters
 
         public void FilterSongList(ref List<BeatmapDetails> detailsList)
         {
-            if (!_isInitialized || !Tweaks.SongDataCoreTweaks.ModLoaded || (!_minEnabledAppliedValue && !_maxEnabledAppliedValue))
+            if (!Tweaks.SongDataCoreTweaks.ModLoaded || (!_minEnabledAppliedValue && !_maxEnabledAppliedValue))
                 return;
 
             for (int i = 0; i < detailsList.Count;)
@@ -245,20 +242,64 @@ namespace EnhancedSearchAndFilters.Filters
             }
         }
 
-        public string SerializeFromAppliedValues()
+        public List<FilterSettingsKeyValuePair> GetAppliedValuesAsPairs()
         {
-            throw new NotImplementedException();
+            return FilterSettingsKeyValuePair.CreateFilterSettingsList(
+                "minEnabled", _minEnabledAppliedValue,
+                "minValue", _minAppliedValue,
+                "maxEnabled", _maxEnabledAppliedValue,
+                "maxValue", _maxAppliedValue,
+                "includeUnrated", _includeUnratedAppliedValue);
         }
 
-        public void DeserializeToStaging(string serializedSettings)
+        public void SetStagingValuesFromPairs(List<FilterSettingsKeyValuePair> settingsList)
         {
-            throw new NotImplementedException();
+            if (!IsAvailable)
+                return;
+
+            SetDefaultValuesToStaging();
+
+            foreach (var pair in settingsList)
+            {
+                if (bool.TryParse(pair.Value, out bool boolValue))
+                {
+                    switch (pair.Key)
+                    {
+                        case "minEnabled":
+                            _minEnabledStagingValue = boolValue;
+                            break;
+                        case "maxEnabled":
+                            _maxEnabledStagingValue = boolValue;
+                            break;
+                        case "includeUnrated":
+                            _includeUnratedStagingValue = boolValue;
+                            break;
+                    }
+                }
+                else if (float.TryParse(pair.Value, out float floatValue))
+                {
+                    if (pair.Key == "minValue")
+                        _minStagingValue = floatValue;
+                    else if (pair.Key == "maxValue")
+                        _maxStagingValue = floatValue;
+                }
+            }
+
+            ValidateMinValue();
+            ValidateMaxValue();
+            if (_viewGameObject != null)
+                _parserParams.EmitEvent("refresh-values");
         }
 
         private void ValidateMinValue()
         {
             // NOTE: this changes staging values without calling setters
             // (since this is intended to be used by the setters)
+            if (_viewGameObject == null)
+                return;
+
+            _minSetting.gameObject.SetActive(_minEnabledStagingValue);
+
             if (_minEnabledStagingValue)
             {
                 if (_maxEnabledStagingValue)
@@ -292,6 +333,11 @@ namespace EnhancedSearchAndFilters.Filters
         {
             // NOTE: this changes staging values without calling setters
             // (since this is intended to be used by the setters)
+            if (_viewGameObject == null)
+                return;
+
+            _maxSetting.gameObject.SetActive(_maxEnabledStagingValue);
+
             if (_maxEnabledStagingValue)
             {
                 if (_minEnabledStagingValue)
