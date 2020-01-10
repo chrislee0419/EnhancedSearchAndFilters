@@ -38,7 +38,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             "<color=#55FF55>Green</color> -  Applied\n" +
             "<color=#55AAFF>Blue</color> -  Applied, but has changes";
 
-        internal class FilterTableCell
+        private class FilterTableCell
         {
             public IFilter AssociatedFilter { get; private set; }
 
@@ -116,12 +116,18 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             SetFilterListVisibility(false);
         }
 
-        public void SetFilterList(List<IFilter> filterList)
+        public void SetFilterList(IEnumerable<IFilter> filterList)
         {
             _filterCellList.Clear();
 
             foreach (var filter in filterList)
                 _filterCellList.Add(new FilterTableCell(filter));
+
+            if (_tableData != null)
+            {
+                _tableData.data = _filterCellList;
+                _tableData.tableView.ReloadData();
+            }
         }
 
         public void SelectCell(int index)

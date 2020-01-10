@@ -127,6 +127,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Filters\FilterList.cs" />
     <Compile Include="Filters\PlayerStatsFilter.cs" />
     <Compile Include="Search\Trie.cs" />
     <Compile Include="Search\WordCountStorage.cs" />

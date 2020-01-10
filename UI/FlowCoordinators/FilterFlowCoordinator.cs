@@ -19,13 +19,10 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 
         public bool AreFiltersApplied { get; private set; } = false;
 
-
         private FilterMainViewController _filterMainViewController;
         private FilterSideViewController _filterSideViewController;
 
-        private List<IFilter> _filterList = new List<IFilter>();
         private IFilter _currentFilter;
-
         private IPreviewBeatmapLevel[] _unfilteredLevels;
         private Dictionary<BeatmapDetails, IPreviewBeatmapLevel> _beatmapDetails;
 
@@ -47,16 +44,10 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                 _filterSideViewController.ClearButtonPressed += ClearAllFilterChanges;
                 _filterSideViewController.DefaultButtonPressed += SetAllFiltersToDefault;
 
-                // add filters to filter list
-                _filterList.Add(new DifficultyFilter());
-                _filterList.Add(new DurationFilter());
-                _filterList.Add(new NJSFilter());
-                _filterList.Add(new PPFilter());
-                _filterList.Add(new StarDifficultyFilter());
-                _filterList.Add(new PlayerStatsFilter());
-                _filterList.Add(new OtherFilter());
+                _filterSideViewController.SetFilterList(FilterList.ActiveFilters);
 
-                _filterSideViewController.SetFilterList(_filterList);
+                FilterList.FilterListChanged -= FilterListChanged;
+                FilterList.FilterListChanged += FilterListChanged;
 
                 ProvideInitialViewControllers(_filterMainViewController, _filterSideViewController);
             }
@@ -85,9 +76,9 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 
         private void RefreshUI()
         {
-            bool anyAppliedNoChanges = _filterList.Any(x => x.Status == FilterStatus.Applied);
-            bool anyChanged = _filterList.Any(x => x.HasChanges);
-            bool allDefaults = _filterList.All(x => x.IsStagingDefaultValues);
+            bool anyAppliedNoChanges = FilterList.ActiveFilters.Any(x => x.Status == FilterStatus.Applied);
+            bool anyChanged = FilterList.ActiveFilters.Any(x => x.HasChanges);
+            bool allDefaults = FilterList.ActiveFilters.All(x => x.IsStagingDefaultValues);
             bool currentChanged = _currentFilter.HasChanges;
             bool currentDefault = _currentFilter.IsStagingDefaultValues;
 
@@ -130,11 +121,11 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                     if (_currentFilter != null)
                     {
                         FilterSelected(_currentFilter);
-                        _filterSideViewController.SelectCell(_filterList.IndexOf(_currentFilter));
+                        _filterSideViewController.SelectCell(FilterList.ActiveFilters.IndexOf(_currentFilter));
                     }
                     else
                     {
-                        FilterSelected(_filterList.First());
+                        FilterSelected(FilterList.ActiveFilters.First());
                         _filterSideViewController.SelectCell(0);
                     }
                     RefreshUI();
@@ -173,7 +164,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             List<BeatmapDetails> filteredLevels = new List<BeatmapDetails>(_beatmapDetails.Keys);
 
             bool hasApplied = false;
-            foreach (var filter in _filterList)
+            foreach (var filter in FilterList.ActiveFilters)
             {
                 filter.ApplyStagingValues();
 
@@ -189,10 +180,10 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             if (!Tweaks.SongBrowserTweaks.Initialized)
                 Logger.log.Debug($"Filter completed, {filteredLevels.Count} songs left");
 
+            RefreshUI();
+
             if (hasApplied)
             {
-                RefreshUI();
-
                 AreFiltersApplied = true;
 
                 if (Tweaks.SongBrowserTweaks.ModLoaded && Tweaks.SongBrowserTweaks.Initialized)
@@ -208,8 +199,6 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             else
             {
                 // default values were applied (no filtering or undo filtering)
-                RefreshUI();
-
                 AreFiltersApplied = false;
 
                 FiltersUnapplied?.Invoke();
@@ -236,7 +225,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             }
 
             var filteredLevels = pairs.Keys.ToList();
-            foreach (var filter in _filterList)
+            foreach (var filter in FilterList.ActiveFilters)
             {
                 if (filter.Status == FilterStatus.Applied || filter.Status == FilterStatus.AppliedAndChanged)
                     filter.FilterSongList(ref filteredLevels);
@@ -252,7 +241,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
         /// <param name="sendEvent">Invoke the FiltersUnapplied event.</param>
         public void UnapplyFilters(bool sendEvent = true)
         {
-            foreach (var filter in _filterList)
+            foreach (var filter in FilterList.ActiveFilters)
                 filter.ApplyDefaultValues();
 
             AreFiltersApplied = false;
@@ -288,16 +277,29 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 
         private void ClearAllFilterChanges()
         {
-            foreach (var filter in _filterList)
+            foreach (var filter in FilterList.ActiveFilters)
                 filter.SetAppliedValuesToStaging();
             RefreshUI();
         }
 
         private void SetAllFiltersToDefault()
         {
-            foreach (var filter in _filterList)
+            foreach (var filter in FilterList.ActiveFilters)
                 filter.SetDefaultValuesToStaging();
             RefreshUI();
+        }
+
+        private void FilterListChanged()
+        {
+            _filterSideViewController.SetFilterList(FilterList.ActiveFilters);
+
+            // the filter list isn't intended to be changed when in the filter screen
+            // so if the current filter has been removed, just set it to null and
+            // let LoadBeatmaps deal with it
+            if (_currentFilter != null && !FilterList.ActiveFilters.Contains(_currentFilter))
+                _currentFilter = null;
+
+            UnapplyFilters();
         }
     }
 }

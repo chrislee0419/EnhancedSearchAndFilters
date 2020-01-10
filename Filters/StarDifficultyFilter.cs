@@ -160,6 +160,15 @@ namespace EnhancedSearchAndFilters.Filters
             _isInitialized = true;
         }
 
+        public void Cleanup()
+        {
+            if (_viewGameObject != null)
+            {
+                UnityEngine.Object.Destroy(_viewGameObject);
+                _viewGameObject = null;
+            }
+        }
+
         public GameObject GetView() => _viewGameObject;
 
         public void SetDefaultValuesToStaging()
@@ -239,7 +248,7 @@ namespace EnhancedSearchAndFilters.Filters
             }
         }
 
-        public string SerializeFromStaging()
+        public string SerializeFromAppliedValues()
         {
             throw new NotImplementedException();
         }
