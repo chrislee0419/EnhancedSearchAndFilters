@@ -9,7 +9,7 @@
   "features": [],
   "dependsOn": {
     "SongCore": "^2.7.5",
-    "BeatSaberMarkupLanguage": "^1.1.1",
+    "BeatSaberMarkupLanguage": "^1.1.2",
     "BS Utils": "^1.4.1"
   }
 }
