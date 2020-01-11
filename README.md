@@ -1,4 +1,4 @@
-# EnhancedSearchAndFilters
+# Enhanced Search And Filters
 
 A mod that helps you find the songs you want to play quicker! Includes a more option-rich search screen and song filtering. The latest version of this mod can be found [here](https://github.com/chrislee0419/EnhancedSearchAndFilters/releases).
 
@@ -20,8 +20,7 @@ _**If you have any suggestions or found any bugs**_, please report it [here](htt
        - While typing, the mod shows you a list of possible words you're trying to type.
 - Filter
      - Limit song length, difficulties, and NJS on the song list.
-     - Find songs you have voted on (requires the BeatSaverDownloader mod).
-     - One Saber, Lightshow, and Mapping Extensions-required songs can be easily found!
+     - One Saber, No Arrows, 90/360 Degree, Lightshow, and Mapping Extensions-required songs can be easily found!
      - Show only ranked songs (requires the SongDataCore mod).
      - Frequently download songs and then forget to play them? Filter for songs that you have never played before.
      - Looking to full combo all your songs? Find all the songs that you have yet to full combo!
@@ -30,9 +29,10 @@ _**If you have any suggestions or found any bugs**_, please report it [here](htt
 
 ## Dependencies
 
-- SongCore
-- CustomUI
-- BS Utils
+- [SongCore](https://github.com/Kylemc1413/SongCore)
+- [BS Utils](https://github.com/Kylemc1413/Beat-Saber-Utils)
+- [BeatSaberMarkupLanguage (BSML)](https://github.com/monkeymanboy/BeatSaberMarkupLanguage)
+- [(Optional) SongDataCore](https://github.com/halsafar/BeatSaberSongDataCore)
 
 ## Screenshots
 
