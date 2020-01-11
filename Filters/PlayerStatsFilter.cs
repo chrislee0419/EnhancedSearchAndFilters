@@ -206,7 +206,7 @@ namespace EnhancedSearchAndFilters.Filters
             _hasFullComboAppliedValue = _hasFullComboStagingValue;
             _easyAppliedValue = _easyStagingValue;
             _normalAppliedValue = _normalStagingValue;
-            _hardAppliedValue = _normalStagingValue;
+            _hardAppliedValue = _hardStagingValue;
             _expertAppliedValue = _expertStagingValue;
             _expertPlusAppliedValue = _expertPlusStagingValue;
         }
