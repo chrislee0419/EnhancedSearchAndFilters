@@ -26,7 +26,7 @@ _**If you have any suggestions or found any bugs**_, please report it [here](htt
      - Frequently download songs and then forget to play them? Filter for songs that you have never played before.
      - Looking to full combo all your songs? Find all the songs that you have yet to full combo!
 - Mod compatibility
-     - Compatible with BeatSaverDownloader, SongBrowser, and SongDataCore.
+     - Compatible with [SongBrowser](https://github.com/halsafar/BeatSaberSongBrowser) and [SongDataCore](https://github.com/halsafar/BeatSaberSongDataCore).
 
 ## Dependencies
 
