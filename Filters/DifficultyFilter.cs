@@ -182,9 +182,9 @@ namespace EnhancedSearchAndFilters.Filters
 
                     if ((!_easyAppliedValue || difficulties.Any(x => x.Difficulty == BeatmapDifficulty.Easy && x.Item2)) &&
                         (!_normalAppliedValue || difficulties.Any(x => x.Difficulty == BeatmapDifficulty.Normal && x.Item2)) &&
-                        (!_hardAppliedValue || difficulties.Any(x => x.Difficulty == BeatmapDifficulty.Easy && x.Item2)) &&
-                        (!_easyAppliedValue || difficulties.Any(x => x.Difficulty == BeatmapDifficulty.Easy && x.Item2)) &&
-                        (!_easyAppliedValue || difficulties.Any(x => x.Difficulty == BeatmapDifficulty.Easy && x.Item2)))
+                        (!_hardAppliedValue || difficulties.Any(x => x.Difficulty == BeatmapDifficulty.Hard && x.Item2)) &&
+                        (!_expertAppliedValue || difficulties.Any(x => x.Difficulty == BeatmapDifficulty.Expert && x.Item2)) &&
+                        (!_expertPlusAppliedValue || difficulties.Any(x => x.Difficulty == BeatmapDifficulty.ExpertPlus && x.Item2)))
                     {
                         remove = false;
                         break;
