@@ -298,14 +298,14 @@ namespace EnhancedSearchAndFilters.Filters
 
                 var difficultySets = details.DifficultyBeatmapSets;
 
-                if (!(TestDifficulty(BeatmapDifficulty.Easy, _easyAppliedValue, difficultySets) ||
-                    TestDifficulty(BeatmapDifficulty.Normal, _normalAppliedValue, difficultySets) ||
-                    TestDifficulty(BeatmapDifficulty.Hard, _hardAppliedValue, difficultySets) ||
-                    TestDifficulty(BeatmapDifficulty.Expert, _expertAppliedValue, difficultySets) ||
-                    TestDifficulty(BeatmapDifficulty.ExpertPlus, _expertPlusAppliedValue, difficultySets)))
-                    detailsList.RemoveAt(i);
-                else
+                if (TestDifficulty(BeatmapDifficulty.Easy, _easyAppliedValue, difficultySets) &&
+                    TestDifficulty(BeatmapDifficulty.Normal, _normalAppliedValue, difficultySets) &&
+                    TestDifficulty(BeatmapDifficulty.Hard, _hardAppliedValue, difficultySets) &&
+                    TestDifficulty(BeatmapDifficulty.Expert, _expertAppliedValue, difficultySets) &&
+                    TestDifficulty(BeatmapDifficulty.ExpertPlus, _expertPlusAppliedValue, difficultySets))
                     ++i;
+                else
+                    detailsList.RemoveAt(i);
             }
         }
 
@@ -315,7 +315,7 @@ namespace EnhancedSearchAndFilters.Filters
         /// <param name="difficulty">The difficulty to check.</param>
         /// <param name="difficultyAppliedValue">The applied value of the difficulty.</param>
         /// <param name="difficultyBeatmapSets"></param>
-        /// <returns>True, if the beatmap contains at least one difficulty that fulfills the filter settings. Otherwise, false.</returns>
+        /// <returns>True, if the beatmap contains at least one difficulty that fulfills the filter settings or we don't need to check. Otherwise, false.</returns>
         private bool TestDifficulty(BeatmapDifficulty difficulty, bool difficultyAppliedValue, SimplifiedDifficultyBeatmapSet[] difficultyBeatmapSets)
         {
             if (!difficultyAppliedValue)
