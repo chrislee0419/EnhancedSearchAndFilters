@@ -30,6 +30,7 @@ namespace EnhancedSearchAndFilters.UI
         private LevelCollectionTableView _levelCollectionTableView;
         private TableView _levelsTableView;
         private IAnnotatedBeatmapLevelCollection _lastPack;
+        private IAnnotatedBeatmapLevelCollection _levelsToApply;
 
         public LevelSelectionNavigationController LevelSelectionNavigationController { get; private set; } = null;
         //public DismissableNavigationController ButtonParentViewController { get; private set; } = null;
@@ -231,16 +232,12 @@ namespace EnhancedSearchAndFilters.UI
         /// <summary>
         /// Unapplies the filters in the FilterViewController, but saves their current status.
         /// </summary>
-        /// <param name="songBrowserFilterSelected">Used only by the SongBrowser mod. Set this to true when another filter (Favorites/Playlist) was selected.</param>
-        public void UnapplyFilters(bool songBrowserFilterSelected = false)
+        public void UnapplyFilters()
         {
             if (_filterFlowCoordinator != null)
                 _filterFlowCoordinator.UnapplyFilters(false);
 
             ButtonPanel.instance.SetFilterStatus(false);
-
-            if (SongBrowserTweaks.Initialized && !songBrowserFilterSelected)
-                LevelSelectionNavigationController.SetData(_lastPack, true, true, true, null);
         }
 
         public void SearchButtonPressed()
@@ -291,6 +288,12 @@ namespace EnhancedSearchAndFilters.UI
         {
             if (_filterFlowCoordinator?.AreFiltersApplied == true)
                 _filterFlowCoordinator?.UnapplyFilters();
+
+            if (_levelsToApply != null)
+            {
+                LevelSelectionNavigationController.SetData(_levelsToApply, true, true, true, null);
+                _levelsToApply = null;
+            }
 
             Logger.log.Debug("'Clear Filter' button pressed.");
         }
@@ -345,7 +348,14 @@ namespace EnhancedSearchAndFilters.UI
             // instead of applying filters inside the filter flow coordinator, apply the filters when the flow coordinator is dismissed
             // that way, we don't get the unity complaining about the LevelSelectionNavigationController being not active
             if (SongBrowserTweaks.Initialized && _filterFlowCoordinator.AreFiltersApplied)
+            {
                 SongBrowserTweaks.ApplyFilters();
+            }
+            else if (_levelsToApply != null)
+            {
+                LevelSelectionNavigationController.SetData(_levelsToApply, true, true, true, null);
+                _levelsToApply = null;
+            }
         }
 
         private void SelectSongFromSearchResult(IPreviewBeatmapLevel level)
@@ -374,20 +384,22 @@ namespace EnhancedSearchAndFilters.UI
             if (SongBrowserTweaks.Initialized)
                 return;
 
-            BeatmapLevelPack levelPack = new BeatmapLevelPack("", FilteredSongsPackName, FilteredSongsCollectionName, Sprite.Create(Texture2D.whiteTexture, Rect.zero, Vector2.zero), new BeatmapLevelCollection(levels));
-            LevelSelectionNavigationController.SetData(levelPack, true, true, true);
+            _levelsToApply = new BeatmapLevelPack("", FilteredSongsPackName, FilteredSongsCollectionName, Sprite.Create(Texture2D.whiteTexture, Rect.zero, Vector2.zero), new BeatmapLevelCollection(levels));
 
             ButtonPanel.instance.SetFilterStatus(true);
         }
 
         private void FilterFlowCoordinatorFiltersUnapplied()
         {
-            LevelSelectionNavigationController.SetData(_lastPack, true, true, true, null);
-
             if (SongBrowserTweaks.ModLoaded)
+            {
                 SongBrowserTweaks.FiltersUnapplied();
+            }
             else
+            {
+                _levelsToApply = _lastPack;
                 ButtonPanel.instance.SetFilterStatus(false);
+            }
         }
     }
 }

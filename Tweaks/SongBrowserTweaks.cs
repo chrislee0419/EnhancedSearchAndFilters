@@ -92,7 +92,7 @@ namespace EnhancedSearchAndFilters.Tweaks
                     {
                         // search button should be hidden already via RefreshOuterUIState
                         _filterButton.gameObject.SetActive(false);
-                        SongListUI.instance.UnapplyFilters(true);
+                        SongListUI.instance.UnapplyFilters();
                     });
                 }
 
@@ -118,11 +118,12 @@ namespace EnhancedSearchAndFilters.Tweaks
                 _clearFiltersButton.onClick.RemoveAllListeners();
                 _clearFiltersButton.onClick.AddListener(delegate ()
                 {
-                    if ((_songBrowserUI as SongBrowserUI).Model.Settings.filterMode == SongFilterMode.Custom)
-                        SongListUI.instance.ClearButtonPressed();
+                    SongListUI.instance.ClearButtonPressed();
 
-                    (_songBrowserUI as SongBrowserUI).CancelFilter();
-                    (_songBrowserUI as SongBrowserUI).RefreshSongUI();
+                    // filters are cancelled by ClearButtonPressed -> UnapplyFilters -> FilterFlowCoordinatorFiltersUnapplied
+                    // but only if custom filters are applied, otherwise we do it here
+                    if ((_songBrowserUI as SongBrowserUI).Model.Settings.filterMode != SongFilterMode.None)
+                        _FiltersUnapplied();
                 });
                 xButton.onClick.AddListener(delegate ()
                 {
@@ -188,6 +189,7 @@ namespace EnhancedSearchAndFilters.Tweaks
         private static void _FiltersUnapplied()
         {
             (_songBrowserUI as SongBrowserUI).CancelFilter();
+            (_songBrowserUI as SongBrowserUI).ProcessSongList();
             (_songBrowserUI as SongBrowserUI).RefreshSongUI();
         }
 
