@@ -157,25 +157,22 @@ namespace EnhancedSearchAndFilters.Tweaks
         /// <summary>
         /// Used to apply the filter and refresh the UI for SongBrowser.
         /// </summary>
-        /// <returns>A boolean representing whether filters have been applied successfully.</returns>
-        public static bool FiltersApplied()
+        public static void ApplyFilters()
         {
             if (!ModLoaded || !Initialized)
-                return false;
-            return _FiltersApplied();
+                return;
+            _ApplyFilters();
         }
 
-        private static bool _FiltersApplied()
+        private static void _ApplyFilters()
         {
             // unapply any existing filters first
-            (_songBrowserUI as SongBrowserUI).CancelFilter();
+            //(_songBrowserUI as SongBrowserUI).CancelFilter();
 
             (_songBrowserUI as SongBrowserUI).Model.Settings.filterMode = SongFilterMode.Custom;
             _clearFiltersButton.SetButtonText("Other");
             (_songBrowserUI as SongBrowserUI).ProcessSongList();
             (_songBrowserUI as SongBrowserUI).RefreshSongUI();
-
-            return true;
         }
 
         /// <summary>

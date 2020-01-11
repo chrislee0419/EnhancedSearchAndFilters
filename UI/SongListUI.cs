@@ -341,6 +341,11 @@ namespace EnhancedSearchAndFilters.UI
         {
             _freePlayFlowCoordinator.InvokeMethod("DismissFlowCoordinator", _filterFlowCoordinator, null, false);
             ButtonPanel.instance.ShowPanel();
+
+            // instead of applying filters inside the filter flow coordinator, apply the filters when the flow coordinator is dismissed
+            // that way, we don't get the unity complaining about the LevelSelectionNavigationController being not active
+            if (SongBrowserTweaks.Initialized && _filterFlowCoordinator.AreFiltersApplied)
+                SongBrowserTweaks.ApplyFilters();
         }
 
         private void SelectSongFromSearchResult(IPreviewBeatmapLevel level)
@@ -365,7 +370,7 @@ namespace EnhancedSearchAndFilters.UI
 
         private void FilterFlowCoordinatorSetFilteredSongs(IPreviewBeatmapLevel[] levels)
         {
-            // filter application should be handled by FilterViewController calling stuff in SongBrowserTweaks
+            // filter application should be handled by FilterFlowCoordinator calling stuff in SongBrowserTweaks
             if (SongBrowserTweaks.Initialized)
                 return;
 

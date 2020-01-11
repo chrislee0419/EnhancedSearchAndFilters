@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using HMUI;
@@ -193,7 +192,8 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 
                 // SongBrowser will create its own BeatmapLevelPack when it gets our filtered levels via:
                 // ProcessSongList() -> CustomFilterHandler() -> ApplyFiltersForSongBrowser() -> ApplyFilters()
-                if (!Tweaks.SongBrowserTweaks.FiltersApplied())
+                // filters are applied once this flow coordinator is dismissed
+                if (!Tweaks.SongBrowserTweaks.Initialized)
                     FilterApplied?.Invoke(_beatmapDetails.Where(x => filteredLevels.Contains(x.Key)).Select(x => x.Value).ToArray());
             }
             else
