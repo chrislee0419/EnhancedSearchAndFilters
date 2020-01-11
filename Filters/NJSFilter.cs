@@ -326,9 +326,13 @@ namespace EnhancedSearchAndFilters.Filters
             {
                 if (difficultyBeatmapSet.DifficultyBeatmaps.Any(x => x.Difficulty == difficulty))
                 {
-                    difficultyFound = true;
-
                     var difficultyBeatmap = difficultyBeatmapSet.DifficultyBeatmaps.First(x => x.Difficulty == difficulty);
+
+                    // do not count lightmaps
+                    if (difficultyBeatmap.NotesCount == 0)
+                        continue;
+
+                    difficultyFound = true;
 
                     if ((!_minEnabledAppliedValue || difficultyBeatmap.NoteJumpMovementSpeed >= _minAppliedValue) &&
                         (!_maxEnabledAppliedValue || difficultyBeatmap.NoteJumpMovementSpeed <= _maxAppliedValue))
