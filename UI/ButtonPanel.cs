@@ -83,7 +83,7 @@ namespace EnhancedSearchAndFilters.UI
             _container.name = "EnhancedSearchAndFiltersButtonPanel";
 
             Destroy(_container.GetComponentInChildren<SetMainCameraToCanvas>(true));
-            Destroy(_container.transform.Find("TitleViewController"));
+            Destroy(_container.transform.Find("TitleViewController").gameObject);
             Destroy(_container.GetComponentInChildren<Screen>(true));
             Destroy(_container.GetComponentInChildren<HorizontalLayoutGroup>(true));
 
@@ -107,13 +107,13 @@ namespace EnhancedSearchAndFilters.UI
 
             if (_searchButton != null)
             {
-                buttonBg = _searchButton.GetComponentInChildren<Image>();
+                buttonBg = _searchButton.GetComponentsInChildren<Image>().First(x => x.name == "Stroke");
                 if (buttonBg != null)
                     buttonBg.sprite = replacementButtonImage;
             }
             if (_filterButton != null)
             {
-                buttonBg = _filterButton.GetComponentInChildren<Image>();
+                buttonBg = _filterButton.GetComponentsInChildren<Image>().First(x => x.name == "Stroke");
                 if (buttonBg != null)
                     buttonBg.sprite = replacementButtonImage;
 
@@ -125,7 +125,7 @@ namespace EnhancedSearchAndFilters.UI
             }
             if (_clearFilterButton != null)
             {
-                buttonBg = _clearFilterButton.GetComponentInChildren<Image>();
+                buttonBg = _clearFilterButton.GetComponentsInChildren<Image>().First(x => x.name == "Stroke");
                 if (buttonBg != null)
                     buttonBg.sprite = replacementButtonImage;
 
