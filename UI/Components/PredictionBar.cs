@@ -21,6 +21,7 @@ namespace EnhancedSearchAndFilters.UI.Components
         private float _xStartPos;
         private float _xEndPos;
 
+        private Stack<Button> _unusedButtons = new Stack<Button>();
         private List<Button> _predictionButtons = new List<Button>();
 
         private void Awake()
@@ -50,7 +51,7 @@ namespace EnhancedSearchAndFilters.UI.Components
             if (string.IsNullOrEmpty(searchText))
                 return;
 
-            // create new buttons
+            // create new or re-use old buttons
             Button btn = null;
             float currentX = 0f;
             var predictions = WordPredictionEngine.instance.GetSuggestedWords(searchText);
@@ -58,13 +59,23 @@ namespace EnhancedSearchAndFilters.UI.Components
             {
                 var word = predictions[i];
 
-                btn = Instantiate(_buttonPrefab, _parent, false);
-                var rt = (btn.transform as RectTransform);
-                rt.anchorMin = new Vector2(0.5f, 0.5f);
-                rt.anchorMax = new Vector2(0.5f, 0.5f);
-                rt.pivot = new Vector2(0f, 0.5f);
-                btn.GetComponentsInChildren<HorizontalLayoutGroup>().First(x => x.name == "Content").padding = new RectOffset(0, 0, 0, 0);
-                btn.GetComponentsInChildren<Image>().FirstOrDefault(x => x.name == "Stroke").color = new Color(0.6f, 0.6f, 0.8f);
+                if (_unusedButtons.Any())
+                {
+                    btn = _unusedButtons.Pop();
+                    btn.gameObject.SetActive(true);
+                }
+                else
+                {
+                    btn = Instantiate(_buttonPrefab, _parent, false);
+                    btn.name = "SearchPredictionBarButton";
+
+                    var rectTransform = (btn.transform as RectTransform);
+                    rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+                    rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+                    rectTransform.pivot = new Vector2(0f, 0.5f);
+                    btn.GetComponentsInChildren<HorizontalLayoutGroup>().First(x => x.name == "Content").padding = new RectOffset(0, 0, 0, 0);
+                    btn.GetComponentsInChildren<Image>().FirstOrDefault(x => x.name == "Stroke").color = new Color(0.6f, 0.6f, 0.8f);
+                }
 
                 btn.onClick.RemoveAllListeners();
                 btn.onClick.AddListener(delegate ()
@@ -108,6 +119,7 @@ namespace EnhancedSearchAndFilters.UI.Components
                 text.enableWordWrapping = false;
 
                 var width = text.preferredWidth + 8f;
+                var rt = btn.transform as RectTransform;
                 rt.sizeDelta = new Vector2(width, 7f);
                 rt.anchoredPosition = new Vector2(_xStartPos + currentX, _yPos);
 
@@ -120,7 +132,8 @@ namespace EnhancedSearchAndFilters.UI.Components
             if (btn != null && currentX >= _xEndPos - _xStartPos)
             {
                 _predictionButtons.Remove(btn);
-                Destroy(btn.gameObject);
+                btn.gameObject.SetActive(false);
+                _unusedButtons.Push(btn);
             }
         }
 
@@ -130,7 +143,10 @@ namespace EnhancedSearchAndFilters.UI.Components
                 return;
 
             foreach (var oldButton in _predictionButtons)
-                Destroy(oldButton.gameObject);
+            {
+                oldButton.gameObject.SetActive(false);
+                _unusedButtons.Push(oldButton);
+            }
             _predictionButtons.Clear();
         }
     }
