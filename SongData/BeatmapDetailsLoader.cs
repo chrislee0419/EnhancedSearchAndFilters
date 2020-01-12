@@ -459,15 +459,25 @@ namespace EnhancedSearchAndFilters.SongData
 
             CustomBeatmapLevel customLevel = new CustomBeatmapLevel(copiedLevel, null, null);
             BeatmapLevelData beatmapData = await LevelLoader.LoadBeatmapLevelDataAsync(level.customLevelPath, customLevel, level.standardLevelInfoSaveData, token).ConfigureAwait(false);
-            customLevel.SetBeatmapLevelData(beatmapData);
 
-            return customLevel;
+            if (beatmapData == null)
+            {
+                Logger.log.Warn($"Unable to load beatmap level data for '{level.songName}' (LevelID = {level.levelID})");
+                return null;
+            }
+            else
+            {
+                customLevel.SetBeatmapLevelData(beatmapData);
+                return customLevel;
+            }
         }
 
         private async Task CacheCustomBeatmapDetailsAsync(CustomPreviewBeatmapLevel level)
         {
             CustomBeatmapLevel customLevel = await LoadCustomBeatmapLevelAsync(level, _cachingTokenSource.Token).ConfigureAwait(false);
-            _cache[GetSimplifiedLevelID(level)] = new BeatmapDetails(customLevel);
+
+            if (customLevel != null)
+                _cache[GetSimplifiedLevelID(level)] = new BeatmapDetails(customLevel);
         }
 
         private async Task<Tuple<int, BeatmapDetails>> GetCustomBeatmapDetailsAsync(CustomPreviewBeatmapLevel level, int index)
@@ -476,10 +486,13 @@ namespace EnhancedSearchAndFilters.SongData
             {
                 CustomBeatmapLevel customLevel = await LoadCustomBeatmapLevelAsync(level, _loadingTokenSource.Token);
 
-                var details = new BeatmapDetails(customLevel);
-                _cache[GetSimplifiedLevelID(level)] = details;
+                if (customLevel != null)
+                {
+                    var details = new BeatmapDetails(customLevel);
+                    _cache[GetSimplifiedLevelID(level)] = details;
 
-                return new Tuple<int, BeatmapDetails>(index, details);
+                    return new Tuple<int, BeatmapDetails>(index, details);
+                }
             }
             catch (OperationCanceledException) { }
 

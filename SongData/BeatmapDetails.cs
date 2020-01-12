@@ -20,9 +20,13 @@ namespace EnhancedSearchAndFilters.SongData
 
         public BeatmapDetails(IBeatmapLevel level)
         {
+            if (level == null)
+                throw new ArgumentNullException(nameof(level), "IBeatmapLevel parameter 'level' cannot be null");
+            else if (level.beatmapLevelData == null)
+                throw new ArgumentException("Provided IBeatmapLevel object cannot have the 'beatmapLevelData' property be null", nameof(level));
+
             // remove the directory part of a custom level ID
-            // see BeatmapDetailsLoader:GetLevelID() for more detail on why we do this
-            LevelID = level.levelID.StartsWith("custom_level") ? level.levelID.Substring(0, 53) : level.levelID;
+            LevelID = BeatmapDetailsLoader.GetSimplifiedLevelID(level);
 
             SongName = level.songName;
             BeatsPerMinute = level.beatsPerMinute;
