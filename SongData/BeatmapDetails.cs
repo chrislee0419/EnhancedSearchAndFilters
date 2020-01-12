@@ -32,7 +32,9 @@ namespace EnhancedSearchAndFilters.SongData
             BeatsPerMinute = level.beatsPerMinute;
 
             if (level.beatmapLevelData.audioClip != null)
+            {
                 SongDuration = level.beatmapLevelData.audioClip.length;
+            }
             else
             {
                 SongDuration = level.songDuration;
