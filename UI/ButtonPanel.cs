@@ -19,8 +19,9 @@ namespace EnhancedSearchAndFilters.UI
         public event Action ClearFilterButtonPressed;
         public event Action SortButtonPressed;
 
+        public bool Initialized { get; private set; } = false;
+
         private GameObject _container;
-        private bool _initialized = false;
         private bool _areFiltersApplied = false;
         private bool _inRevealAnimation = false;
         private bool _inExpandAnimation = false;
@@ -75,7 +76,7 @@ namespace EnhancedSearchAndFilters.UI
 
         public void Setup(bool hideSearchButton = false, bool hideFilterButtons = false, bool forceReinit = false)
         {
-            if (_initialized)
+            if (Initialized)
             {
                 if (!forceReinit)
                     return;
@@ -169,14 +170,14 @@ namespace EnhancedSearchAndFilters.UI
 
             _defaultSortButton.GetComponentsInChildren<Image>().First(x => x.name == "Stroke").color = SelectedSortButtonColor;
 
-            _initialized = true;
+            Initialized = true;
 
             HidePanel(true);
         }
 
         public void DisablePanel()
         {
-            if (!_initialized)
+            if (!Initialized)
                 return;
 
             if (_container != null)
@@ -185,7 +186,7 @@ namespace EnhancedSearchAndFilters.UI
                 _container = null;
             }
 
-            _initialized = false;
+            Initialized = false;
         }
 
         [UIAction("search-button-clicked")]
@@ -242,7 +243,7 @@ namespace EnhancedSearchAndFilters.UI
 
         public void ShowPanel(bool immediately = false)
         {
-            if (!_initialized || _container.activeSelf)
+            if (!Initialized || _container.activeSelf)
                 return;
 
             if (immediately)
@@ -270,7 +271,7 @@ namespace EnhancedSearchAndFilters.UI
 
         public void HidePanel(bool immediately = false)
         {
-            if (!_initialized || !_container.activeSelf)
+            if (!Initialized || !_container.activeSelf)
                 return;
 
             if (immediately)
@@ -344,7 +345,7 @@ namespace EnhancedSearchAndFilters.UI
 
         public void SetFilterStatus(bool filterApplied)
         {
-            if (!_initialized)
+            if (!Initialized)
                 return;
 
             _areFiltersApplied = filterApplied;
@@ -363,7 +364,7 @@ namespace EnhancedSearchAndFilters.UI
 
         public void UpdateSortButtons()
         {
-            if (!_initialized)
+            if (!Initialized)
                 return;
 
             switch (SongSortModule.CurrentSortMode)

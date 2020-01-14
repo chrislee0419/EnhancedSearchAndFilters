@@ -260,7 +260,8 @@ namespace EnhancedSearchAndFilters.UI
             IBeatmapLevelPack levelPack = LevelSelectionNavigationController.GetPrivateField<IBeatmapLevelPack>("_levelPack");
             _searchFlowCoordinator.Activate(_freePlayFlowCoordinator, levelPack);
 
-            Logger.log.Debug("'Search' button pressed.");
+            if (!ButtonPanel.instance.Initialized)
+                Logger.log.Debug("'Search' button pressed.");
         }
 
         public void FilterButtonPressed()
@@ -279,14 +280,15 @@ namespace EnhancedSearchAndFilters.UI
             if (_lastPack == null || levelPack.shortPackName != FilteredSongsCollectionName)
             {
                 _lastPack = levelPack;
-                Logger.log.Debug($"Storing '{levelPack.packName}' level pack as last pack");
+                Logger.log.Debug($"Storing '{levelPack.packName}' (id = '{levelPack.packID}') level pack as last pack");
             }
 
             IPreviewBeatmapLevel[] levels = _lastPack.beatmapLevelCollection.beatmapLevels;
 
             _filterFlowCoordinator.Activate(_freePlayFlowCoordinator, levels);
 
-            Logger.log.Debug("'Filter' button pressed.");
+            if (!ButtonPanel.instance.Initialized)
+                Logger.log.Debug("'Filter' button pressed.");
         }
 
         public void ClearButtonPressed()
@@ -305,7 +307,8 @@ namespace EnhancedSearchAndFilters.UI
                 _levelsToApply = null;
             }
 
-            Logger.log.Debug("'Clear Filter' button pressed.");
+            if (!ButtonPanel.instance.Initialized)
+                Logger.log.Debug("'Clear Filter' button pressed.");
         }
 
         private void SortButtonPressed()
@@ -396,7 +399,10 @@ namespace EnhancedSearchAndFilters.UI
                 SongSortModule.ResetSortMode();
                 ButtonPanel.instance.UpdateSortButtons();
 
-                Logger.log.Debug($"Storing '{levelPack.collectionName}' level pack as last pack");
+                if (levelPack is IBeatmapLevelPack beatmapLevelPack)
+                    Logger.log.Debug($"Storing '{beatmapLevelPack.packName}' (id = '{beatmapLevelPack.packID}') level pack as last pack");
+                else
+                    Logger.log.Debug($"Storing '{levelPack.collectionName}' level collection as last pack");
             }
 
             if (!SongBrowserTweaks.ModLoaded || !SongBrowserTweaks.Initialized)
