@@ -45,8 +45,7 @@ namespace EnhancedSearchAndFilters.SongData
         /// <returns>True if the player has completed the beatmap at least once, otherwise false.</returns>
         public bool HasCompletedLevel(string levelID, string characteristicName = null, List<BeatmapDifficulty> difficulties = null)
         {
-            if (levelID.StartsWith("custom_level_"))
-                levelID = levelID.Substring(0, 53);
+            levelID = BeatmapDetailsLoader.GetSimplifiedLevelID(levelID);
 
             if (difficulties != null && difficulties.Count == 0)
                 difficulties = null;
@@ -90,8 +89,7 @@ namespace EnhancedSearchAndFilters.SongData
         /// <returns>True if the player has achieved a full combo on the beatmap, otherwise false.</returns>
         public bool HasFullComboForLevel(string levelID, string characteristicName = null, List<BeatmapDifficulty> difficulties = null)
         {
-            if (levelID.StartsWith("custom_level_"))
-                levelID = levelID.Substring(0, 53);
+            levelID = BeatmapDetailsLoader.GetSimplifiedLevelID(levelID);
 
             if (difficulties != null && difficulties.Count == 0)
                 difficulties = null;
@@ -122,6 +120,17 @@ namespace EnhancedSearchAndFilters.SongData
             {
                 return _playerData.levelsStatsData.Any(x => x.levelID.StartsWith(levelID) && x.validScore && x.fullCombo && x.maxCombo != 0);
             }
+        }
+
+        /// <summary>
+        /// Returns the number of times the player has played a beatmap.
+        /// </summary>
+        /// <param name="levelID">The level ID of the beatmap to check.</param>
+        /// <returns>An integer representing the number of times the player has played the beatmap.</returns>
+        public int GetPlayCountForLevel(string levelID)
+        {
+            levelID = BeatmapDetailsLoader.GetSimplifiedLevelID(levelID);
+            return _playerData.levelsStatsData.Where(x => x.levelID.StartsWith(levelID)).Sum(x => x.playCount);
         }
     }
 }

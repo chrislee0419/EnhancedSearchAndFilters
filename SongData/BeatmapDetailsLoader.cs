@@ -527,6 +527,19 @@ namespace EnhancedSearchAndFilters.SongData
                 return GetCustomLevelIDWithoutDirectory(level.levelID);
         }
 
+        /// <summary>
+        /// Get the simplified level ID from a level ID string. Removes the directory from a custom level's ID if it exists.
+        /// </summary>
+        /// <param name="levelID">A string containing some level's ID.</param>
+        /// <returns>The level ID, minus the directory when applicable.</returns>
+        public static string GetSimplifiedLevelID(string levelID)
+        {
+            if (levelID.StartsWith(CustomLevelLoader.kCustomLevelPackPrefixId))
+                return GetCustomLevelIDWithoutDirectory(levelID);
+            else
+                return levelID;
+        }
+
         private static string GetCustomLevelIDWithoutDirectory(string levelID)
         {
             // The hash is always 40 characters long
