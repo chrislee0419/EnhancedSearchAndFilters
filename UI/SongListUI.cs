@@ -277,7 +277,7 @@ namespace EnhancedSearchAndFilters.UI
             }
 
             var levelPack = LevelSelectionNavigationController.GetPrivateField<IBeatmapLevelPack>("_levelPack");
-            if (_lastPack == null || levelPack.shortPackName != FilteredSongsCollectionName)
+            if (_lastPack == null || (levelPack.shortPackName != FilteredSongsCollectionName && !levelPack.packID.Contains(SortedLevelPackIDSuffix)))
             {
                 _lastPack = levelPack;
                 Logger.log.Debug($"Storing '{levelPack.packName}' (id = '{levelPack.packID}') level pack as last pack");
