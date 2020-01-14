@@ -206,14 +206,13 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
         }
 
         /// <summary>
-        /// Filter application logic intended for use when filters are applied outside of this flow coordinator. 
-        /// Mainly used by SongBrowser.
+        /// Filter application logic intended for use when filters are applied outside of this flow coordinator.
         /// </summary>
         /// <param name="levels">Array of levels to filter.</param>
         /// <returns>The filtered list of beatmaps.</returns>
         public List<IPreviewBeatmapLevel> ApplyFiltersFromExternalViewController(IPreviewBeatmapLevel[] levels)
         {
-            Logger.log.Debug($"Providing SongBrowser with a list of filtered songs. Starting with {levels.Length} songs");
+            Logger.log.Debug($"Applying filters from an external view controller. Starting with {levels.Length} songs");
 
             BeatmapDetails[] detailsList = BeatmapDetailsLoader.instance.LoadBeatmapsInstant(levels);
 

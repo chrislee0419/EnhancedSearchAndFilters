@@ -6,9 +6,9 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
-using Image = UnityEngine.UI.Image;
 using Screen = HMUI.Screen;
 using EnhancedSearchAndFilters.UI.Components;
+using EnhancedSearchAndFilters.SongData;
 
 namespace EnhancedSearchAndFilters.UI
 {
@@ -17,10 +17,13 @@ namespace EnhancedSearchAndFilters.UI
         public event Action SearchButtonPressed;
         public event Action FilterButtonPressed;
         public event Action ClearFilterButtonPressed;
+        public event Action SortButtonPressed;
 
         private GameObject _container;
         private bool _initialized = false;
         private bool _areFiltersApplied = false;
+        private bool _inRevealAnimation = false;
+        private bool _inExpandAnimation = false;
 
 #pragma warning disable CS0649
 #pragma warning disable CS0414
@@ -37,6 +40,13 @@ namespace EnhancedSearchAndFilters.UI
         private Button _filterButton;
         [UIComponent("clear-filter-button")]
         private Button _clearFilterButton;
+
+        [UIComponent("default-sort-button")]
+        private Button _defaultSortButton;
+        [UIComponent("newest-sort-button")]
+        private Button _newestSortButton;
+        [UIComponent("play-count-sort-button")]
+        private Button _playCountSortButton;
 #pragma warning restore CS0649
 #pragma warning restore CS0414
 #pragma warning restore CS0169
@@ -53,8 +63,15 @@ namespace EnhancedSearchAndFilters.UI
         private const string ClearFilterButtonAppliedText = "<color=#FFDDDD>Clear Filters</color>";
         private const string ClearFilterButtonHighlightedAppliedText = "<color=#440000>Clear Filters</color>";
 
+        private static readonly Color DefaultSortButtonColor = Color.white;
+        private static readonly Color SelectedSortButtonColor = new Color(0.7f, 1f, 0.6f);
+        private static readonly Color SelectedReversedSortButtonColor = new Color(0.7f, 0.6f, 1f);
+
         private const float DefaultYScale = 0.02f;
         private const float HiddenYScale = 0f;
+
+        private const float DefaultXSize = 28f;
+        private const float ExpandedXSize = 56f;
 
         public void Setup(bool hideSearchButton = false, bool hideFilterButtons = false, bool forceReinit = false)
         {
@@ -71,6 +88,9 @@ namespace EnhancedSearchAndFilters.UI
                     _searchButton = null;
                     _filterButton = null;
                     _clearFilterButton = null;
+                    _defaultSortButton = null;
+                    _newestSortButton = null;
+                    _playCountSortButton = null;
                 }
             }
 
@@ -81,6 +101,34 @@ namespace EnhancedSearchAndFilters.UI
 
             _container = Instantiate(topScreen, topScreen.transform.parent, true);
             _container.name = "EnhancedSearchAndFiltersButtonPanel";
+            _container.AddComponent<RectMask2D>();
+
+            // always render this screen in front of the title view controller's screen
+            var canvas = _container.GetComponent<Canvas>();
+            canvas.sortingOrder += 1;
+
+            // expand screen to reveal sort mode buttons
+            var enterExitEventHander = _container.AddComponent<EnterExitEventHandler>();
+            enterExitEventHander.PointerEntered += delegate ()
+            {
+                if (_inRevealAnimation)
+                    return;
+                else if (_inExpandAnimation)
+                    StopAllCoroutines();
+
+                _inExpandAnimation = true;
+                StartCoroutine(ExpandAnimationCoroutine(ExpandedXSize));
+            };
+            enterExitEventHander.PointerExited += delegate ()
+            {
+                if (_inRevealAnimation)
+                    return;
+                else if (_inExpandAnimation)
+                    StopAllCoroutines();
+
+                _inExpandAnimation = true;
+                StartCoroutine(ExpandAnimationCoroutine(DefaultXSize));
+            };
 
             Destroy(_container.GetComponentInChildren<SetMainCameraToCanvas>(true));
             Destroy(_container.transform.Find("TitleViewController").gameObject);
@@ -89,34 +137,21 @@ namespace EnhancedSearchAndFilters.UI
 
             // position the screen
             var rt = _container.transform as RectTransform;
-            rt.sizeDelta = new Vector2(28f, 30f);
+            rt.sizeDelta = new Vector2(DefaultXSize, 30f);
             rt.pivot = new Vector2(1f, 0f);
             rt.anchorMin = new Vector2(1f, 0f);
             rt.anchorMax = new Vector2(1f, 0f);
             rt.anchoredPosition = new Vector2(1.6f, 2.44f);
             rt.localRotation = Quaternion.Euler(345f, 0f, 0f);
+            rt.localPosition += new Vector3(0f, 0f, -0.001f);
 
             _hideSearchButton = hideSearchButton;
             _hideFilterButtons = hideFilterButtons;
             BSMLParser.instance.Parse(BeatSaberMarkupLanguage.Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.ButtonPanelView.bsml"), _container, this);
 
-            // replace the ugly looking button with the marginally better looking keyboard button (RoundRectBig)
-            // also, add ability to check pointer enter/exit events to filter/clear buttons to change colour
-            var replacementButtonImage = Resources.FindObjectsOfTypeAll<TextMeshProButton>().First(x => x.name == "KeyboardButton").GetComponentInChildren<Image>().sprite;
-            Image buttonBg;
-
-            if (_searchButton != null)
-            {
-                buttonBg = _searchButton.GetComponentsInChildren<Image>().First(x => x.name == "Stroke");
-                if (buttonBg != null)
-                    buttonBg.sprite = replacementButtonImage;
-            }
+            // add ability to check pointer enter/exit events to filter/clear buttons to change colour
             if (_filterButton != null)
             {
-                buttonBg = _filterButton.GetComponentsInChildren<Image>().First(x => x.name == "Stroke");
-                if (buttonBg != null)
-                    buttonBg.sprite = replacementButtonImage;
-
                 _filterButton.gameObject.AddComponent<EnterExitEventHandler>();
                 var handler = _filterButton.gameObject.GetComponent<EnterExitEventHandler>();
 
@@ -125,16 +160,14 @@ namespace EnhancedSearchAndFilters.UI
             }
             if (_clearFilterButton != null)
             {
-                buttonBg = _clearFilterButton.GetComponentsInChildren<Image>().First(x => x.name == "Stroke");
-                if (buttonBg != null)
-                    buttonBg.sprite = replacementButtonImage;
-
-                _clearFilterButton?.gameObject.AddComponent<EnterExitEventHandler>();
+                _clearFilterButton.gameObject.AddComponent<EnterExitEventHandler>();
                 var handler = _clearFilterButton.gameObject.GetComponent<EnterExitEventHandler>();
 
                 handler.PointerEntered += () => _clearFilterButton.SetButtonText(_areFiltersApplied ? ClearFilterButtonHighlightedAppliedText : ClearFilterButtonHighlightedText);
                 handler.PointerExited += () => _clearFilterButton.SetButtonText(_areFiltersApplied ? ClearFilterButtonAppliedText : ClearFilterButtonText);
             }
+
+            _defaultSortButton.GetComponentsInChildren<Image>().First(x => x.name == "Stroke").color = SelectedSortButtonColor;
 
             _initialized = true;
 
@@ -177,6 +210,36 @@ namespace EnhancedSearchAndFilters.UI
             SetFilterStatus(false);
         }
 
+        [UIAction("default-sort-button-clicked")]
+        private void OnDefaultSortButtonClicked()
+        {
+            SongSortModule.CurrentSortMode = SortMode.Default;
+            UpdateSortButtons();
+            Logger.log.Debug("Default sort button pressed");
+
+            SortButtonPressed?.Invoke();
+        }
+
+        [UIAction("newest-sort-button-clicked")]
+        private void OnNewestSortButtonClicked()
+        {
+            SongSortModule.CurrentSortMode = SortMode.Newest;
+            UpdateSortButtons();
+            Logger.log.Debug("Newest sort button pressed");
+
+            SortButtonPressed?.Invoke();
+        }
+
+        [UIAction("play-count-sort-button-clicked")]
+        private void OnPlayCountSortButtonClicked()
+        {
+            SongSortModule.CurrentSortMode = SortMode.PlayCount;
+            UpdateSortButtons();
+            Logger.log.Debug("Play count sort button pressed");
+
+            SortButtonPressed?.Invoke();
+        }
+
         public void ShowPanel(bool immediately = false)
         {
             if (!_initialized || _container.activeSelf)
@@ -188,14 +251,21 @@ namespace EnhancedSearchAndFilters.UI
                 localScale.y = DefaultYScale;
                 this._container.transform.localScale = localScale;
 
+                // reset size delta as well
+                var rt = (this._container.transform as RectTransform);
+                var sizeDelta = rt.sizeDelta;
+                sizeDelta.x = DefaultXSize;
+                rt.sizeDelta = sizeDelta;
+
                 _container.SetActive(true);
                 return;
             }
 
             _container.SetActive(true);
 
+            _inRevealAnimation = true;
             StopAllCoroutines();
-            StartCoroutine(AnimationCoroutine(DefaultYScale));
+            StartCoroutine(RevealAnimationCoroutine(DefaultYScale));
         }
 
         public void HidePanel(bool immediately = false)
@@ -209,16 +279,23 @@ namespace EnhancedSearchAndFilters.UI
                 localScale.y = HiddenYScale;
                 this._container.transform.localScale = localScale;
 
+                // reset size delta as well
+                var rt = (this._container.transform as RectTransform);
+                var sizeDelta = rt.sizeDelta;
+                sizeDelta.x = DefaultXSize;
+                rt.sizeDelta = sizeDelta;
+
                 _container.SetActive(false);
 
                 return;
             }
 
+            _inRevealAnimation = true;
             StopAllCoroutines();
-            StartCoroutine(AnimationCoroutine(HiddenYScale, true));
+            StartCoroutine(RevealAnimationCoroutine(HiddenYScale, true));
         }
 
-        private IEnumerator AnimationCoroutine(float destAnimationValue, bool disableOnFinish = false)
+        private IEnumerator RevealAnimationCoroutine(float destAnimationValue, bool disableOnFinish = false)
         {
             yield return null;
             yield return null;
@@ -236,7 +313,33 @@ namespace EnhancedSearchAndFilters.UI
             localScale.y = destAnimationValue;
             this._container.transform.localScale = localScale;
 
+            // reset size delta as well
+            var rt = (this._container.transform as RectTransform);
+            var sizeDelta = rt.sizeDelta;
+            sizeDelta.x = DefaultXSize;
+            rt.sizeDelta = sizeDelta;
+
             _container.SetActive(!disableOnFinish);
+            _inRevealAnimation = false;
+        }
+
+        private IEnumerator ExpandAnimationCoroutine(float destAnimationValue)
+        {
+            RectTransform rt = this._container.transform as RectTransform;
+            Vector3 sizeDelta = rt.sizeDelta;
+
+            while (Mathf.Abs(sizeDelta.x - destAnimationValue) > 0.0001f)
+            {
+                sizeDelta.x = Mathf.Lerp(sizeDelta.x, destAnimationValue, Time.deltaTime * 30);
+                rt.sizeDelta = sizeDelta;
+
+                yield return null;
+            }
+
+            sizeDelta.x = destAnimationValue;
+            rt.sizeDelta = sizeDelta;
+
+            _inExpandAnimation = false;
         }
 
         public void SetFilterStatus(bool filterApplied)
@@ -255,6 +358,33 @@ namespace EnhancedSearchAndFilters.UI
                     _clearFilterButton.SetButtonText(filterApplied ? ClearFilterButtonHighlightedAppliedText : ClearFilterButtonHighlightedText);
                 else
                     _clearFilterButton.SetButtonText(filterApplied ? ClearFilterButtonAppliedText : ClearFilterButtonText);
+            }
+        }
+
+        public void UpdateSortButtons()
+        {
+            if (!_initialized)
+                return;
+
+            switch (SongSortModule.CurrentSortMode)
+            {
+                case SortMode.Default:
+                    _defaultSortButton.GetComponentsInChildren<Image>().First(x => x.name == "Stroke").color = SongSortModule.Reversed ? SelectedReversedSortButtonColor : SelectedSortButtonColor;
+                    _newestSortButton.GetComponentsInChildren<Image>().First(x => x.name == "Stroke").color = DefaultSortButtonColor;
+                    _playCountSortButton.GetComponentsInChildren<Image>().First(x => x.name == "Stroke").color = DefaultSortButtonColor;
+                    break;
+
+                case SortMode.Newest:
+                    _defaultSortButton.GetComponentsInChildren<Image>().First(x => x.name == "Stroke").color = DefaultSortButtonColor;
+                    _newestSortButton.GetComponentsInChildren<Image>().First(x => x.name == "Stroke").color = SongSortModule.Reversed ? SelectedReversedSortButtonColor : SelectedSortButtonColor;
+                    _playCountSortButton.GetComponentsInChildren<Image>().First(x => x.name == "Stroke").color = DefaultSortButtonColor;
+                    break;
+
+                case SortMode.PlayCount:
+                    _defaultSortButton.GetComponentsInChildren<Image>().First(x => x.name == "Stroke").color = DefaultSortButtonColor;
+                    _newestSortButton.GetComponentsInChildren<Image>().First(x => x.name == "Stroke").color = DefaultSortButtonColor;
+                    _playCountSortButton.GetComponentsInChildren<Image>().First(x => x.name == "Stroke").color = SongSortModule.Reversed ? SelectedReversedSortButtonColor : SelectedSortButtonColor;
+                    break;
             }
         }
     }

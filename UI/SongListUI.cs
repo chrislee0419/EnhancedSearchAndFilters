@@ -11,6 +11,7 @@ using BS_Utils.Utilities;
 using BeatSaberMarkupLanguage;
 using EnhancedSearchAndFilters.Tweaks;
 using EnhancedSearchAndFilters.UI.FlowCoordinators;
+using EnhancedSearchAndFilters.SongData;
 
 namespace EnhancedSearchAndFilters.UI
 {
@@ -37,6 +38,7 @@ namespace EnhancedSearchAndFilters.UI
 
         public const string FilteredSongsCollectionName = "EnhancedFilterFilteredSongs";
         public const string FilteredSongsPackName = "Filtered Songs";
+        public const string SortedLevelPackIDSuffix = "EnhancedSearchAndFiltersSorted";
 
         public void OnMenuSceneLoadedFresh()
         {
@@ -75,9 +77,12 @@ namespace EnhancedSearchAndFilters.UI
                 ButtonPanel.instance.SearchButtonPressed -= SearchButtonPressed;
                 ButtonPanel.instance.FilterButtonPressed -= FilterButtonPressed;
                 ButtonPanel.instance.ClearFilterButtonPressed -= ClearButtonPressed;
+                ButtonPanel.instance.SortButtonPressed -= SortButtonPressed;
+
                 ButtonPanel.instance.SearchButtonPressed += SearchButtonPressed;
                 ButtonPanel.instance.FilterButtonPressed += FilterButtonPressed;
                 ButtonPanel.instance.ClearFilterButtonPressed += ClearButtonPressed;
+                ButtonPanel.instance.SortButtonPressed += SortButtonPressed;
             }
             else
             {
@@ -291,11 +296,80 @@ namespace EnhancedSearchAndFilters.UI
 
             if (_levelsToApply != null)
             {
-                LevelSelectionNavigationController.SetData(_levelsToApply, true, true, true, null);
+                LevelSelectionNavigationController.SetData(_levelsToApply,
+                    true,
+                    LevelSelectionNavigationController.GetPrivateField<bool>("_showPlayerStatsInDetailView"),
+                    LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView"),
+                    null);
+
                 _levelsToApply = null;
             }
 
             Logger.log.Debug("'Clear Filter' button pressed.");
+        }
+
+        private void SortButtonPressed()
+        {
+            if (_filterFlowCoordinator?.AreFiltersApplied ?? false)
+            {
+                // if filters are applied, _lastPack should not be null
+                var filteredLevels = _filterFlowCoordinator.ApplyFiltersFromExternalViewController(_lastPack.beatmapLevelCollection.beatmapLevels);
+
+                var filteredAndSortedLevels = new BeatmapLevelPack(
+                    "",
+                    FilteredSongsPackName,
+                    FilteredSongsCollectionName,
+                    Sprite.Create(Texture2D.whiteTexture, Rect.zero, Vector2.zero),
+                    new BeatmapLevelCollection(SongSortModule.SortSongs(filteredLevels.ToArray())));
+
+                LevelSelectionNavigationController.SetData(
+                    filteredAndSortedLevels,
+                    true,
+                    LevelSelectionNavigationController.GetPrivateField<bool>("_showPlayerStatsInDetailView"),
+                    LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView"));
+            }
+            else
+            {
+                if (_lastPack == null)
+                    _lastPack = LevelSelectionNavigationController.GetPrivateField<IBeatmapLevelPack>("_levelPack");
+
+                if (_lastPack is IBeatmapLevelPack && _lastPack != null)
+                {
+                    LevelSelectionNavigationController.SetData(
+                        CreateSortedBeatmapLevelPack(_lastPack as IBeatmapLevelPack),
+                        true,
+                        LevelSelectionNavigationController.GetPrivateField<bool>("_showPlayerStatsInDetailView"),
+                        LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView"));
+                }
+                else
+                {
+                    var lastLevels = _levelCollectionTableView.GetPrivateField<IPreviewBeatmapLevel[]>("_previewBeatmapLevels");
+
+                    if (lastLevels != null)
+                    {
+                        LevelSelectionNavigationController.SetData(
+                            new BeatmapLevelCollection(SongSortModule.SortSongs(lastLevels)),
+                            LevelSelectionNavigationController.GetPrivateField<bool>("_showPlayerStatsInDetailView"),
+                            LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView"),
+                            null);
+                    }
+                    else
+                    {
+                        Logger.log.Warn("Unable to find songs to sort");
+                    }
+
+                }
+            }
+        }
+
+        private BeatmapLevelPack CreateSortedBeatmapLevelPack(IBeatmapLevelPack levelPack)
+        {
+            return new BeatmapLevelPack(
+                levelPack.packID + SortedLevelPackIDSuffix,
+                levelPack.packName,
+                levelPack.shortPackName,
+                levelPack.coverImage,
+                new BeatmapLevelCollection(SongSortModule.SortSongs(levelPack.beatmapLevelCollection.beatmapLevels)));
         }
 
         public void ToggleButtonsActive(bool active)
@@ -318,6 +392,10 @@ namespace EnhancedSearchAndFilters.UI
             if (levelPack.collectionName != FilteredSongsCollectionName)
             {
                 _lastPack = levelPack;
+
+                SongSortModule.ResetSortMode();
+                ButtonPanel.instance.UpdateSortButtons();
+
                 Logger.log.Debug($"Storing '{levelPack.collectionName}' level pack as last pack");
             }
 
@@ -353,7 +431,13 @@ namespace EnhancedSearchAndFilters.UI
             }
             else if (_levelsToApply != null)
             {
-                LevelSelectionNavigationController.SetData(_levelsToApply, true, true, true, null);
+                // NOTE: levels should already be sorted
+                LevelSelectionNavigationController.SetData(
+                    _levelsToApply,
+                    true,
+                    LevelSelectionNavigationController.GetPrivateField<bool>("_showPlayerStatsInDetailView"),
+                    LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView"),
+                    null);
                 _levelsToApply = null;
             }
         }
@@ -384,7 +468,14 @@ namespace EnhancedSearchAndFilters.UI
             if (SongBrowserTweaks.Initialized)
                 return;
 
-            _levelsToApply = new BeatmapLevelPack("", FilteredSongsPackName, FilteredSongsCollectionName, Sprite.Create(Texture2D.whiteTexture, Rect.zero, Vector2.zero), new BeatmapLevelCollection(levels));
+            // the filter view controller is always provided a default-sorted array of levels,
+            // so we apply sorting here
+            _levelsToApply = new BeatmapLevelPack(
+                "",
+                FilteredSongsPackName,
+                FilteredSongsCollectionName,
+                Sprite.Create(Texture2D.whiteTexture, Rect.zero, Vector2.zero),
+                new BeatmapLevelCollection(SongSortModule.SortSongs(levels)));
 
             ButtonPanel.instance.SetFilterStatus(true);
         }
@@ -397,7 +488,20 @@ namespace EnhancedSearchAndFilters.UI
             }
             else
             {
-                _levelsToApply = _lastPack;
+                if (_lastPack is IBeatmapLevelPack)
+                {
+                    _levelsToApply = CreateSortedBeatmapLevelPack(_lastPack as IBeatmapLevelPack);
+                }
+                else
+                {
+                    SongSortModule.ResetSortMode();
+                    ButtonPanel.instance.UpdateSortButtons();
+
+                    _levelsToApply = _lastPack;
+
+                    Logger.log.Warn("Unable to sort level pack while disabling filters. Resetting to default sort mode.");
+                }
+
                 ButtonPanel.instance.SetFilterStatus(false);
             }
         }
