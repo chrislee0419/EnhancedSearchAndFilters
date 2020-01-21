@@ -332,7 +332,7 @@ namespace EnhancedSearchAndFilters.Filters
                 case SongCompletedFilterOption.HasCompleted:
                     return "<size=62%>Keep Completed</size>";
                 case SongCompletedFilterOption.HasNeverCompleted:
-                    return "<size=62%>Has Never Completed</size>";
+                    return "<size=62%>Keep Never Completed</size>";
                 default:
                     return "ERROR!";
             }
