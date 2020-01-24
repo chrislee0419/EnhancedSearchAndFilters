@@ -34,7 +34,6 @@ namespace EnhancedSearchAndFilters.UI
         private IAnnotatedBeatmapLevelCollection _levelsToApply;
 
         public LevelSelectionNavigationController LevelSelectionNavigationController { get; private set; } = null;
-        //public DismissableNavigationController ButtonParentViewController { get; private set; } = null;
 
         public const string FilteredSongsCollectionName = "EnhancedFilterFilteredSongs";
         public const string FilteredSongsPackName = "Filtered Songs";
@@ -44,7 +43,6 @@ namespace EnhancedSearchAndFilters.UI
         {
             // get view controller which will contain our buttons
             RectTransform viewControllersContainer = FindObjectsOfType<RectTransform>().First(x => x.name == "ViewControllers");
-            //ButtonParentViewController = viewControllersContainer.GetComponentInChildren<DismissableNavigationController>(true);
 
             _levelCollectionTableView = viewControllersContainer.GetComponentInChildren<LevelCollectionTableView>(true);
             _levelsTableView = _levelCollectionTableView.GetPrivateField<TableView>("_tableView");
@@ -62,12 +60,6 @@ namespace EnhancedSearchAndFilters.UI
             {
                 // delay building UI until SongBrowser elements are built (after the user selects mode)
             }
-            /* TODO: re-enable this when BeatSaverDownloader is available again (or whatever is gonna replace its UI)
-            else if (BeatSaverDownloaderTweaks.ModLoaded)
-            {
-                StartCoroutine(GetBeatSaverDownloaderButtons());
-            }
-            */
             else if (!PluginConfig.DisableSearch || !PluginConfig.DisableFilters)
             {
                 Logger.log.Debug("Creating button panel");
@@ -105,8 +97,6 @@ namespace EnhancedSearchAndFilters.UI
                 (_freePlayFlowCoordinator as SoloFreePlayFlowCoordinator).didFinishEvent += OnFreePlayFlowCoordinatorFinished;
 
                 StartCoroutine(PrepareLevelPackSelectedEvent());
-
-                //BeatSaverDownloaderTweaks.SetTopButtons(false);
             }
             else if (mode == FreePlayMode.Party)
             {
@@ -114,16 +104,11 @@ namespace EnhancedSearchAndFilters.UI
                 (_freePlayFlowCoordinator as PartyFreePlayFlowCoordinator).didFinishEvent += OnFreePlayFlowCoordinatorFinished;
 
                 StartCoroutine(PrepareLevelPackSelectedEvent());
-
-                //BeatSaverDownloaderTweaks.SetTopButtons(false);
             }
             else if (mode == FreePlayMode.Campaign)
             {
                 _freePlayFlowCoordinator = FindObjectOfType<CampaignFlowCoordinator>();
                 (_freePlayFlowCoordinator as CampaignFlowCoordinator).didFinishEvent += OnFreePlayFlowCoordinatorFinished;
-
-                //ToggleButtonsActive(false);
-                //BeatSaverDownloaderTweaks.HideTopButtons();
             }
 
             SongBrowserTweaks.OnModeSelection();
@@ -170,40 +155,6 @@ namespace EnhancedSearchAndFilters.UI
             }
         }
 
-        /*
-        private IEnumerator GetBeatSaverDownloaderButtons()
-        {
-            Logger.log.Info("BeatSaverDownloader mod found. Attempting to replace button behaviour and positions.");
-
-            int tries;
-            Vector2 newButtonSize = new Vector2(20f, 6f);
-
-            for (tries = 10; tries > 0; --tries)
-            {
-                if (BeatSaverDownloaderTweaks.Init(newButtonSize))
-                {
-                    if (!PluginConfig.DisableFilter)
-                    {
-                        CreateFilterButton(new Vector2(-12f, 36.75f), newButtonSize, "CreditsButton");
-                        CreateClearButton(new Vector2(8f, 36.75f), newButtonSize, "CreditsButton");
-                    }
-
-                    break;
-                }
-
-                yield return new WaitForSeconds(0.5f);
-            }
-
-            if (tries <= 0)
-            {
-                Logger.log.Warn("BeatSaverDownloader buttons could not be found. Creating default buttons panel");
-                ButtonPanel.instance.Setup();
-            }
-
-            ToggleButtonsActive(false);
-        }
-        */
-
         private void OnFreePlayFlowCoordinatorFinished(FlowCoordinator unused)
         {
             if (_freePlayFlowCoordinator is SoloFreePlayFlowCoordinator)
@@ -212,8 +163,6 @@ namespace EnhancedSearchAndFilters.UI
                 (_freePlayFlowCoordinator as PartyFreePlayFlowCoordinator).didFinishEvent -= OnFreePlayFlowCoordinatorFinished;
             else if (_freePlayFlowCoordinator is CampaignFlowCoordinator)
                 (_freePlayFlowCoordinator as CampaignFlowCoordinator).didFinishEvent -= OnFreePlayFlowCoordinatorFinished;
-
-            //BeatSaverDownloaderTweaks.HideTopButtons();
 
             // unapply filters before leaving the screen
             if (_filterFlowCoordinator?.AreFiltersApplied == true)
@@ -256,7 +205,6 @@ namespace EnhancedSearchAndFilters.UI
                 _searchFlowCoordinator.SongSelected += SelectSongFromSearchResult;
             }
 
-            // TODO?: toggle to search every level pack instead of just the current?
             IBeatmapLevelPack levelPack = LevelSelectionNavigationController.GetPrivateField<IBeatmapLevelPack>("_levelPack");
             _searchFlowCoordinator.Activate(_freePlayFlowCoordinator, levelPack);
 
@@ -373,21 +321,6 @@ namespace EnhancedSearchAndFilters.UI
                 levelPack.shortPackName,
                 levelPack.coverImage,
                 new BeatmapLevelCollection(SongSortModule.SortSongs(levelPack.beatmapLevelCollection.beatmapLevels)));
-        }
-
-        public void ToggleButtonsActive(bool active)
-        {
-            /* TODO: revisit this when BeatSaverDownloader is updated, since only that mod uses this function now
-            if (SearchButton != null)
-                SearchButton.gameObject.SetActive(active);
-            if (FilterButton != null)
-                FilterButton.gameObject.SetActive(active);
-            if (ClearButton != null)
-                ClearButton.gameObject.SetActive(active);
-
-            if (!active)
-                BeatSaverDownloaderTweaks.HideTopButtons();
-            */
         }
 
         private void LevelPackSelected(LevelFilteringNavigationController navController, IAnnotatedBeatmapLevelCollection levelPack, GameObject noDataInfoPrefab, BeatmapCharacteristicSO preferredCharacteristic)
