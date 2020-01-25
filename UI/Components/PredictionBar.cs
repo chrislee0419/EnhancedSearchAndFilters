@@ -5,28 +5,33 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using WordPredictionEngine = EnhancedSearchAndFilters.Search.WordPredictionEngine;
+using SuggestionType = EnhancedSearchAndFilters.Search.SuggestedWord.SuggestionType;
 
 namespace EnhancedSearchAndFilters.UI.Components
 {
-    class PredictionBar : MonoBehaviour
+    public class PredictionBar : MonoBehaviour
     {
-        public event Action<string> PredictionPressed;
+        public event Action<string, SuggestionType> PredictionPressed;
 
         private bool _initialized = false;
 
-        private Button _buttonPrefab;
+        private static Button _buttonPrefab;
         private Transform _parent;
         private float _fontSize;
         private float _yPos;
         private float _xStartPos;
         private float _xEndPos;
 
-        private Stack<Button> _unusedButtons = new Stack<Button>();
-        private List<Button> _predictionButtons = new List<Button>();
+        private Stack<PredictionButton> _unusedButtons = new Stack<PredictionButton>();
+        private List<PredictionButton> _predictionButtons = new List<PredictionButton>();
+
+        private static readonly Color DefaultPredictionButtonColor = new Color(0.6f, 0.6f, 0.8f);
+        private static readonly Color FuzzyMatchPredictionButtonColor = new Color(0.8f, 0.5f, 0.6f);
 
         private void Awake()
         {
-            _buttonPrefab = Resources.FindObjectsOfTypeAll<Button>().First(x => x.name == "CancelButton");
+            if (_buttonPrefab == null)
+                _buttonPrefab = Resources.FindObjectsOfTypeAll<Button>().First(x => x.name == "CancelButton");
         }
 
         public void Initialize(Transform parent, float fontSize, float yPosition, float xPositionStart, float xPositionEnd)
@@ -52,74 +57,64 @@ namespace EnhancedSearchAndFilters.UI.Components
                 return;
 
             // create new or re-use old buttons
-            Button btn = null;
+            PredictionButton btn = default;
             float currentX = 0f;
             var predictions = WordPredictionEngine.instance.GetSuggestedWords(searchText);
             for (int i = 0; i < predictions.Count && currentX < _xEndPos - _xStartPos; ++i)
             {
-                var word = predictions[i];
+                var word = predictions[i].Word;
+                var type = predictions[i].Type;
 
                 if (_unusedButtons.Any())
                 {
                     btn = _unusedButtons.Pop();
-                    btn.gameObject.SetActive(true);
+                    btn.SetActive(true);
                 }
                 else
                 {
-                    btn = Instantiate(_buttonPrefab, _parent, false);
-                    btn.name = "SearchPredictionBarButton";
-
-                    var rectTransform = (btn.transform as RectTransform);
-                    rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
-                    rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
-                    rectTransform.pivot = new Vector2(0f, 0.5f);
-                    btn.GetComponentsInChildren<HorizontalLayoutGroup>().First(x => x.name == "Content").padding = new RectOffset(0, 0, 0, 0);
-                    btn.GetComponentsInChildren<Image>().FirstOrDefault(x => x.name == "Stroke").color = new Color(0.6f, 0.6f, 0.8f);
+                    btn = new PredictionButton(_parent);
                 }
 
-                btn.onClick.RemoveAllListeners();
-                btn.onClick.AddListener(delegate ()
+                btn.Button.onClick.RemoveAllListeners();
+                btn.Button.onClick.AddListener(delegate ()
                 {
-                    if (!char.IsLetterOrDigit(searchText[searchText.Length - 1]) && !(searchText[searchText.Length - 1] == '\''))
+                    string[] searchTextWords = WordPredictionEngine.RemoveSymbolsRegex.Replace(searchText, " ").Split(WordPredictionEngine.SpaceCharArray);
+
+                    if (searchTextWords.Length == 0)
                     {
-                        searchText += word;
+                        // this should never be able to happen
+                        // implies we got a suggested word from an empty search query
+                        searchText = word;
                     }
                     else
                     {
-                        var searchTextWords = WordPredictionEngine.RemoveSymbolsRegex.Replace(searchText, " ").Split(new char[] { ' ' });
+                        char lastChar = searchText[searchText.Length - 1];
+                        string lastSearchWord = searchTextWords[searchTextWords.Length - 1];
 
-                        if (searchTextWords.Length == 0)
+                        if (type == SuggestionType.Prefixed || type == SuggestionType.FuzzyMatch)
                         {
-                            // this should never be able to happen
-                            // implies we got a suggested word from empty search query
-                            searchText = word;
+                            int index = searchText.LastIndexOf(lastSearchWord);
+                            searchText = searchText.Remove(index) + word;
+                        }
+                        else if (type == SuggestionType.FollowUp)
+                        {
+                            string space = lastChar == ' ' ? "" : " ";
+                            searchText = searchText + space + word;
                         }
                         else
                         {
-                            var lastSearchQueryWord = searchTextWords[searchTextWords.Length - 1];
-
-                            if (word != lastSearchQueryWord && word.StartsWith(lastSearchQueryWord))
-                            {
-                                var space = searchTextWords.Length == 1 ? "" : " ";
-                                searchText = searchText.Remove(searchText.Length - lastSearchQueryWord.Length) + space + word;
-                            }
-                            else
-                            {
-                                searchText += " " + word;
-                            }
+                            searchText = word;
                         }
                     }
 
-                    PredictionPressed?.Invoke(searchText);
+                    PredictionPressed?.Invoke(searchText, type);
                 });
 
-                var text = btn.GetComponentInChildren<TextMeshProUGUI>();
-                text.fontSize = _fontSize;
-                text.text = word.ToUpper();
-                text.enableWordWrapping = false;
+                btn.SetText(word.ToUpper(), _fontSize);
+                btn.Type = type;
 
-                var width = text.preferredWidth + 8f;
-                var rt = btn.transform as RectTransform;
+                var width = btn.PreferredTextWidth + 8f;
+                var rt = btn.Button.transform as RectTransform;
                 rt.sizeDelta = new Vector2(width, 7f);
                 rt.anchoredPosition = new Vector2(_xStartPos + currentX, _yPos);
 
@@ -129,10 +124,10 @@ namespace EnhancedSearchAndFilters.UI.Components
 
             // remove the last button created, since it goes past the end of the screen
             // we have to do this here, since we don't know the width of the strings to be displayed before button creation
-            if (btn != null && currentX >= _xEndPos - _xStartPos)
+            if (PredictionButton.IsValid(btn) && currentX >= _xEndPos - _xStartPos)
             {
                 _predictionButtons.Remove(btn);
-                btn.gameObject.SetActive(false);
+                btn.SetActive(false);
                 _unusedButtons.Push(btn);
             }
         }
@@ -144,10 +139,58 @@ namespace EnhancedSearchAndFilters.UI.Components
 
             foreach (var oldButton in _predictionButtons)
             {
-                oldButton.gameObject.SetActive(false);
+                oldButton.SetActive(false);
                 _unusedButtons.Push(oldButton);
             }
             _predictionButtons.Clear();
+        }
+
+        private struct PredictionButton
+        {
+            public Button Button { get; private set; }
+            public SuggestionType Type
+            {
+                get => _type;
+                set
+                {
+                    _type = value;
+                    _stroke.color = value == SuggestionType.FuzzyMatch ? FuzzyMatchPredictionButtonColor : DefaultPredictionButtonColor;
+                }
+            }
+            public float PreferredTextWidth { get => _text.preferredWidth; }
+
+            private TextMeshProUGUI _text;
+            private SuggestionType _type;
+            private Image _stroke;
+
+            public PredictionButton(Transform parent)
+            {
+                Button = Instantiate(_buttonPrefab, parent, false);
+                _text = Button.GetComponentInChildren<TextMeshProUGUI>();
+                _type = default;
+                _stroke = Button.GetComponentsInChildren<Image>().FirstOrDefault(x => x.name == "Stroke");
+
+                Button.name = "SearchPredictionBarButton";
+
+                var rectTransform = (Button.transform as RectTransform);
+                rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+                rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+                rectTransform.pivot = new Vector2(0f, 0.5f);
+                Button.GetComponentsInChildren<HorizontalLayoutGroup>().First(x => x.name == "Content").padding = new RectOffset(0, 0, 0, 0);
+                _stroke.color = DefaultPredictionButtonColor;
+            }
+
+            public void SetActive(bool active) => Button.gameObject.SetActive(active);
+
+            public void SetText(string text, float fontSize = -1f)
+            {
+                if (fontSize > 0f)
+                    _text.fontSize = fontSize;
+                _text.text = text;
+                _text.enableWordWrapping = false;
+            }
+
+            public static bool IsValid(PredictionButton btn) => btn.Button != null && btn._text != null && btn._stroke != null;
         }
     }
 }

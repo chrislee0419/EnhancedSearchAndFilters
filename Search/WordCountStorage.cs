@@ -5,6 +5,7 @@ using System.Linq;
 
 namespace EnhancedSearchAndFilters.Search
 {
+    // NOTE: the words stored are all converted to lowercase
     internal class WordCountStorage
     {
         public bool IsLoading { get; private set; } = false;
@@ -12,6 +13,7 @@ namespace EnhancedSearchAndFilters.Search
 
         private Trie _trie = new Trie();
         private Dictionary<string, WordInformation> _words = new Dictionary<string, WordInformation>();
+        private BKTree _bkTree = new BKTree();
 
         private HMTask _task;
         private ManualResetEvent _manualResetEvent;
@@ -47,7 +49,7 @@ namespace EnhancedSearchAndFilters.Search
                         return;
 
                     sw.Stop();
-                    Logger.log.Info($"Finished creating word count storage object for the \"{levelPack.packName}\" level pack (took {sw.ElapsedMilliseconds/1000f} seconds)");
+                    Logger.log.Info($"Finished creating word count storage object for the \"{levelPack.packName}\" level pack (took {sw.ElapsedMilliseconds/1000f} seconds, {_words.Count} unique words processed)");
                 },
                 delegate ()
                 {
@@ -239,6 +241,7 @@ namespace EnhancedSearchAndFilters.Search
                         .Select(p => p.Key)
                         .ToList())
                 );
+                _bkTree.AddWord(word);
             }
 
             IsReady = true;
@@ -269,6 +272,53 @@ namespace EnhancedSearchAndFilters.Search
                 return new List<string>();
 
             return wordInfo.FollowUpWords;
+        }
+
+        /// <summary>
+        /// Gets the words that partially match the provided word according to the Levenshtein distance. 
+        /// The provided word must be 3 characters or longer.
+        /// </summary>
+        /// <param name="word">Find words that are close matches to this word. Exact matches are omitted.</param>
+        /// <param name="tolerance">The largest Levenshtein distance for a word match to be accepted.</param>
+        /// <returns>A list of similar words.</returns>
+        public List<string> GetFuzzyMatchedWords(string word, int tolerance = 2)
+        {
+            if (word.Length < 3 || tolerance < 1)
+                return new List<string>();
+
+            var words = _bkTree.Search(word, tolerance);
+
+            if (words.Contains(word))
+                words.Remove(word);
+
+            return words;
+        }
+
+        /// <summary>
+        /// Gets the words that partially match the provided word according to the Jaro-Winkler similarity. 
+        /// The provided word must be 3 characters or longer.
+        /// </summary>
+        /// <param name="word">Find words that are close matches to this word. Exact matches are omitted.</param>
+        /// <param name="minSimilarity">The minimum similarity value for a word match to be accepted, where 1 represents matching same word.</param>
+        /// <returns>A list of similar words.</returns>
+        public List<string> GetFuzzyMatchedWordsAlternate(string word, float minSimilarity = 0.7f)
+        {
+            List<string> words = new List<string>();
+
+            if (word.Length < 3 || minSimilarity <= 0f || minSimilarity >= 1f)
+                return words;
+
+            foreach (var kv in _words)
+            {
+                string targetWord = kv.Key;
+                if (FuzzyStringMatching.JaroWinklerSimilarity(word, targetWord) >= minSimilarity)
+                    words.Add(targetWord);
+            }
+
+            if (words.Contains(word))
+                words.Remove(word);
+
+            return words;
         }
 
         private string[] GetWordsFromString(string s)

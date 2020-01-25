@@ -3,6 +3,7 @@ using HMUI;
 using BeatSaberMarkupLanguage;
 using EnhancedSearchAndFilters.UI.ViewControllers;
 using EnhancedSearchAndFilters.Search;
+using SuggestionType = EnhancedSearchAndFilters.Search.SuggestedWord.SuggestionType;
 
 namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 {
@@ -255,7 +256,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                 _searchResultsNavigationController.ShowLastSearchButton(true, _lastSearchQuery);
         }
 
-        private void KeyboardPredictionPressed(string query)
+        private void KeyboardPredictionPressed(string query, SuggestionType type)
         {
             _searchQuery = query;
 
@@ -267,7 +268,9 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             if (PluginConfig.CompactSearchMode)
                 _searchResultsListViewController.UpdateSongs(new IPreviewBeatmapLevel[0]);
 
-            if (_searchQuery.Length == 1)
+            // we need to start a new search when a fuzzy match prediction is pressed,
+            // otherwise the search would have already filtered out the selected word
+            if (type == SuggestionType.FuzzyMatch)
                 SearchBehaviour.Instance.StartNewSearch(_levelsSearchSpace, _searchQuery, SearchCompleted);
             else
                 SearchBehaviour.Instance.StartSearchOnExistingList(_searchQuery, SearchCompleted);

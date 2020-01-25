@@ -5,6 +5,7 @@ using TMPro;
 using HMUI;
 using BeatSaberMarkupLanguage;
 using EnhancedSearchAndFilters.UI.Components;
+using SuggestionType = EnhancedSearchAndFilters.Search.SuggestedWord.SuggestionType;
 
 namespace EnhancedSearchAndFilters.UI.ViewControllers
 {
@@ -13,7 +14,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         public event Action<char> TextKeyPressed;
         public event Action DeleteButtonPressed;
         public event Action ClearButtonPressed;
-        public event Action<string> PredictionPressed;
+        public event Action<string, SuggestionType> PredictionPressed;
 
         private SearchKeyboard _keyboard;
         private TextMeshProUGUI _textDisplayComponent;
@@ -31,14 +32,14 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
                 _predictionBar = new GameObject("EnhancedSearchPredictionBar").AddComponent<PredictionBar>();
                 _predictionBar.Initialize(this.transform, 4f, 19f, -50f, 50f);
-                _predictionBar.PredictionPressed += delegate (string query)
+                _predictionBar.PredictionPressed += delegate (string query, SuggestionType type)
                 {
                     _searchText = query;
                     _textDisplayComponent.text = _searchText.ToUpper() + CursorText;
 
                     _predictionBar.ClearAndSetPredictionButtons(_searchText);
 
-                    PredictionPressed?.Invoke(query);
+                    PredictionPressed?.Invoke(query, type);
                 };
 
                 var keyboardGO = Instantiate(Resources.FindObjectsOfTypeAll<UIKeyboard>().First(x => x.name != "CustomUIKeyboard"), this.rectTransform, false).gameObject;

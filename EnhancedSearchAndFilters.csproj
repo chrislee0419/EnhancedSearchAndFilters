@@ -129,6 +129,8 @@
   <ItemGroup>
     <Compile Include="Filters\FilterList.cs" />
     <Compile Include="Filters\PlayerStatsFilter.cs" />
+    <Compile Include="Search\BKTree.cs" />
+    <Compile Include="Search\FuzzyStringMatching.cs" />
     <Compile Include="Search\Trie.cs" />
     <Compile Include="Search\WordCountStorage.cs" />
     <Compile Include="Search\WordPredictionEngine.cs" />
