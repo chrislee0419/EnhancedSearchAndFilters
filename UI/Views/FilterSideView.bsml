@@ -1,4 +1,16 @@
 ﻿<bg anchor-min-x="0" anchor-min-y="0" anchor-max-x="1" anchor-max-y="1">
+  <!-- filter list -->
+  <horizontal bg="round-rect-panel"
+              child-expand-width="true"
+              vertical-fit="Unconstrained"
+              anchor-min-x="1" anchor-min-y="1"
+              anchor-max-x="1" anchor-max-y="1"
+              size-delta-x="60" size-delta-y="6"
+              anchor-pos-x="-38" anchor-pos-y="-6">
+    <text text="Filters"
+          font-size="4.8"
+          font-align="Center" />
+  </horizontal>
   <custom-list id="filter-list"
                contents="filter-cell-list"
                list-direction="Vertical"
@@ -8,8 +20,8 @@
                select-cell="filter-cell-selected"
                anchor-min-x="1" anchor-min-y="0"
                anchor-max-x="1" anchor-max-y="1"
-               size-delta-x="60" size-delta-y="-10"
-               anchor-pos-x="-38" anchor-pos-y="-5">
+               size-delta-x="60" size-delta-y="-20"
+               anchor-pos-x="-38" anchor-pos-y="-2">
     <raw-image id='hovered-image'
             tags='hovered'
             anchor-min-x='0' anchor-min-y='0'
@@ -34,36 +46,140 @@
           size-delta-x='-5' size-delta-y='0'
           anchored-pos-x='1' anchored-pos-y='0' />
   </custom-list>
-  <bg bg="round-rect-panel"
-      anchor-min-x="0" anchor-min-y="1"
-      anchor-max-x="0" anchor-max-y="1"
-      size-delta-x="40" size-delta-y="24"
-      anchor-pos-x="25" anchor-pos-y="-16">
-    <text text="~legend-text"
-          font-align="TopLeft"
+  <horizontal bg="round-rect-panel"
+              hover-hint="~legend-text"
+              child-expand-width="true"
+              vertical-fit="Unconstrained"
+              anchor-min-x="1" anchor-min-y="0"
+              anchor-max-x="1" anchor-max-y="0"
+              size-delta-x="40" size-delta-y="7"
+              anchor-pos-x="-47" anchor-pos-y="6.5">
+    <text text="What do the colors mean? &lt;size=80%&gt;(Hover for info)&lt;/size&gt;"
           font-size="2.8"
-          anchor-min-x="0" anchor-min-y="0"
-          anchor-max-x="1" anchor-max-y="1"
-          size-delta-x="-4" size-delta-y="-4" />
-  </bg>
+          font-align="Center" />
+  </horizontal>
+  
+  <!-- quick filter options -->
+  <horizontal bg="round-rect-panel"
+              child-expand-width="true"
+              vertical-fit="Unconstrained"
+              anchor-min-x="0" anchor-min-y="1"
+              anchor-max-x="0" anchor-max-y="1"
+              size-delta-x="40" size-delta-y="6"
+              anchor-pos-x="25" anchor-pos-y="-6">
+    <text text="Quick Filter Options"
+          font-size="4.2"
+          font-align="Center" />
+  </horizontal>
+  <vertical bg="round-rect-panel"
+            anchor-min-x="0" anchor-min-y="1"
+            anchor-max-x="0" anchor-max-y="1"
+            size-delta-x="40" size-delta-y="38"
+            anchor-pos-x="25" anchor-pos-y="-29"
+            pad="1" spacing="2">
+    <vertical child-align="UpperCenter"
+              expand-width="true"
+              preferred-height="15"
+              vertical-fit="PreferredSize"
+              pad="1" spacing="2">
+      <!-- dropdown -->
+      <horizontal id="quick-filter-dropdown-container"
+                  bg="round-rect-panel"
+                  vertical-fit="PreferredSize"
+                  preferred-height="8"
+                  preferred-width="38"
+                  pad="1" spacing="1">
+        <horizontal vertical-fit="Unconstrained"
+                    preferred-height="6"
+                    preferred-width="30">
+          <clickable-text id="quick-filter-dropdown-text"
+                          text="123456789 1234567890"
+                          font-size="3.2"
+                          font-align="Center"
+                          on-click="quick-filter-dropdown-clicked" />
+        </horizontal>
+        <page-button direction="Down"
+                     interactable="false"
+                     preferred-height="6"
+                     preferred-width="6"
+                     on-click="quick-filter-dropdown-clicked" />
+      </horizontal>
+      <modal show-event="show-modal"
+             hide-event="hide-modal"
+             click-off-closes="true"
+             size-delta-x="50" size-delta-y="50">
+        <vertical>
+          <page-button direction="Up"
+                       preferred-height="6"
+                       click-event="quick-filter-list#PageUp" />
+          <list id="quick-filter-list"
+                list-style="Simple"
+                cell-size="6" />
+          <page-button direction="Down"
+                       preferred-height="6"
+                       click-event="quick-filter-list#PageDown" />
+        </vertical>
+      </modal>
+      <!-- apply/delete buttons -->
+      <horizontal preferred-width="38"
+                  preferred-height="5"
+                  pad-left="1" pad-right="1"
+                  spacing="1">
+        <button text="Apply Quick Filter"
+                font-size="3"
+                interactable="~apply-quick-filter-button-interactivity"
+                preferred-height="5"
+                preferred-width="30"
+                stroke-type="Clean"
+                pad="1" />
+        <icon-button icon="EnhancedSearchAndFilters.Assets.cross.png"
+                     interactable="~delete-quick-filter-button-interactivity"
+                     preferred-height="5"
+                     preferred-width="5"
+                     stroke-type="Clean"
+                     stroke-color="#FF3333"
+                     pad="2" />
+      </horizontal>
+    </vertical>
+    <!-- save quick filter button -->
+    <button id="save-quick-filter-button"
+            text="~save-quick-filter-button-text"
+            font-size="2.8"
+            on-click="save-quick-filter-button-clicked"
+            preferred-width="38" preferred-height="9"
+            pad="2" />
+  </vertical>
+  
+  <!-- setting reset options -->
+  <horizontal bg="round-rect-panel"
+              child-expand-width="true"
+              vertical-fit="Unconstrained"
+              anchor-min-x="0" anchor-min-y="0"
+              anchor-max-x="0" anchor-max-y="0"
+              size-delta-x="40" size-delta-y="6"
+              anchor-pos-x="25" anchor-pos-y="26">
+    <text text="Reset Settings"
+          font-size="4.2"
+          font-align="Center" />
+  </horizontal>
   <vertical bg="round-rect-panel"
             child-expand-width="true"
             anchor-min-x="0" anchor-min-y="0"
             anchor-max-x="0" anchor-max-y="0"
-            size-delta-x="40" size-delta-y="42"
-            anchor-pos-x="25" anchor-pos-y="26"
-            pad="2" spacing="2">
+            size-delta-x="40" size-delta-y="19"
+            anchor-pos-x="25" anchor-pos-y="12.5"
+            pad="2" spacing="1">
     <button id="clear-button"
             text="Clear All Changes"
-            font-size="3.5"
+            font-size="3.6"
             on-click="clear-button-clicked"
-            preferred-width="35" preferred-height="9.5"
-            pad="2"/>
+            preferred-width="35" preferred-height="7"
+            pad="2" />
     <button id="default-button"
             text="Reset All To Defaults"
-            font-size="3.2"
+            font-size="3.3"
             on-click="default-button-clicked"
-            preferred-width="35" preferred-height="9.5"
-            pad="2"/>
+            preferred-width="35" preferred-height="7"
+            pad="2" />
   </vertical>
 </bg>

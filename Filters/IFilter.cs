@@ -74,7 +74,7 @@ namespace EnhancedSearchAndFilters.Filters
             get => _key;
             set
             {
-                if (!AlphanumericRegex.IsMatch(value))
+                if (string.IsNullOrEmpty(value) || !AlphanumericRegex.IsMatch(value))
                     throw new ArgumentException("The key of a filter setting should only contain alphanumeric characters.");
 
                 _key = value;
@@ -86,7 +86,7 @@ namespace EnhancedSearchAndFilters.Filters
             get => _value;
             set
             {
-                if (!AlphanumericRegex.IsMatch(value))
+                if (string.IsNullOrEmpty(value) || !AlphanumericRegex.IsMatch(value))
                     throw new ArgumentException("The value of a filter setting should only contain alphanumeric characters.");
 
                 _value = value;
@@ -94,6 +94,7 @@ namespace EnhancedSearchAndFilters.Filters
         }
 
         public static readonly Regex AlphanumericRegex = new Regex("^[A-Za-z0-9]+$");
+        public const char SeparatorCharacter = ':';
 
         public FilterSettingsKeyValuePair(string key, object value)
         {
@@ -115,6 +116,26 @@ namespace EnhancedSearchAndFilters.Filters
                 settingsList.Add(new FilterSettingsKeyValuePair(items[k].ToString(), items[v]));
 
             return settingsList;
+        }
+
+        public override string ToString() => $"{Key}{SeparatorCharacter}{Value}";
+
+        /// <summary>
+        /// Parse a string to a FilterSettingsKeyValuePair object.
+        /// </summary>
+        /// <param name="kvPairString">String to parse.</param>
+        /// <returns>A FilterSettingsKeyValuePair object.</returns>
+        public static FilterSettingsKeyValuePair FromString(string kvPairString)
+        {
+            if (string.IsNullOrEmpty(kvPairString))
+                return null;
+
+            string[] pair = kvPairString.Split(SeparatorCharacter);
+
+            if (pair.Length != 2)
+                return null;
+            else
+                return new FilterSettingsKeyValuePair(pair[0], pair[1]);
         }
     }
 }

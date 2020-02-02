@@ -6,18 +6,52 @@ using TMPro;
 using HMUI;
 using BeatSaberMarkupLanguage.Components;
 using BeatSaberMarkupLanguage.Attributes;
+using BeatSaberMarkupLanguage.Parser;
 using BeatSaberMarkupLanguage.ViewControllers;
 using EnhancedSearchAndFilters.Filters;
+using EnhancedSearchAndFilters.UI.Components;
 
 namespace EnhancedSearchAndFilters.UI.ViewControllers
 {
-    internal class FilterSideViewController : BSMLResourceViewController
+    internal class FilterSideViewController : HotReloadableViewController
+    //internal class FilterSideViewController : BSMLResourceViewController
     {
         public override string ResourceName => "EnhancedSearchAndFilters.UI.Views.FilterSideView.bsml";
+        public override string ContentFilePath => "E:\\Projects\\EnhancedSearchAndFilters\\UI\\Views\\FilterSideView.bsml";
 
         public event Action<IFilter> FilterSelected;
         public event Action ClearButtonPressed;
         public event Action DefaultButtonPressed;
+
+        private bool _applyQuickFilterButtonInteractibility = false;
+        [UIValue("apply-quick-filter-button-interactivity")]
+        public bool ApplyQuickFilterButtonInteractability
+        {
+            get => _applyQuickFilterButtonInteractibility;
+            set
+            {
+                if (_applyQuickFilterButtonInteractibility == value)
+                    return;
+
+                _applyQuickFilterButtonInteractibility = value;
+                NotifyPropertyChanged();
+            }
+        }
+        private bool _deleteQuickFilterButtonInteractivity = false;
+        [UIValue("delete-quick-filter-button-interactivity")]
+        public bool DeleteQuickFilterButtonInteractivity
+        {
+            get => _deleteQuickFilterButtonInteractivity;
+            set
+            {
+                if (_deleteQuickFilterButtonInteractivity == value)
+                    return;
+
+                _deleteQuickFilterButtonInteractivity = value;
+                NotifyPropertyChanged();
+            }
+        }
+
         [UIValue("filter-cell-list")]
         private List<object> _filterCellList = new List<object>();
 
@@ -28,15 +62,28 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         private Button _defaultButton;
         [UIComponent("filter-list")]
         private CustomCellListTableData _tableData;
+
+        [UIObject("quick-filter-dropdown-container")]
+        private GameObject _quickFilterDropdownContainer;
+
+        [UIComponent("quick-filter-dropdown-text")]
+        private TextMeshProUGUI _quickFilterDropdownText;
+        [UIComponent("quick-filter-list")]
+        private CustomListTableData _quickFilterTableData;
 #pragma warning restore CS0649
+
+        [UIParams]
+        private BSMLParserParams _parserParams;
 
         [UIValue("legend-text")]
         private const string LegendText =
-            "<b><i>Filter Color Legend</i></b>\n" +
-            "<color=#FF5555>Red</color> -  Not applied\n" +
-            "<color=#FFFF55>Yellow</color> -  Not applied, but has changes\n" +
-            "<color=#55FF55>Green</color> -  Applied\n" +
-            "<color=#55AAFF>Blue</color> -  Applied, but has changes";
+            "<b>Filter Color Legend</b>\n\n" +
+            "<color=#FF5555>Red</color>  -  Not applied\n" +
+            "<color=#FFFF55>Yellow</color>  -  Not applied, but has changes\n" +
+            "<color=#55FF55>Green</color>  -  Applied\n" +
+            "<color=#55AAFF>Blue</color>  -  Applied, but has changes";
+        [UIValue("save-quick-filter-button-text")]
+        private const string SaveQuickFilterButtonText = "Save Settings\nTo Quick Filter";
 
         private class FilterTableCell
         {
@@ -116,6 +163,18 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 this.name = "FilterSideViewController";
 
                 _tableData.gameObject.GetComponentInChildren<ScrollRect>().vertical = false;
+
+                var eventHandler = _quickFilterDropdownContainer.AddComponent<EnterExitEventHandler>();
+                eventHandler.PointerEntered += delegate ()
+                {
+                    Logger.log.Warn("pointer entered quick filter dropdown container");
+                    // TODO: do something with the background and text
+                };
+                eventHandler.PointerExited += delegate ()
+                {
+                    Logger.log.Warn("pointer exited quick filter dropdown container");
+                    // TODO: do somoething with the background and text
+                };
             }
 
             SetButtonInteractivity(false, false);
@@ -183,6 +242,22 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         {
             _defaultButton.GetComponentInChildren<TextMeshProUGUI>().color = Color.white;
             DefaultButtonPressed?.Invoke();
+        }
+
+        [UIAction("quick-filter-dropdown-clicked")]
+        private void OnQuickFilterDropdownButtonClicked()
+        {
+            Logger.log.Warn("quick filter dropdown clicked");
+            // TODO
+
+            _parserParams.EmitEvent("show-modal");
+        }
+
+        [UIAction("save-quick-filter-button-clicked")]
+        private void OnSaveQuickFilterButtonClicked()
+        {
+            Logger.log.Warn("save quick filter clicked");
+            // TODO
         }
     }
 }

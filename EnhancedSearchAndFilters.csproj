@@ -130,6 +130,7 @@
   <ItemGroup>
     <Compile Include="Filters\FilterList.cs" />
     <Compile Include="Filters\PlayerStatsFilter.cs" />
+    <Compile Include="Filters\QuickFiltersManager.cs" />
     <Compile Include="Search\BKTree.cs" />
     <Compile Include="Search\FuzzyStringMatching.cs" />
     <Compile Include="Search\Trie.cs" />
@@ -206,6 +207,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="UI\Views\SettingsView.bsml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\triangle.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
