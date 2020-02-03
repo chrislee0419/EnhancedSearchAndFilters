@@ -110,7 +110,13 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         protected override void DidActivate(bool firstActivation, ActivationType type)
         {
             base.DidActivate(firstActivation, type);
-            this.name = "FilterSideViewController";
+
+            if (firstActivation)
+            {
+                this.name = "FilterSideViewController";
+
+                _tableData.gameObject.GetComponentInChildren<ScrollRect>().vertical = false;
+            }
 
             SetButtonInteractivity(false, false);
             SetFilterListVisibility(false);
