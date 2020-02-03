@@ -177,15 +177,17 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 };
             }
 
+            SetFilterList();
+
             SetButtonInteractivity(false, false);
             SetFilterListVisibility(false);
         }
 
-        public void SetFilterList(IEnumerable<IFilter> filterList)
+        public void SetFilterList()
         {
             _filterCellList.Clear();
 
-            foreach (var filter in filterList)
+            foreach (var filter in FilterList.ActiveFilters)
                 _filterCellList.Add(new FilterTableCell(filter));
 
             if (_tableData != null)

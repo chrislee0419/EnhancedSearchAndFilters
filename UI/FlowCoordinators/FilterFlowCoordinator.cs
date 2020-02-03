@@ -43,8 +43,6 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                 _filterSideViewController.ClearButtonPressed += ClearAllFilterChanges;
                 _filterSideViewController.DefaultButtonPressed += SetAllFiltersToDefault;
 
-                _filterSideViewController.SetFilterList(FilterList.ActiveFilters);
-
                 FilterList.FilterListChanged -= FilterListChanged;
                 FilterList.FilterListChanged += FilterListChanged;
 
@@ -294,7 +292,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 
         private void FilterListChanged()
         {
-            _filterSideViewController.SetFilterList(FilterList.ActiveFilters);
+            _filterSideViewController.SetFilterList();
 
             // the filter list isn't intended to be changed when in the filter screen
             // so if the current filter has been removed, just set it to null and
