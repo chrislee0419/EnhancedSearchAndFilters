@@ -107,5 +107,15 @@ namespace EnhancedSearchAndFilters.SongData
             ObstaclesCount = obstaclesCount;
             SpawnRotationEventsCount = spawnRotationEventsCount;
         }
+
+        public SimplifiedDifficultyBeatmap(BeatmapDifficulty difficulty, float noteJumpMovementSpeed, int notesCount, int bombsCount, int obstaclesCount, int spawnRotationEventsCount)
+        {
+            Difficulty = difficulty;
+            NoteJumpMovementSpeed = noteJumpMovementSpeed;
+            NotesCount = notesCount;
+            BombsCount = bombsCount;
+            ObstaclesCount = obstaclesCount;
+            SpawnRotationEventsCount = spawnRotationEventsCount;
+        }
     }
 }

@@ -337,7 +337,7 @@ namespace EnhancedSearchAndFilters.SongData
 
                     if (!_cache.ContainsKey(levelID) || _cache[levelID].SongDuration == 0f)
                     {
-                        if (Tweaks.SongDataCoreTweaks.GetBeatmapDetails(levelID, out var beatmapDetails))
+                        if (Tweaks.SongDataCoreTweaks.GetBeatmapDetails(allLevels[index] as CustomPreviewBeatmapLevel, out var beatmapDetails))
                         {
                             // load the beatmap details manually if some data from BeatSaver is incomplete
                             if (beatmapDetails.DifficultyBeatmapSets.Any(set => set.DifficultyBeatmaps.Any(diff => diff.NoteJumpMovementSpeed == 0)))
@@ -391,16 +391,16 @@ namespace EnhancedSearchAndFilters.SongData
                     {
                         _loadedLevelsUnsorted.Add(new Tuple<int, BeatmapDetails>(index, _cache[levelID]));
                     }
-                    else if (level is CustomPreviewBeatmapLevel)
+                    else if (level is CustomPreviewBeatmapLevel customLevel)
                     {
-                        if (Tweaks.SongDataCoreTweaks.GetBeatmapDetails(levelID, out var beatmapDetails))
+                        if (Tweaks.SongDataCoreTweaks.GetBeatmapDetails(customLevel, out var beatmapDetails))
                         {
                             // load the beatmap details manually if some data from BeatSaver is incomplete
                             if (beatmapDetails.DifficultyBeatmapSets.Any(set => set.DifficultyBeatmaps.Any(diff => diff.NoteJumpMovementSpeed == 0)))
                             {
                                 Logger.log.Debug($"BeatmapDetails object generated for '{beatmapDetails.SongName}' from BeatSaver data has some incomplete fields. \n" +
                                     "Discarding and regenerating BeatmapDetails object from locally stored information instead.");
-                                taskList.Add(GetCustomBeatmapDetailsAsync(level as CustomPreviewBeatmapLevel, index));
+                                taskList.Add(GetCustomBeatmapDetailsAsync(customLevel, index));
                                 ++i;
                             }
                             else
@@ -410,7 +410,7 @@ namespace EnhancedSearchAndFilters.SongData
                         }
                         else
                         {
-                            taskList.Add(GetCustomBeatmapDetailsAsync(level as CustomPreviewBeatmapLevel, index));
+                            taskList.Add(GetCustomBeatmapDetailsAsync(customLevel, index));
                             ++i;
                         }
                     }

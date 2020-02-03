@@ -74,6 +74,11 @@ namespace EnhancedSearchAndFilters
             SongDataCoreTweaks.ModLoaded = IPAPluginManager.GetPluginFromId("SongDataCore") != null;
 #pragma warning restore CS0618
 
+            if (SongBrowserTweaks.ModLoaded)
+                Logger.log.Debug("SongBrowser detected");
+            if (SongDataCoreTweaks.ModLoaded)
+                Logger.log.Debug("SongDataCore detected");
+
             // reset initialization status if settings were applied
             SongBrowserTweaks.Initialized = false;
 
