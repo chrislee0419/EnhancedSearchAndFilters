@@ -41,6 +41,14 @@ namespace EnhancedSearchAndFilters.Tweaks
             try
             {
                 float bpm = song.bmp;
+                if (bpm < 0.0001f)
+                {
+                    Logger.log.Warn($"Unable to acquire valid BPM for level ID '{level.levelID}' from information provided by SongDataCore");
+
+                    beatmapDetails = null;
+                    return false;
+                }
+
                 // NOTE: since BeatSaver calculates the duration of a song using the last note (or event?) of a beatmap, instead of the using the length of the audio file,
                 //       it is extremely likely that this duration is going to be a bit shorter than the actual length of the audio (typically < 10 seconds shorter)
                 //       (or even vastly shorter if there is a long period of no notes at the end of a beatmap)
