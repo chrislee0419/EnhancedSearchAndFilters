@@ -56,6 +56,10 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
         {
             BeatmapDetailsLoader.instance.CancelLoading();
 
+            // filter will be re-selected during the LoadBeatmaps on finish handler, which will re-install this delegate
+            if (_currentFilter != null)
+                _currentFilter.SettingChanged -= FilterSettingChanged;
+
             BackButtonPressed?.Invoke();
         }
 
