@@ -85,7 +85,9 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 
             _filterMainViewController.SetButtonInteractivity(anyAppliedNoChanges || anyChanged, currentChanged, !currentDefault);
             _filterMainViewController.SetApplyUnapplyButton(!anyAppliedNoChanges || anyChanged);
-            _filterSideViewController.SetButtonInteractivity(anyChanged, !allDefaults);
+
+            _filterSideViewController.ClearButtonInteractable = anyChanged;
+            _filterSideViewController.DefaultButtonInteractable = !allDefaults;
             _filterSideViewController.RefreshFilterList();
         }
 
@@ -117,7 +119,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                 delegate (BeatmapDetails[] levels)
                 {
                     // on finish
-                    _filterSideViewController.SetFilterListVisibility(true);
+                    _filterSideViewController.FilterListActive = true;
 
                     if (_currentFilter != null)
                     {

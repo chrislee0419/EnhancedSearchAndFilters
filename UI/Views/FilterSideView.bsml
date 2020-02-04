@@ -17,6 +17,7 @@
                list-width="60"
                cell-size="8"
                clickable-cells="true"
+               active="filter-list-active"
                select-cell="filter-cell-selected"
                anchor-min-x="1" anchor-min-y="0"
                anchor-max-x="1" anchor-max-y="1"
@@ -127,13 +128,13 @@
                   spacing="1">
         <button text="Apply Quick Filter"
                 font-size="3"
-                interactable="~apply-quick-filter-button-interactivity"
+                interactable="~apply-quick-filter-button-interactable"
                 preferred-height="5"
                 preferred-width="30"
                 stroke-type="Clean"
                 pad="1" />
         <icon-button icon="EnhancedSearchAndFilters.Assets.cross.png"
-                     interactable="~delete-quick-filter-button-interactivity"
+                     interactable="~delete-quick-filter-button-interactable"
                      preferred-height="5"
                      preferred-width="5"
                      stroke-type="Clean"
@@ -172,12 +173,14 @@
     <button id="clear-button"
             text="Clear All Changes"
             font-size="3.6"
+            interactable="~clear-button-interactable"
             on-click="clear-button-clicked"
             preferred-width="35" preferred-height="7"
             pad="2" />
     <button id="default-button"
             text="Reset All To Defaults"
             font-size="3.3"
+            interactable="~default-button-interactable"
             on-click="default-button-clicked"
             preferred-width="35" preferred-height="7"
             pad="2" />

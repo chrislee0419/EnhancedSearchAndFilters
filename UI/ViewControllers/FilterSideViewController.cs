@@ -23,31 +23,73 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         public event Action ClearButtonPressed;
         public event Action DefaultButtonPressed;
 
-        private bool _applyQuickFilterButtonInteractibility = false;
-        [UIValue("apply-quick-filter-button-interactivity")]
-        public bool ApplyQuickFilterButtonInteractability
+        private bool _clearButtonInteractable = false;
+        [UIValue("clear-button-interactable")]
+        public bool ClearButtonInteractable
         {
-            get => _applyQuickFilterButtonInteractibility;
+            get => _clearButtonInteractable;
             set
             {
-                if (_applyQuickFilterButtonInteractibility == value)
+                if (_clearButtonInteractable == value)
                     return;
 
-                _applyQuickFilterButtonInteractibility = value;
+                _clearButtonInteractable = value;
                 NotifyPropertyChanged();
             }
         }
-        private bool _deleteQuickFilterButtonInteractivity = false;
-        [UIValue("delete-quick-filter-button-interactivity")]
-        public bool DeleteQuickFilterButtonInteractivity
+        private bool _defaultButtonInteractable = false;
+        [UIValue("default-button-interactable")]
+        public bool DefaultButtonInteractable
         {
-            get => _deleteQuickFilterButtonInteractivity;
+            get => _defaultButtonInteractable;
             set
             {
-                if (_deleteQuickFilterButtonInteractivity == value)
+                if (_defaultButtonInteractable == value)
                     return;
 
-                _deleteQuickFilterButtonInteractivity = value;
+                _defaultButtonInteractable = value;
+                NotifyPropertyChanged();
+            }
+        }
+        private bool _filterListActive = false;
+        [UIValue("filter-list-active")]
+        public bool FilterListActive
+        {
+            get => _filterListActive;
+            set
+            {
+                if (_filterListActive == value)
+                    return;
+
+                _filterListActive = value;
+                NotifyPropertyChanged();
+            }
+        }
+        private bool _applyQuickFilterButtonInteractable = false;
+        [UIValue("apply-quick-filter-button-interactable")]
+        public bool ApplyQuickFilterButtonInteractable
+        {
+            get => _applyQuickFilterButtonInteractable;
+            set
+            {
+                if (_applyQuickFilterButtonInteractable == value)
+                    return;
+
+                _applyQuickFilterButtonInteractable = value;
+                NotifyPropertyChanged();
+            }
+        }
+        private bool _deleteQuickFilterButtonInteractable = false;
+        [UIValue("delete-quick-filter-button-interactable")]
+        public bool DeleteQuickFilterButtonInteractable
+        {
+            get => _deleteQuickFilterButtonInteractable;
+            set
+            {
+                if (_deleteQuickFilterButtonInteractable == value)
+                    return;
+
+                _deleteQuickFilterButtonInteractable = value;
                 NotifyPropertyChanged();
             }
         }
@@ -179,8 +221,9 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
             SetFilterList();
 
-            SetButtonInteractivity(false, false);
-            SetFilterListVisibility(false);
+            ClearButtonInteractable = false;
+            DefaultButtonInteractable = false;
+            FilterListActive = false;
         }
 
         public void SetFilterList()
@@ -203,20 +246,6 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 return;
 
             _tableData.tableView.SelectCellWithIdx(index);
-        }
-
-        public void SetButtonInteractivity(bool clearInteractable, bool defaultInteractable)
-        {
-            _clearButton.interactable = clearInteractable;
-            _defaultButton.interactable = defaultInteractable;
-        }
-
-        public void SetFilterListVisibility(bool visible)
-        {
-            if (_tableData == null)
-                return;
-
-            _tableData.gameObject.SetActive(visible);
         }
 
         public void RefreshFilterList()
