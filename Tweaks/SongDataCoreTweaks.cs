@@ -17,36 +17,34 @@ namespace EnhancedSearchAndFilters.Tweaks
         /// </summary>
         /// <param name="level">The song's associated preview beatmap level.</param>
         /// <param name="beatmapDetails">The returned BeatmapDetails object, or null if it could not be retrieved.</param>
-        /// <returns>True, if a valid BeatmapDetails object was returned. Otherwise, false.</returns>
-        public static bool GetBeatmapDetails(CustomPreviewBeatmapLevel level, out BeatmapDetails beatmapDetails)
+        /// <returns>An enum representing success or what went wrong.</returns>
+        public static SongDataCoreDataStatus GetBeatmapDetails(CustomPreviewBeatmapLevel level, out BeatmapDetails beatmapDetails)
         {
             if (!ModLoaded)
             {
                 beatmapDetails = null;
-                return false;
+                return SongDataCoreDataStatus.NoData;
             }
 
             return _GetBeatmapDetails(level, out beatmapDetails);
         }
 
-        private static bool _GetBeatmapDetails(CustomPreviewBeatmapLevel level, out BeatmapDetails beatmapDetails)
+        private static SongDataCoreDataStatus _GetBeatmapDetails(CustomPreviewBeatmapLevel level, out BeatmapDetails beatmapDetails)
         {
             if (!IsDataAvailable ||
                 !SongDataCorePlugin.Songs.Data.Songs.TryGetValue(GetCustomLevelHash(level), out var song))
             {
                 beatmapDetails = null;
-                return false;
+                return SongDataCoreDataStatus.NoData;
             }
 
             try
             {
-                float bpm = song.bmp;
-                if (bpm < 0.0001f)
+                float bpm = song.bpm;
+                if (bpm < 0.001f)
                 {
-                    Logger.log.Warn($"Unable to acquire valid BPM for level ID '{level.levelID}' from information provided by SongDataCore");
-
                     beatmapDetails = null;
-                    return false;
+                    return SongDataCoreDataStatus.InvalidBPM;
                 }
 
                 // NOTE: since BeatSaver calculates the duration of a song using the last note (or event?) of a beatmap, instead of the using the length of the audio file,
@@ -76,57 +74,65 @@ namespace EnhancedSearchAndFilters.Tweaks
                 }
                 else
                 {
-                    Logger.log.Warn($"Unable to acquire valid song duration for level ID '{level.levelID}' from information provided by SongDataCore");
-
                     beatmapDetails = null;
-                    return false;
+                    return SongDataCoreDataStatus.InvalidDuration;
                 }
 
-                SimplifiedDifficultyBeatmapSet[] difficultyBeatmapSets = song.characteristics.Select(delegate (KeyValuePair<BeatStarCharacteristics, Dictionary<string, BeatStarSongDifficultyStats>> characteristicPair)
+                SimplifiedDifficultyBeatmapSet[] difficultyBeatmapSets;
+                try
                 {
-                    BeatStarCharacteristics loadedCharacteristicName = characteristicPair.Key;
-                    string actualCharacteristicName = loadedCharacteristicName != BeatStarCharacteristics.Unkown ? loadedCharacteristicName.ToString() : null;
-
-                    if (string.IsNullOrEmpty(actualCharacteristicName))
+                    difficultyBeatmapSets = song.characteristics.Select(delegate (KeyValuePair<BeatStarCharacteristics, Dictionary<string, BeatStarSongDifficultyStats>> characteristicPair)
                     {
-                        Logger.log.Warn($"Unable to create SimplifiedDifficultyBeatmapSet from BeatSaver data: could not parse '{loadedCharacteristicName.ToString()}' as a valid characteristic.");
-                        return new SimplifiedDifficultyBeatmapSet(null, null);
-                    }
+                        BeatStarCharacteristics loadedCharacteristicName = characteristicPair.Key;
+                        string actualCharacteristicName = loadedCharacteristicName != BeatStarCharacteristics.Unkown ? loadedCharacteristicName.ToString() : null;
 
-                    SimplifiedDifficultyBeatmap[] difficultyBeatmaps = characteristicPair.Value.Where(x => x.Value != null).Select(delegate (KeyValuePair<string, BeatStarSongDifficultyStats> difficultyPair)
-                    {
-                        // this will throw an exception (that will be caught) if the difficulty name cannot be parsed
-                        var diffString = difficultyPair.Key == "Expert+" ? "ExpertPlus" : difficultyPair.Key;
-                        var diff = (BeatmapDifficulty)Enum.Parse(typeof(BeatmapDifficulty), diffString);
+                        if (string.IsNullOrEmpty(actualCharacteristicName))
+                        {
+                            Logger.log.Debug($"Unable to create SimplifiedDifficultyBeatmapSet from BeatSaver data: could not parse '{loadedCharacteristicName.ToString()}' as a valid characteristic.");
+                            return new SimplifiedDifficultyBeatmapSet(null, null);
+                        }
 
-                        BeatStarSongDifficultyStats data = difficultyPair.Value;
+                        SimplifiedDifficultyBeatmap[] difficultyBeatmaps = characteristicPair.Value.Where(x => x.Value != null).Select(delegate (KeyValuePair<string, BeatStarSongDifficultyStats> difficultyPair)
+                        {
+                            // this will throw an exception (that will be caught) if the difficulty name cannot be parsed
+                            var diffString = difficultyPair.Key == "Expert+" ? "ExpertPlus" : difficultyPair.Key;
+                            var diff = (BeatmapDifficulty)Enum.Parse(typeof(BeatmapDifficulty), diffString);
 
-                        // NOTE: from my testing, the parsed NJS could be 0, so that should be fixed by loading the details stored locally
-                        return new SimplifiedDifficultyBeatmap(diff, Convert.ToSingle(data.njs), data.nts, data.bmb, data.obs, 0);
+                            BeatStarSongDifficultyStats data = difficultyPair.Value;
+
+                            // NOTE: from my testing, the parsed NJS could be 0, so that should be fixed by loading the details stored locally
+                            return new SimplifiedDifficultyBeatmap(diff, Convert.ToSingle(data.njs), data.nts, data.bmb, data.obs, 0);
+                        }).ToArray();
+
+                        return new SimplifiedDifficultyBeatmapSet(actualCharacteristicName, difficultyBeatmaps);
                     }).ToArray();
-
-                    return new SimplifiedDifficultyBeatmapSet(actualCharacteristicName, difficultyBeatmaps);
-                }).ToArray();
+                }
+                catch (ArgumentException)
+                {
+                    // NOTE: this exception should only be able to be thrown when parsing BeatmapDifficulty,
+                    //       but that may change if the above function is changed in the future
+                    beatmapDetails = null;
+                    return SongDataCoreDataStatus.InvalidDifficultyString;
+                }
 
                 // if there were any errors during the creation of the SimplifiedDifficultyBeatmapSet objects, do not create a BeatmapDetails object from it
+                // currently, the only error we need to check for here is if the characteristic name is invalid
                 if (difficultyBeatmapSets.Any(x => string.IsNullOrEmpty(x.CharacteristicName) || x.DifficultyBeatmaps == null))
                 {
-                    Logger.log.Warn("Error occurred when attempting to create SimplifiedDifficultyBeatmapSet array from object stored in SongDataCore (could not create BeatmapDetails object).");
-
                     beatmapDetails = null;
-                    return false;
+                    return SongDataCoreDataStatus.InvalidCharacteristicString;
                 }
 
                 beatmapDetails = new BeatmapDetails(level.levelID, level.songName, bpm, duration, difficultyBeatmapSets);
-                return true;
+                return SongDataCoreDataStatus.Success;
             }
             catch (Exception e)
             {
-                Logger.log.Warn($"Unable to create BeatmapDetails object for level ID '{level.levelID}' from information provided by SongDataCore");
+                Logger.log.Debug($"Exception thrown when trying to create BeatmapDetails object for level ID '{level.levelID}' from information provided by SongDataCore");
                 Logger.log.Debug(e);
 
                 beatmapDetails = null;
-                return false;
+                return SongDataCoreDataStatus.ExceptionThrown;
             }
         }
 
@@ -185,5 +191,16 @@ namespace EnhancedSearchAndFilters.Tweaks
         private static string GetCustomLevelHash(CustomPreviewBeatmapLevel level) => GetCustomLevelHash(level.levelID);
 
         private static string GetCustomLevelHash(string levelID) => BeatmapDetailsLoader.GetSimplifiedLevelID(levelID).Substring(CustomLevelLoader.kCustomLevelPrefixId.Length);
+    }
+
+    internal enum SongDataCoreDataStatus
+    {
+        Success,
+        NoData,
+        InvalidBPM,
+        InvalidDuration,
+        InvalidCharacteristicString,
+        InvalidDifficultyString,
+        ExceptionThrown
     }
 }

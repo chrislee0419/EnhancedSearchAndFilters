@@ -9,6 +9,7 @@ using System.Linq;
 using UnityEngine;
 using SongCore;
 using BS_Utils.Utilities;
+using EnhancedSearchAndFilters.Tweaks;
 
 namespace EnhancedSearchAndFilters.SongData
 {
@@ -322,6 +323,9 @@ namespace EnhancedSearchAndFilters.SongData
                     allLevels.AddRange(folder.Levels.Values);
             }
 
+            // record errors from SongDataCore for logging
+            List<SongDataCoreDataStatus> sdcErrorStatuses = new List<SongDataCoreDataStatus>(allLevels.Count);
+
             List<Task> taskList = new List<Task>(WorkChunkSize);
             int index = 0;
             while (index < allLevels.Count)
@@ -337,7 +341,9 @@ namespace EnhancedSearchAndFilters.SongData
 
                     if (!_cache.ContainsKey(levelID) || _cache[levelID].SongDuration == 0f)
                     {
-                        if (Tweaks.SongDataCoreTweaks.GetBeatmapDetails(allLevels[index] as CustomPreviewBeatmapLevel, out var beatmapDetails))
+                        SongDataCoreDataStatus status = SongDataCoreTweaks.GetBeatmapDetails(allLevels[index] as CustomPreviewBeatmapLevel, out var beatmapDetails);
+
+                        if (status == SongDataCoreDataStatus.Success)
                         {
                             // load the beatmap details manually if some data from BeatSaver is incomplete
                             if (beatmapDetails.DifficultyBeatmapSets.Any(set => set.DifficultyBeatmaps.Any(diff => diff.NoteJumpMovementSpeed == 0)))
@@ -354,6 +360,9 @@ namespace EnhancedSearchAndFilters.SongData
                         }
                         else
                         {
+                            if (SongDataCoreTweaks.ModLoaded)
+                                sdcErrorStatuses.Add(status);
+
                             taskList.Add(CacheCustomBeatmapDetailsAsync(allLevels[index] as CustomPreviewBeatmapLevel));
                             ++i;
                         }
@@ -366,12 +375,27 @@ namespace EnhancedSearchAndFilters.SongData
 
             sw.Stop();
             Logger.log.Info($"Finished caching the details of {allLevels.Count} beatmaps (took {sw.ElapsedMilliseconds/1000f} seconds).");
+
+            if (sdcErrorStatuses.Count > 0)
+            {
+                // NOTE: this will need to be updated if i ever add more error status markers
+                Logger.log.Debug($"Unable to retrieve some data from SongDataCore: (" +
+                    $"NoData = {sdcErrorStatuses.Count(x => x == SongDataCoreDataStatus.NoData)}, " +
+                    $"InvalidBPM = {sdcErrorStatuses.Count(x => x == SongDataCoreDataStatus.InvalidBPM)}, " +
+                    $"InvalidDuration = {sdcErrorStatuses.Count(x => x == SongDataCoreDataStatus.InvalidDuration)}, " +
+                    $"InvalidCharacteristicString = {sdcErrorStatuses.Count(x => x == SongDataCoreDataStatus.InvalidCharacteristicString)}, " +
+                    $"InvalidDifficultyString = {sdcErrorStatuses.Count(x => x == SongDataCoreDataStatus.InvalidDifficultyString)}, " +
+                    $"ExceptionThrown = {sdcErrorStatuses.Count(x => x == SongDataCoreDataStatus.ExceptionThrown)})");
+            }
         }
 
         private async Task GetBeatmapLevelsAsync()
         {
             List<Task<Tuple<int, BeatmapDetails>>> taskList = new List<Task<Tuple<int, BeatmapDetails>>>(WorkChunkSize);
             _loadedLevelsUnsorted = new List<Tuple<int, BeatmapDetails>>(_levels.Length);
+
+            // record errors from SongDataCore for logging
+            List<SongDataCoreDataStatus> sdcErrorStatuses = new List<SongDataCoreDataStatus>(_levels.Length);
 
             var sw = System.Diagnostics.Stopwatch.StartNew();
 
@@ -393,7 +417,8 @@ namespace EnhancedSearchAndFilters.SongData
                     }
                     else if (level is CustomPreviewBeatmapLevel customLevel)
                     {
-                        if (Tweaks.SongDataCoreTweaks.GetBeatmapDetails(customLevel, out var beatmapDetails))
+                        SongDataCoreDataStatus status = SongDataCoreTweaks.GetBeatmapDetails(customLevel, out var beatmapDetails);
+                        if (status == SongDataCoreDataStatus.Success)
                         {
                             // load the beatmap details manually if some data from BeatSaver is incomplete
                             if (beatmapDetails.DifficultyBeatmapSets.Any(set => set.DifficultyBeatmaps.Any(diff => diff.NoteJumpMovementSpeed == 0)))
@@ -410,6 +435,9 @@ namespace EnhancedSearchAndFilters.SongData
                         }
                         else
                         {
+                            if (SongDataCoreTweaks.ModLoaded)
+                                sdcErrorStatuses.Add(status);
+
                             taskList.Add(GetCustomBeatmapDetailsAsync(customLevel, index));
                             ++i;
                         }
@@ -437,6 +465,18 @@ namespace EnhancedSearchAndFilters.SongData
 
             sw.Stop();
             Logger.log.Debug($"Finished loading the details of {_loadedLevelsUnsorted.Count} beatmaps (took {sw.ElapsedMilliseconds/1000f} seconds)");
+
+            if (sdcErrorStatuses.Count > 0)
+            {
+                // NOTE: this will need to be updated if i ever add more error status markers
+                Logger.log.Debug($"Unable to retrieve some data from SongDataCore: (" +
+                    $"NoData = {sdcErrorStatuses.Count(x => x == SongDataCoreDataStatus.NoData)}, " +
+                    $"InvalidBPM = {sdcErrorStatuses.Count(x => x == SongDataCoreDataStatus.InvalidBPM)}, " +
+                    $"InvalidDuration = {sdcErrorStatuses.Count(x => x == SongDataCoreDataStatus.InvalidDuration)}, " +
+                    $"InvalidCharacteristicString = {sdcErrorStatuses.Count(x => x == SongDataCoreDataStatus.InvalidCharacteristicString)}, " +
+                    $"InvalidDifficultyString = {sdcErrorStatuses.Count(x => x == SongDataCoreDataStatus.InvalidDifficultyString)}, " +
+                    $"ExceptionThrown = {sdcErrorStatuses.Count(x => x == SongDataCoreDataStatus.ExceptionThrown)})");
+            }
 
             // all beatmaps are loaded, sort to maintain order
             _loadedLevelsUnsorted.Sort((x, y) => x.Item1 - y.Item1);
