@@ -8,6 +8,8 @@ _**If you have any suggestions or found any bugs**_, please report it [here](htt
 
 ## Features
 
+- Song Sorting
+     - Sort your songs by how recently you downloaded it or by your play count
 - Search
      - Auto-refreshing search results
        - Now you don't have to enter the whole title of a song and hope it appears in the search results! You can see what songs match as you're typing it in.
