@@ -72,12 +72,13 @@ namespace EnhancedSearchAndFilters
 #pragma warning disable CS0618 // remove PluginManager.Plugins is obsolete warning
             SongBrowserTweaks.ModLoaded = IPAPluginManager.GetPluginFromId("SongBrowser") != null || IPAPluginManager.GetPlugin("Song Browser") != null || IPAPluginManager.Plugins.Any(x => x.Name == "Song Browser");
             SongDataCoreTweaks.ModLoaded = IPAPluginManager.GetPluginFromId("SongDataCore") != null;
+            SongDataCoreTweaks.ModVersion = IPAPluginManager.GetPluginFromId("SongDataCore")?.Metadata.Version;
 #pragma warning restore CS0618
 
             if (SongBrowserTweaks.ModLoaded)
                 Logger.log.Debug("SongBrowser detected");
             if (SongDataCoreTweaks.ModLoaded)
-                Logger.log.Debug("SongDataCore detected");
+                Logger.log.Debug($"SongDataCore detected (Is correct version = {SongDataCoreTweaks.IsModAvailable})");
 
             // reset initialization status if settings were applied
             SongBrowserTweaks.Initialized = false;

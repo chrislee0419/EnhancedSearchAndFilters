@@ -17,7 +17,7 @@ namespace EnhancedSearchAndFilters.Filters
 
         public string Name { get { return "Ranked Songs (PP)"; } }
         [UIValue("is-available")]
-        public bool IsAvailable { get { return Tweaks.SongDataCoreTweaks.ModLoaded; } }
+        public bool IsAvailable { get { return Tweaks.SongDataCoreTweaks.IsModAvailable; } }
         public FilterStatus Status
         {
             get

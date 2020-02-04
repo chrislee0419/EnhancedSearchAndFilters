@@ -1,16 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using SemVer;
+using SongDataCore.BeatStar;
 using EnhancedSearchAndFilters.SongData;
 using SongDataCorePlugin = SongDataCore.Plugin;
-using SongDataCore.BeatStar;
+using Version = SemVer.Version;
 
 namespace EnhancedSearchAndFilters.Tweaks
 {
     internal static class SongDataCoreTweaks
     {
         public static bool ModLoaded { get; set; } = false;
+        public static Version ModVersion { get; set; }
+        public static bool IsModAvailable
+        {
+            get
+            {
+                try
+                {
+                    return ModLoaded && ValidVersionRange.IsSatisfied(ModVersion);
+                }
+                catch (NullReferenceException)
+                {
+                    return false;
+                }
+            }
+        }
         public static bool IsDataAvailable => SongDataCorePlugin.Songs?.IsDataAvailable() ?? false;
+
+        private static readonly Range ValidVersionRange = new Range("^1.3.0");
 
         /// <summary>
         /// Get the BeatmapDetails associated with a specific levelID from data retrieved by SongDataCore.BeatSaver.
@@ -20,7 +39,7 @@ namespace EnhancedSearchAndFilters.Tweaks
         /// <returns>An enum representing success or what went wrong.</returns>
         public static SongDataCoreDataStatus GetBeatmapDetails(CustomPreviewBeatmapLevel level, out BeatmapDetails beatmapDetails)
         {
-            if (!ModLoaded)
+            if (!IsModAvailable)
             {
                 beatmapDetails = null;
                 return SongDataCoreDataStatus.NoData;
@@ -144,7 +163,7 @@ namespace EnhancedSearchAndFilters.Tweaks
         /// <returns>True, if the song is ranked. Otherwise, false.</returns>
         public static bool IsRanked(string levelID, out float[] ppList)
         {
-            if (!ModLoaded)
+            if (!IsModAvailable)
             {
                 ppList = null;
                 return false;
@@ -173,7 +192,7 @@ namespace EnhancedSearchAndFilters.Tweaks
         /// <returns>A list of Tuples containing difficulty name/star rating pairs.</returns>
         public static Tuple<string, double>[] GetStarDifficultyRating(string levelID)
         {
-            if (!ModLoaded)
+            if (!IsModAvailable)
                 return null;
 
             return _GetStarDifficultyRating(levelID);

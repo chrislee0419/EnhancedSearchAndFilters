@@ -360,7 +360,7 @@ namespace EnhancedSearchAndFilters.SongData
                         }
                         else
                         {
-                            if (SongDataCoreTweaks.ModLoaded)
+                            if (SongDataCoreTweaks.IsModAvailable)
                                 sdcErrorStatuses.Add(status);
 
                             taskList.Add(CacheCustomBeatmapDetailsAsync(allLevels[index] as CustomPreviewBeatmapLevel));
@@ -435,7 +435,7 @@ namespace EnhancedSearchAndFilters.SongData
                         }
                         else
                         {
-                            if (SongDataCoreTweaks.ModLoaded)
+                            if (SongDataCoreTweaks.IsModAvailable)
                                 sdcErrorStatuses.Add(status);
 
                             taskList.Add(GetCustomBeatmapDetailsAsync(customLevel, index));

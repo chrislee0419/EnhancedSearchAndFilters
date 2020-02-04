@@ -16,7 +16,7 @@ namespace EnhancedSearchAndFilters.Filters
         public event Action SettingChanged;
         public string Name { get { return "Star Rating"; } }
         [UIValue("is-available")]
-        public bool IsAvailable { get { return Tweaks.SongDataCoreTweaks.ModLoaded; } }
+        public bool IsAvailable { get { return Tweaks.SongDataCoreTweaks.IsModAvailable; } }
         public FilterStatus Status
         {
             get
@@ -226,7 +226,7 @@ namespace EnhancedSearchAndFilters.Filters
 
         public void FilterSongList(ref List<BeatmapDetails> detailsList)
         {
-            if (!Tweaks.SongDataCoreTweaks.ModLoaded || (!_minEnabledAppliedValue && !_maxEnabledAppliedValue))
+            if (!Tweaks.SongDataCoreTweaks.IsModAvailable || (!_minEnabledAppliedValue && !_maxEnabledAppliedValue))
                 return;
 
             for (int i = 0; i < detailsList.Count;)
