@@ -275,12 +275,17 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             RectTransform statsPanel = _standardLevelDetailView.GetComponentsInChildren<RectTransform>(true).First(x => x.name == "Stats");
             statsPanel.gameObject.SetActive(true);
 
-            RectTransform original = statsPanel.GetComponentsInChildren<RectTransform>(true).First(x => x.name == "Highscore");
-            Instantiate(original, statsPanel.transform, false);
-            Instantiate(original, statsPanel.transform, false);
+            Func<RectTransform, bool> getStatsRectTransforms = x => x.name != "Stats" && x.name != "Title" && x.name != "Value";
 
-            RectTransform[] rectTransforms = statsPanel.GetComponentsInChildren<RectTransform>(true)
-                .Where(x => x.name != "Stats" && x.name != "Title" && x.name != "Value").ToArray();
+            // ensure that there are only 5 stats rect transforms, representing each difficulty
+            // another mod could add/remove these, which would mess up the layout for our use
+            RectTransform original = statsPanel.GetComponentsInChildren<RectTransform>(true).First(x => x.name == "Highscore");
+            while (statsPanel.GetComponentsInChildren<RectTransform>(true).Count(getStatsRectTransforms) < _difficultyStrings.Length)
+                Instantiate(original, statsPanel.transform, false);
+            while (statsPanel.GetComponentsInChildren<RectTransform>(true).Count(getStatsRectTransforms) > _difficultyStrings.Length)
+                Destroy(statsPanel.GetComponentsInChildren<RectTransform>(true).First(getStatsRectTransforms));
+
+            RectTransform[] rectTransforms = statsPanel.GetComponentsInChildren<RectTransform>(true).Where(getStatsRectTransforms).ToArray();
 
             float width = 16f;      // parent width = 80u
             float height = 8f;      // parent height = 9u
