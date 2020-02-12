@@ -35,6 +35,9 @@ namespace EnhancedSearchAndFilters.Filters
             }
         }
 
+        public static bool AnyApplied => CurrentFilterList.Any(x => x.IsFilterApplied);
+        public static bool AnyChanged => CurrentFilterList.Any(x => x.HasChanges);
+
         private static readonly IFilter[] DefaultFilters =
         {
             new DifficultyFilter(),

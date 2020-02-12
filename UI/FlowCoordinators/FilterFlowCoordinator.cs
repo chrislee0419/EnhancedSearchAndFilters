@@ -78,7 +78,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
         private void RefreshUI()
         {
             bool anyAppliedNoChanges = FilterList.ActiveFilters.Any(x => x.Status == FilterStatus.Applied);
-            bool anyChanged = FilterList.ActiveFilters.Any(x => x.HasChanges);
+            bool anyChanged = FilterList.AnyChanged;
             bool allDefaults = FilterList.ActiveFilters.All(x => x.IsStagingDefaultValues);
             bool currentChanged = _currentFilter.HasChanges;
             bool currentDefault = _currentFilter.IsStagingDefaultValues;
