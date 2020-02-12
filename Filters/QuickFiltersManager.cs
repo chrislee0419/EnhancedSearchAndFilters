@@ -54,7 +54,19 @@ namespace EnhancedSearchAndFilters.Filters
 
     internal class QuickFilter
     {
-        public string Name { get; set; }
+        private string _name;
+        public string Name
+        {
+            get => _name;
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException("value", "A quick filter cannot have a 'null' name.");
+                else if (value.Length > MaxNameLength)
+                    throw new ArgumentException($"A quick filter cannot have a name longer than '{MaxNameLength}'.", "value");
+                _name = value;
+            }
+        }
         public List<FilterSettings> Filters { get; set; }
 
         private const char EscapeCharacter = '~';
@@ -63,6 +75,8 @@ namespace EnhancedSearchAndFilters.Filters
 
         private const char FilterListStartCharacter = ';';
         private const char FilterListSeparatorCharacter = '|';
+
+        public const int MaxNameLength = 20;
 
         public QuickFilter()
         {
@@ -308,11 +322,11 @@ namespace EnhancedSearchAndFilters.Filters
             filterSettings.Name = name.ToString();
 
             // parse filter settings
-            int endCharPos = settingsString.IndexOf(SettingsListEndCharacter, SettingsListStartCharacter);
+            int endCharPos = settingsString.IndexOf(SettingsListEndCharacter, startCharPos);
             if (endCharPos < 0)
                 return null;
 
-            string[] settings = settingsString.Substring(startCharPos + 1, endCharPos - startCharPos).Split(SettingsListSeparatorCharacter);
+            string[] settings = settingsString.Substring(startCharPos + 1, endCharPos - startCharPos - 1).Split(SettingsListSeparatorCharacter);
             foreach (var setting in settings)
             {
                 var kv = FilterSettingsKeyValuePair.FromString(setting);
