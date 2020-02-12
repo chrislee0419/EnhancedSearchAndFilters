@@ -75,7 +75,7 @@ namespace EnhancedSearchAndFilters.Filters
             set
             {
                 if (string.IsNullOrEmpty(value) || !AlphanumericRegex.IsMatch(value))
-                    throw new ArgumentException("The key of a filter setting should only contain alphanumeric characters.");
+                    throw new ArgumentException($"The key of a filter setting should only contain alphanumeric characters (got '{value ?? "null"}').");
 
                 _key = value;
             }
@@ -87,7 +87,7 @@ namespace EnhancedSearchAndFilters.Filters
             set
             {
                 if (string.IsNullOrEmpty(value) || !AlphanumericRegex.IsMatch(value))
-                    throw new ArgumentException("The value of a filter setting should only contain alphanumeric characters.");
+                    throw new ArgumentException($"The value of a filter setting should only contain alphanumeric characters (got '{value ?? "null"}').");
 
                 _value = value;
             }
@@ -100,6 +100,12 @@ namespace EnhancedSearchAndFilters.Filters
         {
             Key = key;
             Value = value.ToString();
+        }
+
+        public FilterSettingsKeyValuePair(string key, string value)
+        {
+            Key = key;
+            Value = value;
         }
 
         /// <summary>
