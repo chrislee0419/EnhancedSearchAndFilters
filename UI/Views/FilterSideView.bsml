@@ -112,20 +112,23 @@
       <modal show-event="show-quick-filter-list-modal"
              hide-event="hide-quick-filter-list-modal"
              click-off-closes="true"
-             size-delta-x="52" size-delta-y="70">
+             size-delta-x="64" size-delta-y="70">
         <vertical pad="1">
+          <text text="Saved Quick Filters"
+                font-align="Center"
+                font-size="4.5" />
           <page-button direction="Up"
                        preferred-height="6"
-                       preferred-width="50"
+                       preferred-width="60"
                        click-event="quick-filter-list#PageUp" />
           <list id="quick-filter-list"
                 list-style="Simple"
-                cell-size="6"
-                list-width="50"
+                cell-size="7"
+                list-width="60"
                 select-cell="quick-filter-list-cell-selected" />
           <page-button direction="Down"
                        preferred-height="6"
-                       preferred-width="50"
+                       preferred-width="60"
                        click-event="quick-filter-list#PageDown" />
         </vertical>
       </modal>
