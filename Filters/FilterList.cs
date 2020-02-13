@@ -79,5 +79,22 @@ namespace EnhancedSearchAndFilters.Filters
 
             FilterListChanged?.Invoke();
         }
+
+        /// <summary>
+        /// Change the staging values in each filter according to the settings saved to the provided QuickFilter.
+        /// </summary>
+        /// <param name="quickFilter">A QuickFilter containing the saved filter settings.</param>
+        internal static void ApplyQuickFilter(QuickFilter quickFilter)
+        {
+            foreach (var filter in CurrentFilterList)
+            {
+                var filterSettings = quickFilter.Filters.FirstOrDefault(x => x.Name == filter.Name);
+
+                if (filterSettings != null)
+                    filter.SetStagingValuesFromPairs(filterSettings.Settings);
+                else
+                    filter.SetDefaultValuesToStaging();
+            }
+        }
     }
 }

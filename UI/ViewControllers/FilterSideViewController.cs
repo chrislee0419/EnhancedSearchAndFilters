@@ -1,15 +1,19 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using HMUI;
 using BeatSaberMarkupLanguage.Components;
+using BeatSaberMarkupLanguage.Components.Settings;
 using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.Parser;
 using BeatSaberMarkupLanguage.ViewControllers;
 using EnhancedSearchAndFilters.Filters;
 using EnhancedSearchAndFilters.UI.Components;
+using Image = UnityEngine.UI.Image;
+using UIUtilities = EnhancedSearchAndFilters.UI.Utilities;
 
 namespace EnhancedSearchAndFilters.UI.ViewControllers
 {
@@ -22,6 +26,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         public event Action<IFilter> FilterSelected;
         public event Action ClearButtonPressed;
         public event Action DefaultButtonPressed;
+        public event Action<QuickFilter> QuickFilterApplied;
 
         private bool _clearButtonInteractable = false;
         [UIValue("clear-button-interactable")]
@@ -65,6 +70,62 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 NotifyPropertyChanged();
             }
         }
+        private bool _quickFilterSectionActive = false;
+        [UIValue("quick-filter-section-active")]
+        public bool QuickFilterSectionActive
+        {
+            get => _quickFilterSectionActive;
+            set
+            {
+                if (_quickFilterSectionActive == value)
+                    return;
+
+                _quickFilterSectionActive = value;
+                NotifyPropertyChanged();
+            }
+        }
+        private string _quickFilterDropdownTextValue = QuickFilterDropdownEmptyText;
+        [UIValue("quick-filter-dropdown-text-value")]
+        public string QuickFilterDropdownTextValue
+        {
+            get => _quickFilterDropdownTextValue;
+            set
+            {
+                if (_quickFilterDropdownTextValue == value)
+                    return;
+
+                _quickFilterDropdownTextValue = value;
+                NotifyPropertyChanged();
+            }
+        }
+        private string _deleteQuickFilterModalTextValue = "";
+        [UIValue("delete-quick-filter-modal-text-value")]
+        public string DeleteQuickFilterModalTextValue
+        {
+            get => _deleteQuickFilterModalTextValue;
+            set
+            {
+                if (_deleteQuickFilterModalTextValue == value)
+                    return;
+
+                _deleteQuickFilterModalTextValue = value;
+                NotifyPropertyChanged();
+            }
+        }
+        private string _saveQuickFilterModalWarningText = "";
+        [UIValue("save-quick-filter-modal-warning-text")]
+        public string SaveQuickFilterModalWarningText
+        {
+            get => _saveQuickFilterModalWarningText;
+            set
+            {
+                if (_saveQuickFilterModalWarningText == value)
+                    return;
+
+                _saveQuickFilterModalWarningText = value;
+                NotifyPropertyChanged();
+            }
+        }
         private bool _applyQuickFilterButtonInteractable = false;
         [UIValue("apply-quick-filter-button-interactable")]
         public bool ApplyQuickFilterButtonInteractable
@@ -93,9 +154,71 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 NotifyPropertyChanged();
             }
         }
+        private bool _saveQuickFilterButtonInteractable = false;
+        [UIValue("save-quick-filter-button-interactable")]
+        public bool SaveQuickFilterButtonInteractable
+        {
+            get => _saveQuickFilterButtonInteractable;
+            set
+            {
+                if (_saveQuickFilterButtonInteractable == value)
+                    return;
+
+                _saveQuickFilterButtonInteractable = value;
+                NotifyPropertyChanged();
+            }
+        }
+        private bool _modalSaveQuickFilterButtonInteractable = false;
+        [UIValue("modal-save-quick-filter-button-interactable")]
+        public bool ModalSaveQuickFilterButtonInteractable
+        {
+            get => _modalSaveQuickFilterButtonInteractable;
+            set
+            {
+                if (_modalSaveQuickFilterButtonInteractable == value)
+                    return;
+
+                _modalSaveQuickFilterButtonInteractable = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        private QuickFilter _selectedQuickFilter = null;
+        private QuickFilter SelectedQuickFilter
+        {
+            get => _selectedQuickFilter;
+            set
+            {
+                _selectedQuickFilter = value;
+
+                if (value == null)
+                {
+                    QuickFilterDropdownTextValue = QuickFilterDropdownEmptyText;
+                    ApplyQuickFilterButtonInteractable = false;
+                    DeleteQuickFilterButtonInteractable = false;
+                }
+                else
+                {
+                    var textWidth = _quickFilterDropdownText.GetPreferredValues(value.Name).x;
+                    string name;
+
+                    // NOTE: no idea why, but the returned textWidth is a tenth of what it should be
+                    if (textWidth > 2.8f)
+                        name = $"<size={(280f / textWidth).ToString("N0")}%>" + value.Name + "</size>";
+                    else
+                        name = value.Name;
+
+                    QuickFilterDropdownTextValue = name;
+                    ApplyQuickFilterButtonInteractable = true;
+                    DeleteQuickFilterButtonInteractable = true;
+                }
+            }
+        }
 
         [UIValue("filter-cell-list")]
         private List<object> _filterCellList = new List<object>();
+        [UIValue("quick-filter-name")]
+        private string _quickFilterName = "";
 
 #pragma warning disable CS0649
         [UIComponent("clear-button")]
@@ -103,19 +226,27 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         [UIComponent("default-button")]
         private Button _defaultButton;
         [UIComponent("filter-list")]
-        private CustomCellListTableData _tableData;
+        private CustomCellListTableData _filterListTableData;
 
         [UIObject("quick-filter-dropdown-container")]
         private GameObject _quickFilterDropdownContainer;
 
-        [UIComponent("quick-filter-dropdown-text")]
-        private TextMeshProUGUI _quickFilterDropdownText;
         [UIComponent("quick-filter-list")]
         private CustomListTableData _quickFilterTableData;
-#pragma warning restore CS0649
+        [UIComponent("quick-filter-dropdown-text")]
+        private TextMeshProUGUI _quickFilterDropdownText;
+        [UIComponent("dropdown-chevron")]
+        private RawImage _dropdownChevron;
+        [UIComponent("quick-filter-name-setting")]
+        private StringSetting _quickFilterNameSetting;
+        [UIComponent("delete-quick-filter-modal-text")]
+        private TextMeshProUGUI _deleteQuickFilterModalText;
 
         [UIParams]
         private BSMLParserParams _parserParams;
+#pragma warning restore CS0649
+
+        private Image _quickFilterDropdownImage;
 
         [UIValue("legend-text")]
         private const string LegendText =
@@ -124,8 +255,10 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             "<color=#FFFF55>Yellow</color>  -  Not applied, but has changes\n" +
             "<color=#55FF55>Green</color>  -  Applied\n" +
             "<color=#55AAFF>Blue</color>  -  Applied, but has changes";
+
         [UIValue("save-quick-filter-button-text")]
         private const string SaveQuickFilterButtonText = "Save Settings\nTo Quick Filter";
+        private const string QuickFilterDropdownEmptyText = "<color=#FF9999>None Available</color>";
 
         private class FilterTableCell
         {
@@ -204,28 +337,30 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             {
                 this.name = "FilterSideViewController";
 
-                _tableData.gameObject.GetComponentInChildren<ScrollRect>().vertical = false;
+                _filterListTableData.gameObject.GetComponentInChildren<ScrollRect>().vertical = false;
+                _dropdownChevron.color = UIUtilities.LightBlueElementColour;
 
-                var eventHandler = _quickFilterDropdownContainer.AddComponent<EnterExitEventHandler>();
-                eventHandler.PointerEntered += delegate ()
-                {
-                    Logger.log.Warn("pointer entered quick filter dropdown container");
-                    // TODO: do something with the background and text
-                };
-                eventHandler.PointerExited += delegate ()
-                {
-                    Logger.log.Warn("pointer exited quick filter dropdown container");
-                    // TODO: do somoething with the background and text
-                };
+                _quickFilterDropdownImage = _quickFilterDropdownContainer.GetComponentsInChildren<Image>().First();
+
+                var enterExitEventHandler = _quickFilterDropdownContainer.AddComponent<EnterExitEventHandler>();
+                var clickEventHandler = _quickFilterDropdownContainer.AddComponent<ClickEventHandler>();
+                enterExitEventHandler.PointerEntered += () => _quickFilterDropdownImage.color = UIUtilities.LightBlueHighlightedColour;
+                enterExitEventHandler.PointerExited += () => _quickFilterDropdownImage.color = UIUtilities.RoundRectDefaultColour;
+                clickEventHandler.PointerClicked += OnQuickFilterDropdownClicked;
             }
 
             SetFilterList();
+            CheckSelectedQuickFilter();
 
             ClearButtonInteractable = false;
             DefaultButtonInteractable = false;
             FilterListActive = false;
+            SaveQuickFilterButtonInteractable = QuickFiltersManager.HasSlotsAvailable;
         }
 
+        /// <summary>
+        /// Set the global list of filters to the filter list TableView.
+        /// </summary>
         public void SetFilterList()
         {
             _filterCellList.Clear();
@@ -233,28 +368,94 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             foreach (var filter in FilterList.ActiveFilters)
                 _filterCellList.Add(new FilterTableCell(filter));
 
-            if (_tableData != null)
+            if (_filterListTableData != null)
             {
-                _tableData.data = _filterCellList;
-                _tableData.tableView.ReloadData();
+                _filterListTableData.data = _filterCellList;
+                _filterListTableData.tableView.ReloadData();
             }
         }
 
-        public void SelectCell(int index)
+        /// <summary>
+        /// Select a filter on the TableView by index.
+        /// </summary>
+        /// <param name="index">Index of filter.</param>
+        public void SelectFilterCell(int index)
         {
-            if (_tableData == null || index < 0 || index >= _filterCellList.Count)
+            if (_filterListTableData == null || index < 0 || index >= _filterCellList.Count)
                 return;
 
-            _tableData.tableView.SelectCellWithIdx(index);
+            _filterListTableData.tableView.SelectCellWithIdx(index);
         }
 
-        public void RefreshFilterList()
+        /// <summary>
+        /// Refresh filter status image on every cell in the TableView.
+        /// </summary>
+        public void RefreshFilterListCellContent()
         {
             foreach (var cell in _filterCellList)
                 (cell as FilterTableCell).RefreshCellContent();
-
         }
 
+        public void HideModals()
+        {
+            if (_parserParams == null)
+                return;
+
+            // hide string setting keyboard modal
+            if (_quickFilterNameSetting != null)
+                _quickFilterNameSetting.modalKeyboard.modalView.Hide(true);
+
+            _parserParams.EmitEvent("hide-save-quick-filter-modal,hide-quick-filter-list-modal,hide-delete-quick-filter-modal");
+        }
+
+        /// <summary>
+        /// Refresh quick filters TableView in selection modal.
+        /// </summary>
+        private void RefreshQuickFiltersList()
+        {
+            if (_quickFilterTableData == null)
+                return;
+            else if (_quickFilterTableData.data == null)
+                _quickFilterTableData.data = new List<CustomListTableData.CustomCellInfo>(QuickFiltersManager.NumberOfSlots);
+
+            _quickFilterTableData.data.Clear();
+
+            foreach (var quickFilter in QuickFiltersManager.QuickFiltersList)
+                _quickFilterTableData.data.Add(new CustomListTableData.CustomCellInfo(quickFilter.Name));
+
+            _quickFilterTableData.tableView.ReloadData();
+        }
+
+        /// <summary>
+        /// Checks for nulls and sets the selected quick filter if necessary.
+        /// </summary>
+        private void CheckSelectedQuickFilter()
+        {
+            if (QuickFiltersManager.QuickFiltersList.Count > 0)
+            {
+                if (_selectedQuickFilter == null || !QuickFiltersManager.QuickFiltersList.Contains(_selectedQuickFilter))
+                    SelectedQuickFilter = QuickFiltersManager.QuickFiltersList.First();
+            }
+            else
+            {
+                SelectedQuickFilter = null;
+            }
+        }
+
+        /// <summary>
+        /// Set warning text on quick filter creation modal depending on whether filters are applied/changed.
+        /// </summary>
+        private void SetDefaultSaveQuickFilterWarningText()
+        {
+            if (!FilterList.AnyApplied)
+                SaveQuickFilterModalWarningText = "No filters are currently applied!";
+            else if (FilterList.AnyChanged)
+                SaveQuickFilterModalWarningText = "There are unapplied changes to your filter settings!";
+            else
+                SaveQuickFilterModalWarningText = "";
+        }
+
+        #region BSML Actions
         [UIAction("filter-cell-selected")]
         private void FilterCellSelected(TableView tableView, object selectedCell)
         {
@@ -276,19 +477,137 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         }
 
         [UIAction("quick-filter-dropdown-clicked")]
-        private void OnQuickFilterDropdownButtonClicked()
+        private void OnQuickFilterDropdownClicked()
         {
-            Logger.log.Warn("quick filter dropdown clicked");
-            // TODO
+            RefreshQuickFiltersList();
+            _parserParams.EmitEvent("show-quick-filter-list-modal");
+        }
 
-            _parserParams.EmitEvent("show-modal");
+        [UIAction("quick-filter-list-cell-selected")]
+        private void OnQuickFilterListCellSelected(TableView tableView, int index)
+        {
+            if (index < 0 || index >= QuickFiltersManager.QuickFiltersList.Count)
+            {
+                Logger.log.Warn("Invalid quick filter selected (list was outdated?)");
+                return;
+            }
+
+            SelectedQuickFilter = QuickFiltersManager.QuickFiltersList[index];
+            _parserParams.EmitEvent("hide-quick-filter-list-modal");
+
+            Logger.log.Debug($"Quick filter '{SelectedQuickFilter.Name}' selected from list");
+        }
+
+        [UIAction("apply-quick-filter-button-clicked")]
+        private void OnApplyQuickFilterButtonClicked()
+        {
+            if (SelectedQuickFilter != null)
+                QuickFilterApplied?.Invoke(SelectedQuickFilter);
+        }
+
+        [UIAction("delete-quick-filter-button-clicked")]
+        private void OnDeleteQuickFilterButtonClicked()
+        {
+            // this should never happen
+            if (SelectedQuickFilter == null)
+            {
+                CheckSelectedQuickFilter();
+                return;
+            }
+
+            var textWidth = _deleteQuickFilterModalText.GetPreferredValues(SelectedQuickFilter.Name).x;
+            string name;
+
+            // as above, the textWidth is a tenth of what the actual width should be
+            if (textWidth > 3f)
+                name = $"<size={(300f / textWidth).ToString("N0")}%>" + SelectedQuickFilter.Name + "</size>";
+            else
+                name = SelectedQuickFilter.Name;
+
+            DeleteQuickFilterModalTextValue = $"Are you sure you want to delete the \"<color=#FFFFCC>{name}</color>\" quick filter?";
+            _parserParams.EmitEvent("show-delete-quick-filter-modal");
+        }
+
+        [UIAction("modal-delete-quick-filter-button-clicked")]
+        private void OnModalDeleteQuickFilterButtonClicked()
+        {
+            if (SelectedQuickFilter == null)
+            {
+                // this should never happen
+                Logger.log.Warn("Unable to delete empty quick filter");
+                return;
+            }
+
+            QuickFiltersManager.DeleteQuickFilter(SelectedQuickFilter);
+            CheckSelectedQuickFilter();
+
+            SaveQuickFilterButtonInteractable = true;
+
+            _parserParams.EmitEvent("hide-delete-quick-filter-modal");
         }
 
         [UIAction("save-quick-filter-button-clicked")]
         private void OnSaveQuickFilterButtonClicked()
         {
-            Logger.log.Warn("save quick filter clicked");
-            // TODO
+            _quickFilterName = "";
+            SetDefaultSaveQuickFilterWarningText();
+            ModalSaveQuickFilterButtonInteractable = false;
+
+            _parserParams.EmitEvent("get-quick-filter-name");
+            _parserParams.EmitEvent("show-save-quick-filter-modal");
         }
+
+        [UIAction("modal-save-quick-filter-button-clicked")]
+        private void OnModalSaveQuickFilterButtonClicked()
+        {
+            QuickFiltersManager.SaveCurrentSettingsToQuickFilter(_quickFilterName);
+            CheckSelectedQuickFilter();
+
+            SaveQuickFilterButtonInteractable = QuickFiltersManager.HasSlotsAvailable;
+
+            _parserParams.EmitEvent("hide-save-quick-filter-modal");
+        }
+
+        [UIAction("quick-filter-name-changed")]
+        private void OnQuickFilterNameChanged(string value)
+        {
+            // validate name
+            if (value.Length > QuickFilter.MaxNameLength)
+            {
+                SaveQuickFilterModalWarningText = $"A quick filter must have a name under {QuickFilter.MaxNameLength} characters!";
+                ModalSaveQuickFilterButtonInteractable = false;
+            }
+            else if (value.Length == 0)
+            {
+                SaveQuickFilterModalWarningText = "A quick filter cannot have an empty name!";
+                ModalSaveQuickFilterButtonInteractable = false;
+            }
+            else
+            {
+                SetDefaultSaveQuickFilterWarningText();
+                ModalSaveQuickFilterButtonInteractable = true;
+            }
+        }
+
+        [UIAction("quick-filter-name-formatter")]
+        private string QuickFilterNameFormatter(string s)
+        {
+            if (string.IsNullOrEmpty(s))
+                return "<size=1%>.</size> New Quick Filter <size=1%>.</size>";
+
+            if (s.Length > 12)
+            {
+                s = s.Substring(0, 10) + "<color=#FFFFBB><size=70%> [...]</size></color>";
+            }
+            else
+            {
+                // hacky way of adding padding
+                string spaces = $"<space={(12 - s.Length) + 1}px>";
+                s = "<size=1%>.</size>" + spaces + s + spaces + "<size=1%>.</size>";
+            }
+
+            return s;
+        }
+        #endregion
     }
 }

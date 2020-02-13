@@ -42,6 +42,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                 _filterSideViewController.FilterSelected += FilterSelected;
                 _filterSideViewController.ClearButtonPressed += ClearAllFilterChanges;
                 _filterSideViewController.DefaultButtonPressed += SetAllFiltersToDefault;
+                _filterSideViewController.QuickFilterApplied += ApplyQuickFilter;
 
                 FilterList.FilterListChanged -= FilterListChanged;
                 FilterList.FilterListChanged += FilterListChanged;
@@ -57,6 +58,8 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             // filter will be re-selected during the LoadBeatmaps on finish handler, which will re-install this delegate
             if (_currentFilter != null)
                 _currentFilter.SettingChanged -= FilterSettingChanged;
+
+            _filterSideViewController.HideModals();
 
             BackButtonPressed?.Invoke();
         }
@@ -88,7 +91,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 
             _filterSideViewController.ClearButtonInteractable = anyChanged;
             _filterSideViewController.DefaultButtonInteractable = !allDefaults;
-            _filterSideViewController.RefreshFilterList();
+            _filterSideViewController.RefreshFilterListCellContent();
         }
 
         // beatmaps have to be loaded after everything is created, since only then will the loading view exist
@@ -120,16 +123,17 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                 {
                     // on finish
                     _filterSideViewController.FilterListActive = true;
+                    _filterSideViewController.QuickFilterSectionActive = true;
 
                     if (_currentFilter != null)
                     {
                         FilterSelected(_currentFilter);
-                        _filterSideViewController.SelectCell(FilterList.ActiveFilters.IndexOf(_currentFilter));
+                        _filterSideViewController.SelectFilterCell(FilterList.ActiveFilters.IndexOf(_currentFilter));
                     }
                     else
                     {
                         FilterSelected(FilterList.ActiveFilters.First());
-                        _filterSideViewController.SelectCell(0);
+                        _filterSideViewController.SelectFilterCell(0);
                     }
                     RefreshUI();
 
@@ -264,6 +268,12 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
         {
             _currentFilter.SetDefaultValuesToStaging();
             RefreshUI();
+        }
+
+        private void ApplyQuickFilter(QuickFilter quickFilter)
+        {
+            FilterList.ApplyQuickFilter(quickFilter);
+            ApplyFilters();
         }
 
         private void FilterSelected(IFilter selectedFilter)

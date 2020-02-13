@@ -155,6 +155,7 @@
     <Compile Include="Tweaks\SongBrowserTweaks.cs" />
     <Compile Include="Tweaks\SongDataCoreTweaks.cs" />
     <Compile Include="UI\ButtonPanel.cs" />
+    <Compile Include="UI\Components\ClickEventHandler.cs" />
     <Compile Include="UI\Components\EnterExitEventHandler.cs" />
     <Compile Include="UI\Components\PredictionBar.cs" />
     <Compile Include="UI\Components\SearchKeyboard.cs" />
@@ -185,9 +186,6 @@
     <EmbeddedResource Include="manifest.json" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Assets\filter.png" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Assets\checkmark.png" />
     <EmbeddedResource Include="Assets\cross.png" />
   </ItemGroup>
@@ -210,6 +208,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Assets\triangle.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\chevron.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\garbagecan.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

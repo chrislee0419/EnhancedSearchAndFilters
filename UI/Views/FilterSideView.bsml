@@ -17,7 +17,7 @@
                list-width="60"
                cell-size="8"
                clickable-cells="true"
-               active="filter-list-active"
+               active="~filter-list-active"
                select-cell="filter-cell-selected"
                anchor-min-x="1" anchor-min-y="0"
                anchor-max-x="1" anchor-max-y="1"
@@ -80,8 +80,9 @@
             pad="1" spacing="2">
     <vertical child-align="UpperCenter"
               expand-width="true"
-              preferred-height="15"
+              preferred-height="20"
               vertical-fit="PreferredSize"
+              active="~quick-filter-section-active"
               pad="1" spacing="2">
       <!-- dropdown -->
       <horizontal id="quick-filter-dropdown-container"
@@ -90,65 +91,138 @@
                   preferred-height="8"
                   preferred-width="38"
                   pad="1" spacing="1">
-        <horizontal vertical-fit="Unconstrained"
+          <text id="quick-filter-dropdown-text"
+                text="~quick-filter-dropdown-text-value"
+                preferred-height="6"
+                preferred-width="30"
+                font-size="3.6"
+                font-align="Center"
+                font-color="#00BBFF" />
+        <horizontal preferred-width="6"
                     preferred-height="6"
-                    preferred-width="30">
-          <clickable-text id="quick-filter-dropdown-text"
-                          text="123456789 1234567890"
-                          font-size="3.2"
-                          font-align="Center"
-                          on-click="quick-filter-dropdown-clicked" />
+                    horizontal-fit="MinSize"
+                    vertical-fit="MinSize"
+                    child-align="MiddleCenter">
+          <raw-image id="dropdown-chevron"
+                     source="EnhancedSearchAndFilters.Assets.chevron.png"
+                     min-width="4"
+                     min-height="2.45" />
         </horizontal>
-        <page-button direction="Down"
-                     interactable="false"
-                     preferred-height="6"
-                     preferred-width="6"
-                     on-click="quick-filter-dropdown-clicked" />
       </horizontal>
-      <modal show-event="show-modal"
-             hide-event="hide-modal"
+      <modal show-event="show-quick-filter-list-modal"
+             hide-event="hide-quick-filter-list-modal"
              click-off-closes="true"
-             size-delta-x="50" size-delta-y="50">
-        <vertical>
+             size-delta-x="52" size-delta-y="70">
+        <vertical pad="1">
           <page-button direction="Up"
                        preferred-height="6"
+                       preferred-width="50"
                        click-event="quick-filter-list#PageUp" />
           <list id="quick-filter-list"
                 list-style="Simple"
-                cell-size="6" />
+                cell-size="6"
+                list-width="50"
+                select-cell="quick-filter-list-cell-selected" />
           <page-button direction="Down"
                        preferred-height="6"
+                       preferred-width="50"
                        click-event="quick-filter-list#PageDown" />
         </vertical>
       </modal>
       <!-- apply/delete buttons -->
       <horizontal preferred-width="38"
-                  preferred-height="5"
+                  preferred-height="7"
                   pad-left="1" pad-right="1"
+                  active="~quick-filter-section-active"
                   spacing="1">
         <button text="Apply Quick Filter"
                 font-size="3"
                 interactable="~apply-quick-filter-button-interactable"
-                preferred-height="5"
-                preferred-width="30"
+                on-click="apply-quick-filter-button-clicked"
+                preferred-height="7"
+                preferred-width="28"
                 stroke-type="Clean"
                 pad="1" />
-        <icon-button icon="EnhancedSearchAndFilters.Assets.cross.png"
+        <icon-button icon="EnhancedSearchAndFilters.Assets.garbagecan.png"
                      interactable="~delete-quick-filter-button-interactable"
-                     preferred-height="5"
-                     preferred-width="5"
+                     on-click="delete-quick-filter-button-clicked"
+                     hover-hint="Delete selected quick filter"
+                     preferred-height="7"
+                     preferred-width="7"
                      stroke-type="Clean"
                      stroke-color="#FF3333"
                      pad="2" />
+        <!-- delete quick filter modal -->
+        <modal show-event="show-delete-quick-filter-modal"
+               hide-event="hide-delete-quick-filter-modal"
+               click-off-closes="true"
+               size-delta-x="100" size-delta-y="24">
+          <vertical pad="3">
+            <text id="delete-quick-filter-modal-text"
+                  text="~delete-quick-filter-modal-text-value"
+                  font-size="4" />
+            <horizontal>
+              <button text="Cancel"
+                      font-size="3.5"
+                      preferred-width="32" preferred-height="8"
+                      pad="1"
+                      click-event="hide-delete-quick-filter-modal" />
+              <button text="Delete"
+                      font-size="3.5"
+                      stroke-color="#FF3333"
+                      preferred-width="40" preferred-height="8"
+                      pad="1"
+                      on-click="modal-delete-quick-filter-button-clicked" />
+            </horizontal>
+          </vertical>
+        </modal>
       </horizontal>
     </vertical>
     <!-- save quick filter button -->
     <button id="save-quick-filter-button"
+            active="~quick-filter-section-active"
+            interactable="~save-quick-filter-button-interactable"
             text="~save-quick-filter-button-text"
             font-size="2.8"
             on-click="save-quick-filter-button-clicked"
             preferred-width="38" preferred-height="9"
             pad="2" />
+    <!-- save quick filter modal -->
+    <modal show-event="show-save-quick-filter-modal"
+           hide-event="hide-save-quick-filter-modal"
+           click-off-closes="true"
+           size-delta-x="100" size-delta-y="40">
+      <vertical pad="3">
+        <text text="&lt;u&gt;Save the currently applied settings to a quick filter.&lt;/u&gt;"
+              font-size="4.2" />
+        <text text="~save-quick-filter-modal-warning-text"
+              font-size="4"
+              font-color="#FF8888" />
+        <horizontal>
+          <string-setting id="quick-filter-name-setting"
+                          text="Enter a name for the quick filter"
+                          font-size="4"
+                          value="quick-filter-name"
+                          apply-on-change="true"
+                          on-change="quick-filter-name-changed"
+                          get-event="get-quick-filter-name"
+                          formatter="quick-filter-name-formatter" />
+        </horizontal>
+        <horizontal>
+          <button text="Cancel"
+                  font-size="3.5"
+                  preferred-width="32" preferred-height="8"
+                  pad="1"
+                  click-event="hide-save-quick-filter-modal" />
+          <button text="Save Settings"
+                  font-size="3.5"
+                  interactable="~modal-save-quick-filter-button-interactable"
+                  preferred-width="32" preferred-height="8"
+                  pad="1"
+                  on-click="modal-save-quick-filter-button-clicked" />
+        </horizontal>
+      </vertical>
+    </modal>
   </vertical>
   
   <!-- setting reset options -->

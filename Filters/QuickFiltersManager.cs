@@ -1,55 +1,113 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace EnhancedSearchAndFilters.Filters
 {
     internal static class QuickFiltersManager
     {
-        private static QuickFilter[] _quickFiltersList;
-        private static QuickFilter[] QuickFiltersList
+        private static List<QuickFilter> _quickFiltersList;
+        private static List<QuickFilter> InternalQuickFiltersList
         {
             get
             {
                 if (_quickFiltersList == null)
                 {
-                    _quickFiltersList = new QuickFilter[NumberOfSlots];
+                    _quickFiltersList = new List<QuickFilter>(NumberOfSlots);
                     for (int i = 1; i <= NumberOfSlots; ++i)
-                        _quickFiltersList[i - 1] = QuickFilter.FromString(PluginConfig.GetQuickFilterData(i));
+                    {
+                        var quickFilter = QuickFilter.FromString(PluginConfig.GetQuickFilterData(i));
+
+                        if (quickFilter == null)
+                            break;
+
+                        _quickFiltersList.Add(quickFilter);
+                    }
                 }
 
                 return _quickFiltersList;
             }
         }
 
+        private static IReadOnlyList<QuickFilter> _readonlyQuickFiltersList;
+        public static IReadOnlyList<QuickFilter> QuickFiltersList
+        {
+            get
+            {
+                if (_readonlyQuickFiltersList == null)
+                    _readonlyQuickFiltersList = InternalQuickFiltersList.AsReadOnly();
+
+                return _readonlyQuickFiltersList;
+            }
+        }
+
+        public static int Count => QuickFiltersList.Count;
+        public static bool HasSlotsAvailable => Count < NumberOfSlots;
+
         public const int NumberOfSlots = 10;
 
-        public static void SaveCurrentSettingsToQuickFilter(int slot, string name)
+        public static bool SaveCurrentSettingsToQuickFilter(string name)
         {
             if (string.IsNullOrEmpty(name))
             {
                 Logger.log.Warn("Unable to save quick filter with blank name");
-                return;
+                return false;
             }
-            if (slot < 1 || slot > NumberOfSlots)
+            else if (name.Length > QuickFilter.MaxNameLength)
             {
-                Logger.log.Warn($"Unable to save quick filter to invalid slot #{slot}");
-                return;
+                Logger.log.Warn($"Unable to save quick filter with a name over {QuickFilter.MaxNameLength} characters");
+                return false;
+            }
+            else if (InternalQuickFiltersList.Count >= NumberOfSlots)
+            {
+                Logger.log.Warn($"Unable to save more than {NumberOfSlots} quick filters");
+                return false;
             }
 
             var newQuickFilter = new QuickFilter(name, FilterList.ActiveFilters);
 
-            QuickFiltersList[slot - 1] = newQuickFilter;
-            PluginConfig.SetQuickFilterData(slot, newQuickFilter.ToString());
+            InternalQuickFiltersList.Add(newQuickFilter);
+            PluginConfig.SetQuickFilterData(InternalQuickFiltersList.Count, newQuickFilter.ToString());
+
+            return true;
         }
 
         public static void DeleteQuickFilter(int slot)
         {
-            QuickFiltersList[slot - 1] = null;
-            PluginConfig.SetQuickFilterData(slot, "");
+            if (slot < 0 || slot >= InternalQuickFiltersList.Count)
+                return;
+
+            InternalQuickFiltersList.RemoveAt(slot - 1);
+            SaveAllQuickFilters();
         }
 
-        public static QuickFilter[] GetAllQuickFilters() => QuickFiltersList;
+        public static void DeleteQuickFilter(string name)
+        {
+            var quickFilter = InternalQuickFiltersList.FirstOrDefault(x => x.Name == name);
+            if (quickFilter == null)
+                return;
+
+            InternalQuickFiltersList.Remove(quickFilter);
+            SaveAllQuickFilters();
+        }
+
+        public static void DeleteQuickFilter(QuickFilter quickFilter)
+        {
+            if (InternalQuickFiltersList.Remove(quickFilter))
+                SaveAllQuickFilters();
+        }
+
+        private static void SaveAllQuickFilters()
+        {
+            for (int i = 1; i <= NumberOfSlots; ++i)
+            {
+                if (i <= InternalQuickFiltersList.Count)
+                    PluginConfig.SetQuickFilterData(i, InternalQuickFiltersList[i - 1].ToString());
+                else
+                    PluginConfig.SetQuickFilterData(i, "");
+            }
+        }
     }
 
     internal class QuickFilter

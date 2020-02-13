@@ -5,6 +5,19 @@ namespace EnhancedSearchAndFilters.UI
 {
     internal static class Utilities
     {
+        /// <summary>
+        /// Default colour of RoundRectPanel image.
+        /// </summary>
+        public static readonly Color RoundRectDefaultColour = new Color(0f, 0f, 0f, 0.25f);
+        /// <summary>
+        /// Colour used by most highlighted elements.
+        /// </summary>
+        public static readonly Color LightBlueHighlightedColour = new Color(0.025f, 0.415f, 0.670f);
+        /// <summary>
+        /// Colour used in text and the chevron in dropdown components.
+        /// </summary>
+        public static readonly Color LightBlueElementColour = new Color(0f, 0.75f, 1f);
+
         public static Material NoGlowMaterial
         {
             get
