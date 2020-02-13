@@ -209,7 +209,15 @@ namespace EnhancedSearchAndFilters.Tweaks
 
         private static string GetCustomLevelHash(CustomPreviewBeatmapLevel level) => GetCustomLevelHash(level.levelID);
 
-        private static string GetCustomLevelHash(string levelID) => BeatmapDetailsLoader.GetSimplifiedLevelID(levelID).Substring(CustomLevelLoader.kCustomLevelPrefixId.Length);
+        private static string GetCustomLevelHash(string levelID)
+        {
+            var simplifiedID = BeatmapDetailsLoader.GetSimplifiedLevelID(levelID);
+
+            if (simplifiedID.StartsWith(CustomLevelLoader.kCustomLevelPrefixId))
+                return simplifiedID.Substring(CustomLevelLoader.kCustomLevelPrefixId.Length);
+            else
+                return simplifiedID;
+        }
     }
 
     internal enum SongDataCoreDataStatus
