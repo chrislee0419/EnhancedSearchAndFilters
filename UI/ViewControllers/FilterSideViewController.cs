@@ -202,9 +202,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                     var textWidth = _quickFilterDropdownText.GetPreferredValues(value.Name).x;
                     string name;
 
-                    // NOTE: no idea why, but the returned textWidth is a tenth of what it should be
-                    if (textWidth > 2.8f)
-                        name = $"<size={(280f / textWidth).ToString("N0")}%>" + value.Name + "</size>";
+                    if (textWidth > 28f)
+                        name = $"<size={(2800f / textWidth).ToString("N0")}%>" + value.Name + "</size>";
                     else
                         name = value.Name;
 
@@ -350,7 +349,6 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             }
 
             SetFilterList();
-            CheckSelectedQuickFilter();
 
             ClearButtonInteractable = false;
             DefaultButtonInteractable = false;
@@ -429,7 +427,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         /// <summary>
         /// Checks for nulls and sets the selected quick filter if necessary.
         /// </summary>
-        private void CheckSelectedQuickFilter()
+        public void CheckSelectedQuickFilter()
         {
             if (QuickFiltersManager.QuickFiltersList.Count > 0)
             {
@@ -514,18 +512,21 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 CheckSelectedQuickFilter();
                 return;
             }
+            _parserParams.EmitEvent("show-delete-quick-filter-modal");
 
+            // NOTE: text has to be set after the modal is requested to be shown
+            // for whatever reason, the first time the modal is shown, the calculated text size is a tenth of what it should be
+            // probably has to do with how the elements can be resized to from initially provided preferred size values vs
+            // calculated preferred size values after being set to active for the first time
             var textWidth = _deleteQuickFilterModalText.GetPreferredValues(SelectedQuickFilter.Name).x;
             string name;
 
-            // as above, the textWidth is a tenth of what the actual width should be
-            if (textWidth > 3f)
-                name = $"<size={(300f / textWidth).ToString("N0")}%>" + SelectedQuickFilter.Name + "</size>";
+            if (textWidth > 30f)
+                name = $"<size={(3000f / textWidth).ToString("N0")}%>" + SelectedQuickFilter.Name + "</size>";
             else
                 name = SelectedQuickFilter.Name;
 
             DeleteQuickFilterModalTextValue = $"Are you sure you want to delete the \"<color=#FFFFCC>{name}</color>\" quick filter?";
-            _parserParams.EmitEvent("show-delete-quick-filter-modal");
         }
 
         [UIAction("modal-delete-quick-filter-button-clicked")]

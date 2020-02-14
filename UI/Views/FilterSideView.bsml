@@ -91,13 +91,14 @@
                   preferred-height="8"
                   preferred-width="38"
                   pad="1" spacing="1">
+        <horizontal preferred-height="6"
+                    preferred-width="30">
           <text id="quick-filter-dropdown-text"
                 text="~quick-filter-dropdown-text-value"
-                preferred-height="6"
-                preferred-width="30"
                 font-size="3.6"
                 font-align="Center"
                 font-color="#00BBFF" />
+        </horizontal>
         <horizontal preferred-width="6"
                     preferred-height="6"
                     horizontal-fit="MinSize"

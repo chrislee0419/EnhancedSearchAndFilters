@@ -125,6 +125,11 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                     _filterSideViewController.FilterListActive = true;
                     _filterSideViewController.QuickFilterSectionActive = true;
 
+                    // NOTE: this quick filter check is done here, since the text size calculation cannot be done during DidActivate
+                    // it also can't happen before FilterListActive is set to true, otherwise the first time this text is shown,
+                    // it will be a tenth of the size of what it should be
+                    _filterSideViewController.CheckSelectedQuickFilter();
+
                     if (_currentFilter != null)
                     {
                         FilterSelected(_currentFilter);
