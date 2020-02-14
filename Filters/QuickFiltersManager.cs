@@ -148,7 +148,10 @@ namespace EnhancedSearchAndFilters.Filters
             Filters = new List<FilterSettings>();
 
             foreach (var filter in filters)
-                Filters.Add(new FilterSettings(filter));
+            {
+                if (filter.IsFilterApplied)
+                    Filters.Add(new FilterSettings(filter));
+            }
         }
 
         public override string ToString()
