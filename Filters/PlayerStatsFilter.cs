@@ -239,6 +239,14 @@ namespace EnhancedSearchAndFilters.Filters
             if (_expertPlusAppliedValue)
                 diffList.Add(BeatmapDifficulty.ExpertPlus);
 
+            // touch the helper singletons to make sure they're instantiated before the parallel query
+            // also, might as well do a check to see if they were able to be instantiated
+            if (PlayerDataHelper.Instance == null && LocalLeaderboardDataHelper.Instance == null)
+            {
+                Logger.log.Warn("Both PlayerDataHelper and LocalLeaderboardDataHelper objects could not be instantiated (unable to apply player stats filter)");
+                return;
+            }
+
             var levelsToRemove = detailsList.AsParallel().AsOrdered().Where(delegate (BeatmapDetails details)
             {
                 bool remove = false;
