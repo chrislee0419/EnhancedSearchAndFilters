@@ -23,7 +23,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 
         private IFilter _currentFilter;
         private IPreviewBeatmapLevel[] _unfilteredLevels;
-        private Dictionary<BeatmapDetails, IPreviewBeatmapLevel> _beatmapDetails;
+        private Dictionary<IPreviewBeatmapLevel, BeatmapDetails> _beatmapDetails;
 
         protected override void DidActivate(bool firstActivation, ActivationType activationType)
         {
@@ -133,7 +133,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                     }
                     RefreshUI();
 
-                    _beatmapDetails = new Dictionary<BeatmapDetails, IPreviewBeatmapLevel>(_unfilteredLevels.Length);
+                    _beatmapDetails = new Dictionary<IPreviewBeatmapLevel, BeatmapDetails>(_unfilteredLevels.Length);
                     foreach (var level in _unfilteredLevels)
                     {
                         // if a custom level's level ID contains the name of its folder, strip it out
@@ -141,7 +141,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                         if (details == null)
                             continue;
 
-                        _beatmapDetails[details] = level;
+                        _beatmapDetails[level] = details;
                     }
 
                     PluginConfig.ShowFirstTimeLoadingText = false;
@@ -164,7 +164,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             if (!Tweaks.SongBrowserTweaks.Initialized)
                 Logger.log.Debug($"Applying filter, starting with {_beatmapDetails.Count} songs");
 
-            List<BeatmapDetails> filteredLevels = new List<BeatmapDetails>(_beatmapDetails.Keys);
+            List<BeatmapDetails> filteredLevels = _beatmapDetails.Values.Distinct().ToList();
 
             bool hasApplied = false;
             foreach (var filter in FilterList.ActiveFilters)
@@ -198,7 +198,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                 // ProcessSongList() -> CustomFilterHandler() -> ApplyFiltersForSongBrowser() -> ApplyFilters()
                 // filters are applied once this flow coordinator is dismissed
                 if (!Tweaks.SongBrowserTweaks.Initialized)
-                    FilterApplied?.Invoke(_beatmapDetails.Where(x => filteredLevels.Contains(x.Key)).Select(x => x.Value).ToArray());
+                    FilterApplied?.Invoke(_beatmapDetails.Where(x => filteredLevels.Contains(x.Value)).Select(x => x.Key).ToArray());
             }
             else
             {
