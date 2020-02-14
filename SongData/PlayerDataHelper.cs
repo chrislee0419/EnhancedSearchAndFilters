@@ -81,7 +81,7 @@ namespace EnhancedSearchAndFilters.SongData
         /// <summary>
         /// Check whether the player has achieved a full combo for a level on any characteristic and difficulty. 
         /// Optionally, you can limit the search for a full combo to a specific characteristic and/or difficulties. 
-        /// All duplicate custom beatmaps are treated as completed if any of the duplicates have been completed at least once.
+        /// All duplicate custom beatmaps are treated as full combo'd if any of the duplicates have been full combo'd at least once.
         /// </summary>
         /// <param name="levelID">The level ID of the beatmap.</param>
         /// <param name="characteristicName">The serialized name of the characteristic to check for a full combo (optional).</param>

@@ -251,19 +251,23 @@ namespace EnhancedSearchAndFilters.Filters
                 }
                 if (_hasCompletedAppliedValue != SongCompletedFilterOption.Off && !remove)
                 {
-                    // if PlayerData object cannot be found, assume level has not been completed
+                    // if PlayerData and LocalLeaderboardModel objects cannot be found, assume level has not been completed
                     bool hasBeenCompleted = PlayerDataHelper.Instance?.HasCompletedLevel(details.LevelID, null, diffList) ?? false;
+                    hasBeenCompleted |= LocalLeaderboardDataHelper.Instance?.HasCompletedLevel(details.LevelID, diffList) ?? false;
+
                     remove |= hasBeenCompleted != (_hasCompletedAppliedValue == SongCompletedFilterOption.HasCompleted);
                 }
                 if (_hasFullComboAppliedValue != SongFullComboFilterOption.Off && !remove)
                 {
-                    // if PlayerData object cannot be found, assume level has not been full combo'd
+                    // if PlayerData and LocalLeaderboardModel objects cannot be found, assume level has not been full combo'd
                     bool hasFullCombo = PlayerDataHelper.Instance?.HasFullComboForLevel(details.LevelID, null, diffList) ?? false;
+                    hasFullCombo |= LocalLeaderboardDataHelper.Instance?.HasFullComboForLevel(details.LevelID, diffList) ?? false;
+
                     remove |= hasFullCombo != (_hasFullComboAppliedValue == SongFullComboFilterOption.HasFullCombo);
                 }
 
                 return remove;
-            }).ToArray();
+            }).ToList();
 
             foreach (var level in levelsToRemove)
                 detailsList.Remove(level);

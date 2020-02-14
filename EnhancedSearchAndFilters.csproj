@@ -149,6 +149,7 @@
     <Compile Include="Logger.cs" />
     <Compile Include="PluginConfig.cs" />
     <Compile Include="Search\SearchBehaviour.cs" />
+    <Compile Include="SongData\LocalLeaderboardDataHelper.cs" />
     <Compile Include="SongData\PlayerDataHelper.cs" />
     <Compile Include="SongData\SongSortModule.cs" />
     <Compile Include="Tweaks\SongBrowserTweaks.cs" />
