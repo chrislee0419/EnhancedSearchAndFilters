@@ -17,11 +17,9 @@ using UIUtilities = EnhancedSearchAndFilters.UI.Utilities;
 
 namespace EnhancedSearchAndFilters.UI.ViewControllers
 {
-    internal class FilterSideViewController : HotReloadableViewController
-    //internal class FilterSideViewController : BSMLResourceViewController
+    internal class FilterSideViewController : BSMLResourceViewController
     {
-        public override string ResourceName => "EnhancedSearchAndFilters.UI.Views.FilterSideView.bsml";
-        public override string ContentFilePath => "E:\\Projects\\EnhancedSearchAndFilters\\UI\\Views\\FilterSideView.bsml";
+        public override string ResourceName => "EnhancedSearchAndFilters.UI.Views.Filters.FilterSideView.bsml";
 
         public event Action<IFilter> FilterSelected;
         public event Action ClearButtonPressed;
@@ -229,6 +227,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
         [UIObject("quick-filter-dropdown-container")]
         private GameObject _quickFilterDropdownContainer;
+        [UIObject("tutorial-modal")]
+        private GameObject _tutorialModal;
 
         [UIComponent("quick-filter-list")]
         private CustomListTableData _quickFilterTableData;
@@ -245,7 +245,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         private BSMLParserParams _parserParams;
 #pragma warning restore CS0649
 
-        private Image _quickFilterDropdownImage;
+        FilterTutorialPages _filterTutorialPages;
 
         [UIValue("legend-text")]
         private const string LegendText =
@@ -339,13 +339,17 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 _filterListTableData.gameObject.GetComponentInChildren<ScrollRect>().vertical = false;
                 _dropdownChevron.color = UIUtilities.LightBlueElementColour;
 
-                _quickFilterDropdownImage = _quickFilterDropdownContainer.GetComponentsInChildren<Image>().First();
+                var dropdownBGImage = _quickFilterDropdownContainer.GetComponentsInChildren<Image>().First();
 
                 var enterExitEventHandler = _quickFilterDropdownContainer.AddComponent<EnterExitEventHandler>();
                 var clickEventHandler = _quickFilterDropdownContainer.AddComponent<ClickEventHandler>();
-                enterExitEventHandler.PointerEntered += () => _quickFilterDropdownImage.color = UIUtilities.LightBlueHighlightedColour;
-                enterExitEventHandler.PointerExited += () => _quickFilterDropdownImage.color = UIUtilities.RoundRectDefaultColour;
+                enterExitEventHandler.PointerEntered += () => dropdownBGImage.color = UIUtilities.LightBlueHighlightedColour;
+                enterExitEventHandler.PointerExited += () => dropdownBGImage.color = UIUtilities.RoundRectDefaultColour;
                 clickEventHandler.PointerClicked += OnQuickFilterDropdownClicked;
+
+                // tutorial modal setup
+                _filterTutorialPages = _tutorialModal.AddComponent<FilterTutorialPages>();
+                _filterTutorialPages.CloseButtonPressed += () => _parserParams.EmitEvent("hide-tutorial-modal");
             }
 
             SetFilterList();
@@ -472,6 +476,15 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         {
             _defaultButton.GetComponentInChildren<TextMeshProUGUI>().color = Color.white;
             DefaultButtonPressed?.Invoke();
+        }
+
+        [UIAction("tutorial-button-clicked")]
+        private void OnTutorialButtonClicked()
+        {
+            // reset to first page
+            _filterTutorialPages.ResetPages();
+
+            _parserParams.EmitEvent("show-tutorial-modal");
         }
 
         [UIAction("quick-filter-dropdown-clicked")]

@@ -47,18 +47,23 @@
           size-delta-x='-5' size-delta-y='0'
           anchored-pos-x='1' anchored-pos-y='0' />
   </custom-list>
-  <horizontal bg="round-rect-panel"
-              hover-hint="~legend-text"
-              child-expand-width="true"
-              vertical-fit="Unconstrained"
-              anchor-min-x="1" anchor-min-y="0"
-              anchor-max-x="1" anchor-max-y="0"
-              size-delta-x="40" size-delta-y="7"
-              anchor-pos-x="-47" anchor-pos-y="6.5">
-    <text text="What do the colors mean? &lt;size=80%&gt;(Hover for info)&lt;/size&gt;"
-          font-size="2.8"
-          font-align="Center" />
-  </horizontal>
+  <!-- tutorial modal -->
+  <button text="Filters Tutorial"
+          font-size="3.5"
+          stroke-type="Clean"
+          anchor-min-x="1" anchor-min-y="0"
+          anchor-max-x="1" anchor-max-y="0"
+          preferred-width="40" preferred-height="7"
+          anchor-pos-x="-38" anchor-pos-y="6"
+          pad="1"
+          on-click="tutorial-button-clicked" />
+  <modal id="tutorial-modal"
+         show-event="show-tutorial-modal"
+         hide-event="hide-tutorial-modal"
+         click-off-closes="true"
+         size-delta-x="110" size-delta-y="70">
+    
+  </modal>
   
   <!-- quick filter options -->
   <horizontal bg="round-rect-panel"

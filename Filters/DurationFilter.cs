@@ -127,7 +127,7 @@ namespace EnhancedSearchAndFilters.Filters
             if (_viewGameObject != null)
                 return;
 
-            _parserParams = BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.DurationFilterView.bsml"), viewContainer, this);
+            _parserParams = BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.Filters.DurationFilterView.bsml"), viewContainer, this);
             _viewGameObject.name = "DurationFilterViewContainer";
 
             // ensure that the UI correctly reflects the staging values

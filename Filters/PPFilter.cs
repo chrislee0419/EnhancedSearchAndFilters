@@ -162,7 +162,7 @@ namespace EnhancedSearchAndFilters.Filters
             if (_viewGameObject != null)
                 return;
 
-            _parserParams = BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.PPFilterView.bsml"), viewContainer, this);
+            _parserParams = BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.Filters.PPFilterView.bsml"), viewContainer, this);
             _viewGameObject.name = "PPFilterViewContainer";
 
             // ensure that the UI correctly reflects the staging values

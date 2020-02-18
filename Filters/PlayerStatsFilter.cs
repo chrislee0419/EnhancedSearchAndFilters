@@ -157,7 +157,7 @@ namespace EnhancedSearchAndFilters.Filters
             if (_viewGameObject != null)
                 return;
 
-            _parserParams = BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.PlayerStatsFilterView.bsml"), viewContainer, this);
+            _parserParams = BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.Filters.PlayerStatsFilterView.bsml"), viewContainer, this);
             _viewGameObject.name = "PlayerStatsFilterViewContainer";
         }
 

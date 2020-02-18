@@ -144,7 +144,7 @@ namespace EnhancedSearchAndFilters.Filters
             if (_viewGameObject != null)
                 return;
 
-            _parserParams = BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.StarDifficultyFilterView.bsml"), viewContainer, this);
+            _parserParams = BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.Filters.StarDifficultyFilterView.bsml"), viewContainer, this);
             _viewGameObject.name = "StarDifficultyFilterViewContainer";
 
             // ensure that the UI correctly reflects the staging values

@@ -157,6 +157,7 @@
     <Compile Include="UI\ButtonPanel.cs" />
     <Compile Include="UI\Components\ClickEventHandler.cs" />
     <Compile Include="UI\Components\EnterExitEventHandler.cs" />
+    <Compile Include="UI\Components\FilterTutorialPages.cs" />
     <Compile Include="UI\Components\PredictionBar.cs" />
     <Compile Include="UI\Components\SearchKeyboard.cs" />
     <Compile Include="UI\FlowCoordinators\FilterFlowCoordinator.cs" />
@@ -174,13 +175,13 @@
     <Compile Include="UI\ViewControllers\SearchResultsNavigationController.cs" />
     <Compile Include="UI\ViewControllers\SearchResultsListViewController.cs" />
     <Compile Include="UI\ViewControllers\SongDetailsViewController.cs" />
-    <EmbeddedResource Include="UI\Views\DifficultyFilterView.bsml" />
-    <EmbeddedResource Include="UI\Views\DurationFilterView.bsml" />
-    <EmbeddedResource Include="UI\Views\NJSFilterView.bsml" />
-    <EmbeddedResource Include="UI\Views\OtherFilterView.bsml" />
-    <EmbeddedResource Include="UI\Views\PlayerStatsFilterView.bsml" />
-    <EmbeddedResource Include="UI\Views\PPFilterView.bsml" />
-    <EmbeddedResource Include="UI\Views\StarDifficultyFilterView.bsml" />
+    <EmbeddedResource Include="UI\Views\Filters\DifficultyFilterView.bsml" />
+    <EmbeddedResource Include="UI\Views\Filters\DurationFilterView.bsml" />
+    <EmbeddedResource Include="UI\Views\Filters\NJSFilterView.bsml" />
+    <EmbeddedResource Include="UI\Views\Filters\OtherFilterView.bsml" />
+    <EmbeddedResource Include="UI\Views\Filters\PlayerStatsFilterView.bsml" />
+    <EmbeddedResource Include="UI\Views\Filters\PPFilterView.bsml" />
+    <EmbeddedResource Include="UI\Views\Filters\StarDifficultyFilterView.bsml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="manifest.json" />
@@ -190,7 +191,7 @@
     <EmbeddedResource Include="Assets\cross.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="UI\Views\FilterMainView.bsml" />
+    <EmbeddedResource Include="UI\Views\Filters\FilterMainView.bsml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="UI\Views\ButtonPanelView.bsml" />
@@ -198,10 +199,10 @@
     <EmbeddedResource Include="UI\Views\SearchResultsNavigationView.bsml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="UI\Views\FilterLoadingView.bsml" />
+    <EmbeddedResource Include="UI\Views\Filters\FilterLoadingView.bsml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="UI\Views\FilterSideView.bsml" />
+    <EmbeddedResource Include="UI\Views\Filters\FilterSideView.bsml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="UI\Views\SettingsView.bsml" />
@@ -214,6 +215,17 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Assets\garbagecan.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UI\Views\Filters\FilterTutorialView.bsml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\circle.png" />
+    <EmbeddedResource Include="Assets\FilterTutorial\filterlistexample.jpg" />
+    <EmbeddedResource Include="Assets\FilterTutorial\quickfilterexample.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\FilterTutorial\savingquickfilterexample.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -14,7 +14,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 {
     internal class FilterMainViewController : BSMLResourceViewController
     {
-        public override string ResourceName => "EnhancedSearchAndFilters.UI.Views.FilterMainView.bsml";
+        public override string ResourceName => "EnhancedSearchAndFilters.UI.Views.Filters.FilterMainView.bsml";
 
         public event Action ApplyButtonPressed;
         public event Action UnapplyButtonPressed;
@@ -71,7 +71,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
             if (firstActivation)
             {
-                BSMLParser.instance.Parse(BeatSaberMarkupLanguage.Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.FilterLoadingView.bsml"), _viewContainer, this);
+                BSMLParser.instance.Parse(BeatSaberMarkupLanguage.Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.Filters.FilterLoadingView.bsml"), _viewContainer, this);
                 this.name = "FilterMainViewController";
                 _viewContainer.name = "FilterViewContainer";
 
