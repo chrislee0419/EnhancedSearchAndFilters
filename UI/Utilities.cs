@@ -1,5 +1,9 @@
 ﻿using System.Linq;
+using System.Reflection;
 using UnityEngine;
+using BeatSaberMarkupLanguage;
+using BeatSaberMarkupLanguage.Parser;
+using BSMLUtilities = BeatSaberMarkupLanguage.Utilities;
 
 namespace EnhancedSearchAndFilters.UI
 {
@@ -46,6 +50,11 @@ namespace EnhancedSearchAndFilters.UI
             loadingSpinner.name = "LoadingSpinner";
 
             return loadingSpinner;
+        }
+
+        public static BSMLParserParams ParseBSML(string resource, GameObject parent, object host = null)
+        {
+            return BSMLParser.instance.Parse(BSMLUtilities.GetResourceContent(Assembly.GetExecutingAssembly(), resource), parent, host);
         }
     }
 }

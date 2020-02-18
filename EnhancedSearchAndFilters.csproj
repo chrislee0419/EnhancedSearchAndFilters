@@ -155,6 +155,8 @@
     <Compile Include="Tweaks\SongBrowserTweaks.cs" />
     <Compile Include="Tweaks\SongDataCoreTweaks.cs" />
     <Compile Include="UI\ButtonPanel.cs" />
+    <Compile Include="UI\Components\ButtonPanelModules\MainModule.cs" />
+    <Compile Include="UI\Components\ButtonPanelModules\SortModeModule.cs" />
     <Compile Include="UI\Components\ClickEventHandler.cs" />
     <Compile Include="UI\Components\EnterExitEventHandler.cs" />
     <Compile Include="UI\Components\FilterTutorialPages.cs" />
@@ -194,7 +196,6 @@
     <EmbeddedResource Include="UI\Views\Filters\FilterMainView.bsml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="UI\Views\ButtonPanelView.bsml" />
     <EmbeddedResource Include="UI\Views\SearchOptionsView.bsml" />
     <EmbeddedResource Include="UI\Views\SearchResultsNavigationView.bsml" />
   </ItemGroup>
@@ -226,6 +227,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Assets\FilterTutorial\savingquickfilterexample.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UI\Views\ButtonPanelModules\MainModuleView.bsml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UI\Views\ButtonPanelModules\SortModeView.bsml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -64,7 +64,7 @@ namespace EnhancedSearchAndFilters.UI
             {
                 Logger.log.Debug("Creating button panel");
 
-                ButtonPanel.instance.Setup(PluginConfig.DisableSearch, PluginConfig.DisableFilters, true);
+                ButtonPanel.instance.Setup(true);
 
                 ButtonPanel.instance.SearchButtonPressed -= SearchButtonPressed;
                 ButtonPanel.instance.FilterButtonPressed -= FilterButtonPressed;
@@ -151,7 +151,7 @@ namespace EnhancedSearchAndFilters.UI
             if (tries <= 0)
             {
                 Logger.log.Warn("SongBrowser buttons could not be found. Creating default buttons panel");
-                ButtonPanel.instance.Setup(PluginConfig.DisableSearch, PluginConfig.DisableFilters);
+                ButtonPanel.instance.Setup();
             }
         }
 
