@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using Screen = HMUI.Screen;
+using EnhancedSearchAndFilters.Filters;
 using EnhancedSearchAndFilters.UI.Components;
 using EnhancedSearchAndFilters.UI.Components.ButtonPanelModules;
 
@@ -15,6 +16,7 @@ namespace EnhancedSearchAndFilters.UI
         public event Action FilterButtonPressed;
         public event Action ClearFilterButtonPressed;
         public event Action SortButtonPressed;
+        public event Action<QuickFilter> ApplyQuickFilterPressed;
 
         public bool Initialized { get; private set; } = false;
 
@@ -24,6 +26,7 @@ namespace EnhancedSearchAndFilters.UI
 
         private MainModule _mainModule;
         private SortModeModule _sortModeModule;
+        private QuickFilterModule _quickFilterModule;
 
         private const float DefaultYScale = 0.02f;
         private const float HiddenYScale = 0f;
@@ -131,7 +134,19 @@ namespace EnhancedSearchAndFilters.UI
             anchoredPos -= sizeDelta;
             _expandedXSize += sizeDelta.x;
 
-            // TODO: quick filters module
+            if (!PluginConfig.DisableFilters)
+            {
+                _quickFilterModule = new GameObject("QuickFilterModule").AddComponent<QuickFilterModule>();
+                _quickFilterModule.ApplyQuickFilterPressed += (quickFilter) => ApplyQuickFilterPressed?.Invoke(quickFilter);
+
+                _quickFilterModule.RectTransform.SetParent(_container.transform, false);
+                _quickFilterModule.RectTransform.anchorMin = anchorMin;
+                _quickFilterModule.RectTransform.anchorMax = anchorMax;
+                _quickFilterModule.RectTransform.sizeDelta = sizeDelta;
+                _quickFilterModule.RectTransform.anchoredPosition = anchoredPos;
+                anchoredPos -= sizeDelta;
+                _expandedXSize += sizeDelta.x;
+            }
 
             Initialized = true;
 

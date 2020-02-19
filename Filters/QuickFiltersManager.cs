@@ -108,6 +108,19 @@ namespace EnhancedSearchAndFilters.Filters
                     PluginConfig.SetQuickFilterData(i, "");
             }
         }
+
+        /// <summary>
+        /// Gets the index of the given quick filter in the global list.
+        /// </summary>
+        /// <param name="quickFilter">A QuickFilter instance.</param>
+        /// <returns>The index of the quick filter if found. Otherwise, -1.</returns>
+        public static int IndexOf(QuickFilter quickFilter)
+        {
+            if (quickFilter == null || InternalQuickFiltersList.Count == 0)
+                return -1;
+            else
+                return InternalQuickFiltersList.IndexOf(quickFilter);
+        }
     }
 
     internal class QuickFilter

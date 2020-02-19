@@ -1,0 +1,31 @@
+﻿<vertical xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'
+          child-align='MiddleCenter'
+          spacing='1'
+          pad='3'>
+  <horizontal child-expand-width="true"
+              child-expand-height="true"
+              preferred-width='22'
+              preferred-height='3.5'>
+    <text text='Quick Filter'
+          font-size='4'
+          font-align='Center' />
+  </horizontal>
+  <page-button direction='Up'
+               interactable='~previous-button-interactable'
+               preferred-width='22'
+               preferred-height='6'
+               on-click='previous-button-clicked' />
+  <button id='quick-filter-button'
+          font-size='3.5'
+          stroke-type='Clean'
+          preferred-width='22'
+          preferred-height='6.5'
+          pad='1'
+          on-click='quick-filter-button-clicked' />
+  <page-button direction='Down'
+               interactable='~next-button-interactable'
+               preferred-width='22'
+               preferred-height='6'
+               on-click='next-button-clicked' />
+</vertical>

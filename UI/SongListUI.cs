@@ -9,6 +9,7 @@ using TableView = HMUI.TableView;
 using TableViewScroller = HMUI.TableViewScroller;
 using BS_Utils.Utilities;
 using BeatSaberMarkupLanguage;
+using EnhancedSearchAndFilters.Filters;
 using EnhancedSearchAndFilters.Tweaks;
 using EnhancedSearchAndFilters.UI.FlowCoordinators;
 using EnhancedSearchAndFilters.SongData;
@@ -63,18 +64,7 @@ namespace EnhancedSearchAndFilters.UI
             else if (!PluginConfig.DisableSearch || !PluginConfig.DisableFilters)
             {
                 Logger.log.Debug("Creating button panel");
-
-                ButtonPanel.instance.Setup(true);
-
-                ButtonPanel.instance.SearchButtonPressed -= SearchButtonPressed;
-                ButtonPanel.instance.FilterButtonPressed -= FilterButtonPressed;
-                ButtonPanel.instance.ClearFilterButtonPressed -= ClearButtonPressed;
-                ButtonPanel.instance.SortButtonPressed -= SortButtonPressed;
-
-                ButtonPanel.instance.SearchButtonPressed += SearchButtonPressed;
-                ButtonPanel.instance.FilterButtonPressed += FilterButtonPressed;
-                ButtonPanel.instance.ClearFilterButtonPressed += ClearButtonPressed;
-                ButtonPanel.instance.SortButtonPressed += SortButtonPressed;
+                InitializeButtonPanel(true);
             }
             else
             {
@@ -151,8 +141,25 @@ namespace EnhancedSearchAndFilters.UI
             if (tries <= 0)
             {
                 Logger.log.Warn("SongBrowser buttons could not be found. Creating default buttons panel");
-                ButtonPanel.instance.Setup();
+                InitializeButtonPanel();
             }
+        }
+
+        private void InitializeButtonPanel(bool forceReinit = false)
+        {
+            ButtonPanel.instance.Setup(forceReinit);
+
+            ButtonPanel.instance.SearchButtonPressed -= SearchButtonPressed;
+            ButtonPanel.instance.FilterButtonPressed -= FilterButtonPressed;
+            ButtonPanel.instance.ClearFilterButtonPressed -= ClearButtonPressed;
+            ButtonPanel.instance.SortButtonPressed -= SortButtonPressed;
+            ButtonPanel.instance.ApplyQuickFilterPressed -= ApplyQuickFilterPressed;
+
+            ButtonPanel.instance.SearchButtonPressed += SearchButtonPressed;
+            ButtonPanel.instance.FilterButtonPressed += FilterButtonPressed;
+            ButtonPanel.instance.ClearFilterButtonPressed += ClearButtonPressed;
+            ButtonPanel.instance.SortButtonPressed += SortButtonPressed;
+            ButtonPanel.instance.ApplyQuickFilterPressed += ApplyQuickFilterPressed;
         }
 
         private void OnFreePlayFlowCoordinatorFinished(FlowCoordinator unused)
@@ -311,6 +318,11 @@ namespace EnhancedSearchAndFilters.UI
 
                 }
             }
+        }
+
+        private void ApplyQuickFilterPressed(QuickFilter quickFilter)
+        {
+            FilterList.ApplyQuickFilter(quickFilter);
         }
 
         private BeatmapLevelPack CreateSortedBeatmapLevelPack(IBeatmapLevelPack levelPack)

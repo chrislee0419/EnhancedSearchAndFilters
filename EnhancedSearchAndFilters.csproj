@@ -156,6 +156,7 @@
     <Compile Include="Tweaks\SongDataCoreTweaks.cs" />
     <Compile Include="UI\ButtonPanel.cs" />
     <Compile Include="UI\Components\ButtonPanelModules\MainModule.cs" />
+    <Compile Include="UI\Components\ButtonPanelModules\QuickFilterModule.cs" />
     <Compile Include="UI\Components\ButtonPanelModules\SortModeModule.cs" />
     <Compile Include="UI\Components\ClickEventHandler.cs" />
     <Compile Include="UI\Components\EnterExitEventHandler.cs" />
@@ -209,9 +210,6 @@
     <EmbeddedResource Include="UI\Views\SettingsView.bsml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Assets\triangle.png" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Assets\chevron.png" />
   </ItemGroup>
   <ItemGroup>
@@ -233,6 +231,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="UI\Views\ButtonPanelModules\SortModeView.bsml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UI\Views\ButtonPanelModules\QuickFilterView.bsml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
