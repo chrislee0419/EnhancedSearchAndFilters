@@ -23,6 +23,8 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
         [UIValue("hide-filters")]
         private bool _disableFilterButtons = false;
 
+        [UIComponent("search-button")]
+        private Button _searchButton;
         [UIComponent("filter-button")]
         private Button _filterButton;
         [UIComponent("clear-filter-button")]
@@ -55,6 +57,8 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
             // add ability to check pointer enter/exit events to filter/clear buttons to change colour
             if (_filterButton != null)
             {
+                Utilities.ScaleButton(_filterButton);
+
                 _filterButton.gameObject.AddComponent<EnterExitEventHandler>();
                 var handler = _filterButton.gameObject.GetComponent<EnterExitEventHandler>();
 
@@ -63,12 +67,17 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
             }
             if (_clearFilterButton != null)
             {
+                Utilities.ScaleButton(_clearFilterButton);
+
                 _clearFilterButton.gameObject.AddComponent<EnterExitEventHandler>();
                 var handler = _clearFilterButton.gameObject.GetComponent<EnterExitEventHandler>();
 
                 handler.PointerEntered += () => _clearFilterButton.SetButtonText(_areFiltersApplied ? ClearFilterButtonHighlightedAppliedText : ClearFilterButtonHighlightedText);
                 handler.PointerExited += () => _clearFilterButton.SetButtonText(_areFiltersApplied ? ClearFilterButtonAppliedText : ClearFilterButtonDefaultText);
             }
+
+            if (_searchButton != null)
+                Utilities.ScaleButton(_searchButton);
         }
 
         public void SetFilterStatus(bool filterApplied)

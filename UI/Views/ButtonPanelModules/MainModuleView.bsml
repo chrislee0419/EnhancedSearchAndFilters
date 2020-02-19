@@ -11,11 +11,12 @@
   -->
   <macro.if value="!hide-search">
     <macro.if value="!hide-filters">
-      <button preferred-height="10"
+      <button id="search-button"
+              preferred-height="10"
               preferred-width="22"
               on-click="search-button-clicked"
               text="Search"
-              font-size="4"
+              font-size="4.5"
               stroke-type="Clean"
               pad="0" />
       <button id="filter-button"
@@ -23,7 +24,7 @@
               preferred-width="22"
               on-click="filter-button-clicked"
               text="~filter-button-default-text"
-              font-size="2.8"
+              font-size="3"
               stroke-type="Clean"
               pad="0" />
       <button id="clear-filter-button"
@@ -31,16 +32,17 @@
               preferred-width="22"
               on-click="clear-filter-button-clicked"
               text="~clear-filter-button-default-text"
-              font-size="2.8"
+              font-size="3"
               stroke-type="Clean"
               pad="0" />
     </macro.if>
     <macro.if value="hide-filters">
-      <button preferred-height="14"
+      <button id="search-button"
+              preferred-height="14"
               preferred-width="22"
               on-click="search-button-clicked"
               text="Search"
-              font-size="4.5"
+              font-size="4.8"
               stroke-type="Clean"
               pad="0" />
     </macro.if>
@@ -51,7 +53,7 @@
             preferred-width="22"
             on-click="filter-button-clicked"
             text="~filter-button-default-text"
-            font-size="4"
+            font-size="4.2"
             overflow-mode="Overflow"
             word-wrapping="true"
             stroke-type="Clean"

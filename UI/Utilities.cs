@@ -1,6 +1,8 @@
 ﻿using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.Parser;
 using BSMLUtilities = BeatSaberMarkupLanguage.Utilities;
@@ -55,6 +57,40 @@ namespace EnhancedSearchAndFilters.UI
         public static BSMLParserParams ParseBSML(string resource, GameObject parent, object host = null)
         {
             return BSMLParser.instance.Parse(BSMLUtilities.GetResourceContent(Assembly.GetExecutingAssembly(), resource), parent, host);
+        }
+
+        /// <summary>
+        /// Scales the size of a button. Useful for 'unstretching' small buttons. Defaults to scaling down the button by 0.75.
+        /// </summary>
+        /// <param name="btn">Button to scale.</param>
+        /// <param name="scalingFactor">How much to scale the button by.</param>
+        public static void ScaleButton(Button btn, float scalingFactor = 0.75f)
+        {
+            btn.GetComponentInChildren<TextMeshProUGUI>().fontSize *= 1f / scalingFactor;
+            ScaleRectTransform(btn.transform as RectTransform, scalingFactor);
+        }
+
+        /// <summary>
+        /// Scales the size of a RectTransform. Defaults to scaling down the RectTransform by 0.75. 
+        /// (NOTE: keep in mind that all children will be scaled as well).
+        /// </summary>
+        /// <param name="rt">RectTransform to scale.</param>
+        /// <param name="scalingFactor">How much to scale the RectTransform by.</param>
+        public static void ScaleRectTransform(RectTransform rt, float scalingFactor = 0.75f)
+        {
+            rt.localScale *= scalingFactor;
+
+            var layout = rt.GetComponent<LayoutElement>();
+            float inverseScale = 1f / scalingFactor;
+            if (layout != null)
+            {
+                layout.preferredWidth *= inverseScale;
+                layout.preferredHeight *= inverseScale;
+            }
+            else
+            {
+                rt.sizeDelta *= inverseScale;
+            }
         }
     }
 }

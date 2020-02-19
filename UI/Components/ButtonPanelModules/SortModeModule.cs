@@ -40,6 +40,10 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
         {
             Utilities.ParseBSML("EnhancedSearchAndFilters.UI.Views.ButtonPanelModules.SortModeView.bsml", this.gameObject, this);
 
+            Utilities.ScaleButton(_defaultSortButton);
+            Utilities.ScaleButton(_newestSortButton);
+            Utilities.ScaleButton(_playCountSortButton);
+
             _defaultSortButtonStrokeImage = _defaultSortButton.GetComponentsInChildren<Image>().First(x => x.name == "Stroke");
             _newestSortButtonStrokeImage = _newestSortButton.GetComponentsInChildren<Image>().First(x => x.name == "Stroke");
             _playCountSortButtonStrokeImage = _playCountSortButton.GetComponentsInChildren<Image>().First(x => x.name == "Stroke");
