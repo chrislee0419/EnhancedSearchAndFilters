@@ -314,6 +314,37 @@ namespace EnhancedSearchAndFilters.UI
         private void ApplyQuickFilterPressed(QuickFilter quickFilter)
         {
             FilterList.ApplyQuickFilter(quickFilter);
+
+            IPreviewBeatmapLevel[] unfilteredLevels = null;
+            if (_lastPack == null)
+                _lastPack = LevelSelectionNavigationController.GetPrivateField<IBeatmapLevelPack>("_levelPack");
+            if (_lastPack == null)
+                unfilteredLevels = _levelCollectionTableView.GetPrivateField<IPreviewBeatmapLevel[]>("_previewBeatmapLevels");
+            else
+                unfilteredLevels = _lastPack.beatmapLevelCollection.beatmapLevels;
+
+            if (unfilteredLevels == null)
+            {
+                Logger.log.Warn("Unable to apply quick filter (could not find songs to filter)");
+                return;
+            }
+
+            FilterList.ApplyFilter(unfilteredLevels, out IEnumerable<IPreviewBeatmapLevel> filteredLevels);
+
+            var filteredAndSortedLevels = new BeatmapLevelPack(
+                "",
+                FilteredSongsPackName,
+                FilteredSongsCollectionName,
+                Sprite.Create(Texture2D.whiteTexture, Rect.zero, Vector2.zero),
+                new BeatmapLevelCollection(SongSortModule.SortSongs(filteredLevels.ToArray())));
+
+            LevelSelectionNavigationController.SetData(
+                filteredAndSortedLevels,
+                true,
+                LevelSelectionNavigationController.GetPrivateField<bool>("_showPlayerStatsInDetailView"),
+                LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView"));
+
+            ButtonPanel.instance.SetFilterStatus(true);
         }
 
         private BeatmapLevelPack CreateSortedBeatmapLevelPack(IBeatmapLevelPack levelPack)
