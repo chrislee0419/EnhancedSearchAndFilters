@@ -22,7 +22,10 @@ namespace EnhancedSearchAndFilters.UI
 
         private GameObject _container;
         private bool _inRevealAnimation = false;
-        private bool _inExpandAnimation = false;
+        private IEnumerator _expandAnimation;
+        private IEnumerator _contractAnimation;
+        private float _expandedXSize;
+        private EnterExitEventHandler _hoverEventHandler;
 
         private MainModule _mainModule;
         private SortModeModule _sortModeModule;
@@ -32,7 +35,7 @@ namespace EnhancedSearchAndFilters.UI
         private const float HiddenYScale = 0f;
 
         private const float DefaultXSize = 28f;
-        private float _expandedXSize = 56f;
+        private static readonly WaitForSeconds CollapseAnimationDelay = new WaitForSeconds(1.2f);
 
         public void Setup(bool forceReinit = false)
         {
@@ -61,26 +64,42 @@ namespace EnhancedSearchAndFilters.UI
             canvas.sortingOrder += 1;
 
             // expand screen to reveal sort mode buttons
-            var enterExitEventHander = _container.AddComponent<EnterExitEventHandler>();
-            enterExitEventHander.PointerEntered += delegate ()
+            _hoverEventHandler = _container.AddComponent<EnterExitEventHandler>();
+            _hoverEventHandler.PointerEntered += delegate ()
             {
                 if (_inRevealAnimation)
+                {
                     return;
-                else if (_inExpandAnimation)
-                    StopAllCoroutines();
+                }
+                else if (_contractAnimation != null)
+                {
+                    StopCoroutine(_contractAnimation);
+                    _contractAnimation = null;
+                }
 
-                _inExpandAnimation = true;
-                StartCoroutine(ExpandAnimationCoroutine(_expandedXSize));
+                _expandAnimation = ExpandAnimationCoroutine();
+                StartCoroutine(_expandAnimation);
             };
-            enterExitEventHander.PointerExited += delegate ()
+            _hoverEventHandler.PointerExited += delegate ()
             {
                 if (_inRevealAnimation)
                     return;
-                else if (_inExpandAnimation)
-                    StopAllCoroutines();
 
-                _inExpandAnimation = true;
-                StartCoroutine(ExpandAnimationCoroutine(DefaultXSize));
+                bool immediate = false;
+                if (_expandAnimation != null)
+                {
+                    StopCoroutine(_expandAnimation);
+                    _expandAnimation = null;
+                    immediate = true;
+                }
+                else if (_contractAnimation != null)
+                {
+                    StopCoroutine(_contractAnimation);
+                    _contractAnimation = null;
+                }
+
+                _contractAnimation = ContractAnimationCoroutine(immediate);
+                StartCoroutine(_contractAnimation);
             };
 
             Destroy(_container.GetComponentInChildren<SetMainCameraToCanvas>(true));
@@ -250,23 +269,49 @@ namespace EnhancedSearchAndFilters.UI
             _inRevealAnimation = false;
         }
 
-        private IEnumerator ExpandAnimationCoroutine(float destAnimationValue)
+        private IEnumerator ExpandAnimationCoroutine()
         {
             RectTransform rt = this._container.transform as RectTransform;
             Vector3 sizeDelta = rt.sizeDelta;
 
-            while (Mathf.Abs(sizeDelta.x - destAnimationValue) > 0.0001f)
+            while (Mathf.Abs(sizeDelta.x - _expandedXSize) > 0.0001f)
             {
-                sizeDelta.x = Mathf.Lerp(sizeDelta.x, destAnimationValue, Time.deltaTime * 30);
+                sizeDelta.x = Mathf.Lerp(sizeDelta.x, _expandedXSize, Time.deltaTime * 45);
                 rt.sizeDelta = sizeDelta;
 
                 yield return null;
             }
 
-            sizeDelta.x = destAnimationValue;
+            sizeDelta.x = _expandedXSize;
             rt.sizeDelta = sizeDelta;
 
-            _inExpandAnimation = false;
+            _expandAnimation = null;
+        }
+
+        private IEnumerator ContractAnimationCoroutine(bool immediate = false)
+        {
+            RectTransform rt = this._container.transform as RectTransform;
+            Vector3 sizeDelta = rt.sizeDelta;
+
+            if (!immediate)
+            {
+                yield return CollapseAnimationDelay;
+                if (_hoverEventHandler.IsPointedAt)
+                    yield break;
+            }
+
+            while (Mathf.Abs(sizeDelta.x - DefaultXSize) > 0.0001f)
+            {
+                sizeDelta.x = Mathf.Lerp(sizeDelta.x, DefaultXSize, Time.deltaTime * 30);
+                rt.sizeDelta = sizeDelta;
+
+                yield return null;
+            }
+
+            sizeDelta.x = DefaultXSize;
+            rt.sizeDelta = sizeDelta;
+
+            _contractAnimation = null;
         }
 
         public void SetFilterStatus(bool filterApplied)
