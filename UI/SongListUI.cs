@@ -172,7 +172,7 @@ namespace EnhancedSearchAndFilters.UI
                 (_freePlayFlowCoordinator as CampaignFlowCoordinator).didFinishEvent -= OnFreePlayFlowCoordinatorFinished;
 
             // unapply filters before leaving the screen
-            if (_filterFlowCoordinator?.AreFiltersApplied == true)
+            if (FilterList.AnyApplied == true)
             {
                 UnapplyFilters();
 
@@ -180,14 +180,6 @@ namespace EnhancedSearchAndFilters.UI
             }
 
             _freePlayFlowCoordinator = null;
-        }
-
-        /// <summary>
-        /// Used by SongBrowserTweaks to apply an existing filter onto another set of beatmaps.
-        /// </summary>
-        public List<IPreviewBeatmapLevel> ApplyFiltersForSongBrowser(IPreviewBeatmapLevel[] levels)
-        {
-            return _filterFlowCoordinator.ApplyFiltersFromExternalViewController(levels);
         }
 
         /// <summary>
@@ -248,7 +240,7 @@ namespace EnhancedSearchAndFilters.UI
 
         public void ClearButtonPressed()
         {
-            if (_filterFlowCoordinator?.AreFiltersApplied == true)
+            if (FilterList.AnyApplied == true)
                 _filterFlowCoordinator?.UnapplyFilters();
 
             if (_levelsToApply != null)
@@ -268,10 +260,12 @@ namespace EnhancedSearchAndFilters.UI
 
         private void SortButtonPressed()
         {
-            if (_filterFlowCoordinator?.AreFiltersApplied ?? false)
+            if (_lastPack == null)
+                _lastPack = LevelSelectionNavigationController.GetPrivateField<IBeatmapLevelPack>("_levelPack");
+
+            if (FilterList.AnyApplied)
             {
-                // if filters are applied, _lastPack should not be null
-                var filteredLevels = _filterFlowCoordinator.ApplyFiltersFromExternalViewController(_lastPack.beatmapLevelCollection.beatmapLevels);
+                FilterList.ApplyFilter(_lastPack.beatmapLevelCollection.beatmapLevels, out IEnumerable<IPreviewBeatmapLevel> filteredLevels, false);
 
                 var filteredAndSortedLevels = new BeatmapLevelPack(
                     "",
@@ -288,13 +282,10 @@ namespace EnhancedSearchAndFilters.UI
             }
             else
             {
-                if (_lastPack == null)
-                    _lastPack = LevelSelectionNavigationController.GetPrivateField<IBeatmapLevelPack>("_levelPack");
-
-                if (_lastPack is IBeatmapLevelPack && _lastPack != null)
+                if (_lastPack != null && _lastPack is IBeatmapLevelPack beatmapLevelPack)
                 {
                     LevelSelectionNavigationController.SetData(
-                        CreateSortedBeatmapLevelPack(_lastPack as IBeatmapLevelPack),
+                        CreateSortedBeatmapLevelPack(beatmapLevelPack),
                         true,
                         LevelSelectionNavigationController.GetPrivateField<bool>("_showPlayerStatsInDetailView"),
                         LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView"));
@@ -357,7 +348,7 @@ namespace EnhancedSearchAndFilters.UI
                 // that being said, without SongBrowser, we are still going to cancel filters upon switching level packs
                 // because i'd rather the player have to go into the FilterViewController,
                 // so that it can check if all the beatmap details have been loaded
-                if (_filterFlowCoordinator?.AreFiltersApplied ?? false)
+                if (FilterList.AnyApplied)
                     Logger.log.Debug("Another level pack has been selected, unapplying filters");
                 UnapplyFilters();
             }
@@ -376,7 +367,7 @@ namespace EnhancedSearchAndFilters.UI
 
             // instead of applying filters inside the filter flow coordinator, apply the filters when the flow coordinator is dismissed
             // that way, we don't get the unity complaining about the LevelSelectionNavigationController being not active
-            if (SongBrowserTweaks.Initialized && _filterFlowCoordinator.AreFiltersApplied)
+            if (SongBrowserTweaks.Initialized && FilterList.AnyApplied)
             {
                 SongBrowserTweaks.ApplyFilters();
             }

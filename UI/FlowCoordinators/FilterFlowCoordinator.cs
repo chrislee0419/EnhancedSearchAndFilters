@@ -16,8 +16,6 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
         public event Action<IPreviewBeatmapLevel[]> FilterApplied;
         public event Action FiltersUnapplied;
 
-        public bool AreFiltersApplied { get; private set; } = false;
-
         private FilterMainViewController _filterMainViewController;
         private FilterSideViewController _filterSideViewController;
 
@@ -173,78 +171,45 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             if (!Tweaks.SongBrowserTweaks.Initialized)
                 Logger.log.Debug($"Applying filter, starting with {_beatmapDetails.Count} songs");
 
-            List<BeatmapDetails> filteredLevels = new List<BeatmapDetails>(_beatmapDetails.Keys);
+            List<BeatmapDetails> filteredLevels = null;
 
-            bool hasApplied = false;
-            foreach (var filter in FilterList.ActiveFilters)
-            {
-                filter.ApplyStagingValues();
-
-                if (filter.Status == FilterStatus.Applied)
-                {
-                    // if SongBrowser is loaded, we will apply the filter after the call to SongBrowserUI:ProcessSongList()
-                    if (!Tweaks.SongBrowserTweaks.Initialized)
-                        filter.FilterSongList(ref filteredLevels);
-                    hasApplied = true;
-                }
-            }
-
+            bool hasApplied;
             if (!Tweaks.SongBrowserTweaks.Initialized)
+            {
+                filteredLevels = new List<BeatmapDetails>(_beatmapDetails.Keys);
+                hasApplied = FilterList.ApplyFilter(ref filteredLevels);
                 Logger.log.Debug($"Filter completed, {filteredLevels.Count} songs left");
+            }
+            else
+            {
+                foreach (var filter in FilterList.ActiveFilters)
+                    filter.ApplyStagingValues();
+                hasApplied = FilterList.AnyApplied;
+            }
 
             RefreshUI();
 
             if (hasApplied)
             {
-                AreFiltersApplied = true;
-
                 if (Tweaks.SongBrowserTweaks.ModLoaded && Tweaks.SongBrowserTweaks.Initialized)
+                {
                     _filterMainViewController.ShowInfoText("Filter applied");
+                }
                 else
+                {
                     _filterMainViewController.ShowInfoText($"{filteredLevels.Count} out of {_beatmapDetails.Count} songs found");
 
-                // SongBrowser will create its own BeatmapLevelPack when it gets our filtered levels via:
-                // ProcessSongList() -> CustomFilterHandler() -> ApplyFiltersForSongBrowser() -> ApplyFilters()
-                // filters are applied once this flow coordinator is dismissed
-                if (!Tweaks.SongBrowserTweaks.Initialized)
+                    // SongBrowser will create its own BeatmapLevelPack when it gets our filtered levels via:
+                    // ProcessSongList() -> CustomFilterHandler() -> ApplyFiltersForSongBrowser() -> ApplyFilters()
+                    // filters are applied once this flow coordinator is dismissed
                     FilterApplied?.Invoke(_beatmapDetails.Where(x => filteredLevels.Contains(x.Key)).Select(x => x.Value).ToArray());
+                }
             }
             else
             {
                 // default values were applied (no filtering or undo filtering)
-                AreFiltersApplied = false;
-
                 FiltersUnapplied?.Invoke();
             }
-        }
-
-        /// <summary>
-        /// Filter application logic intended for use when filters are applied outside of this flow coordinator.
-        /// </summary>
-        /// <param name="levels">Array of levels to filter.</param>
-        /// <returns>The filtered list of beatmaps.</returns>
-        public List<IPreviewBeatmapLevel> ApplyFiltersFromExternalViewController(IPreviewBeatmapLevel[] levels)
-        {
-            Logger.log.Debug($"Applying filters from an external view controller. Starting with {levels.Length} songs");
-
-            BeatmapDetails[] detailsList = BeatmapDetailsLoader.instance.LoadBeatmapsInstant(levels);
-
-            Dictionary<BeatmapDetails, IPreviewBeatmapLevel> pairs = new Dictionary<BeatmapDetails, IPreviewBeatmapLevel>(levels.Length);
-            for (int i = 0; i < levels.Length; ++i)
-            {
-                if (detailsList[i] != null && !pairs.ContainsKey(detailsList[i]))
-                    pairs.Add(detailsList[i], levels[i]);
-            }
-
-            var filteredLevels = pairs.Keys.ToList();
-            foreach (var filter in FilterList.ActiveFilters)
-            {
-                if (filter.Status == FilterStatus.Applied || filter.Status == FilterStatus.AppliedAndChanged)
-                    filter.FilterSongList(ref filteredLevels);
-            }
-            Logger.log.Debug($"Filter completed, {filteredLevels.Count} songs left");
-
-            return pairs.Where(x => filteredLevels.Contains(x.Key)).Select(x => x.Value).ToList();
         }
 
         /// <summary>
@@ -256,7 +221,6 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             foreach (var filter in FilterList.ActiveFilters)
                 filter.ApplyDefaultValues();
 
-            AreFiltersApplied = false;
             RefreshUI();
 
             if (sendEvent)

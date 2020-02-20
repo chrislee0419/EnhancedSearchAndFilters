@@ -7,6 +7,7 @@ using SongBrowser;
 using SongBrowser.Internals;
 using SongBrowser.UI;
 using SongBrowser.DataAccess;
+using EnhancedSearchAndFilters.Filters;
 using EnhancedSearchAndFilters.UI;
 
 namespace EnhancedSearchAndFilters.Tweaks
@@ -133,7 +134,8 @@ namespace EnhancedSearchAndFilters.Tweaks
                 // custom filter handler when the same level pack is selected
                 SongBrowserModel.CustomFilterHandler = delegate (IBeatmapLevelPack levelPack)
                 {
-                    return SongListUI.instance.ApplyFiltersForSongBrowser(levelPack.beatmapLevelCollection.beatmapLevels);
+                    FilterList.ApplyFilter(levelPack.beatmapLevelCollection.beatmapLevels, out var filteredLevels, false);
+                    return filteredLevels.ToList();
                 };
 
                 // on first load, SongBrowser uses the previously applied settings
