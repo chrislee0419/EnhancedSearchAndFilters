@@ -17,7 +17,9 @@
                preferred-height='6'
                on-click='previous-button-clicked' />
   <button id='quick-filter-button'
+          text='~quick-filter-loading-text'
           font-size='3.5'
+          interactable='false'
           stroke-type='Clean'
           preferred-width='22'
           preferred-height='6.5'

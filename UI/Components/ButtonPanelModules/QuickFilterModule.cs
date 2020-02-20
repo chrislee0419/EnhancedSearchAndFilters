@@ -8,6 +8,7 @@ using TMPro;
 using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.Notify;
 using EnhancedSearchAndFilters.Filters;
+using EnhancedSearchAndFilters.SongData;
 
 namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
 {
@@ -57,22 +58,28 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
         private Button _quickFilterButton;
 #pragma warning restore CS0649
 
+        private EnterExitEventHandler _hoverEventHandler;
+
         private IEnumerator _applyAnimation;
         private IEnumerator _scrollAnimation;
+        private float _maxTextWidth;
 
         private QuickFilter _currentQuickFilter;
 
         private TextMeshProUGUI _text;
         private Image _strokeImage;
-        private float _maxTextWidth;
 
+        private bool _isInitialized = false;
+
+        [UIValue("quick-filter-loading-text")]
+        private const string LoadingText = "<color=#FF8888>Loading...</color>";
         private const string NoQuickFiltersAvailableText = "<color=#FF9999>None Available</color>";
         private static readonly Color AppliedButtonColour = new Color(0.2f, 1f, 0.2f);
         private const float ApplyAnimationDurationSeconds = 3f;
 
         private const float TextScrollAnimationScaleThreshold = 1.2f;
         private const float TextScrollAnimationDurationSeconds = 2f;
-        private const float TextFadeAnimationDurationSeconds = 0.5f;
+        private const float TextFadeAnimationDurationSeconds = 0.6f;
         private static readonly WaitForSeconds TextScrollAnimationWait = new WaitForSeconds(TextScrollAnimationDurationSeconds);
 
         private void Awake()
@@ -86,6 +93,7 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
 
             Utilities.ScaleButton(_quickFilterButton, 0.5f);
 
+            _quickFilterButton.interactable = false;
             _text = _quickFilterButton.GetComponentInChildren<TextMeshProUGUI>();
             _strokeImage = _quickFilterButton.GetComponentsInChildren<Image>().First(x => x.name == "Stroke");
 
@@ -108,12 +116,36 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
             rt.sizeDelta = new Vector2(80f, 0f);
 
             // text no longer responds to hover after re-parenting the transform, so change the colour ourselves
-            var handler = _quickFilterButton.gameObject.AddComponent<EnterExitEventHandler>();
-            handler.PointerEntered += () => _text.color = Color.black;
-            handler.PointerExited += () => _text.color = Color.white;
+            _hoverEventHandler = _quickFilterButton.gameObject.AddComponent<EnterExitEventHandler>();
+            _hoverEventHandler.PointerEntered += () => _text.color = Color.black;
+            _hoverEventHandler.PointerExited += () => _text.color = Color.white;
 
-            RefreshUI();
-            ResetButton();
+            _isInitialized = true;
+
+            // since OnEnable is called before Start, we need to call it now, after every thing is initialized
+            OnEnable();
+        }
+
+        private void OnEnable()
+        {
+            if (_isInitialized)
+            {
+                BeatmapDetailsLoader.instance.CachingStarted += ShowLoadingText;
+                BeatmapDetailsLoader.instance.CachingFinished += RefreshUI;
+
+                RefreshUI();
+            }
+        }
+
+        private void OnDisable()
+        {
+            StopAllCoroutines();
+
+            _applyAnimation = null;
+            _scrollAnimation = null;
+
+            BeatmapDetailsLoader.instance.CachingStarted -= ShowLoadingText;
+            BeatmapDetailsLoader.instance.CachingFinished -= RefreshUI;
         }
 
         /// <summary>
@@ -121,23 +153,39 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
         /// </summary>
         public void RefreshUI()
         {
+            if (!_isInitialized)
+            {
+                return;
+            }
+            else if (BeatmapDetailsLoader.instance.IsCaching)
+            {
+                ShowLoadingText();
+                BeatmapDetailsLoader.instance.CachingFinished -= RefreshUI;
+                BeatmapDetailsLoader.instance.CachingFinished += RefreshUI;
+                return;
+            }
+
             var quickFiltersList = QuickFiltersManager.QuickFiltersList;
             if (quickFiltersList.Count == 0)
             {
                 _currentQuickFilter = null;
                 PreviousButtonInteractable = false;
                 NextButtonInteractable = false;
-                QuickFilterButtonInteractable = false;
-                SetText(NoQuickFiltersAvailableText);
             }
             else if (_currentQuickFilter == null || !quickFiltersList.Contains(_currentQuickFilter))
             {
                 _currentQuickFilter = quickFiltersList.First();
                 PreviousButtonInteractable = false;
                 NextButtonInteractable = quickFiltersList.Count > 1;
-                QuickFilterButtonInteractable = true;
-                SetText(_currentQuickFilter.Name);
             }
+            else
+            {
+                int index = QuickFiltersManager.IndexOf(_currentQuickFilter);
+                PreviousButtonInteractable = index > 0;
+                NextButtonInteractable = index < quickFiltersList.Count - 1;
+            }
+
+            ResetButton();
         }
 
         #region BSML Actions
@@ -146,8 +194,8 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
         {
             if (_applyAnimation != null)
             {
-                StopAllCoroutines();
-                ResetButton();
+                StopCoroutine(_applyAnimation);
+                _applyAnimation = null;
             }
 
             int index = QuickFiltersManager.IndexOf(_currentQuickFilter);
@@ -159,13 +207,13 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
 
             int prevIndex = index - 1;
             if (prevIndex >= 0)
-            {
                 _currentQuickFilter = QuickFiltersManager.QuickFiltersList[prevIndex];
-                SetText(_currentQuickFilter.Name);
-            }
+            else
+                Logger.log.Warn("Previous button pressed when it wasn't supposed to be able to");
 
             PreviousButtonInteractable = prevIndex > 0;
             NextButtonInteractable = prevIndex < QuickFiltersManager.Count - 1;
+            ResetButton();
         }
 
         [UIAction("next-button-clicked")]
@@ -175,7 +223,6 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
             {
                 StopCoroutine(_applyAnimation);
                 _applyAnimation = null;
-                ResetButton();
             }
 
             int index = QuickFiltersManager.IndexOf(_currentQuickFilter);
@@ -187,13 +234,13 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
 
             int nextIndex = index + 1;
             if (nextIndex < QuickFiltersManager.Count)
-            {
                 _currentQuickFilter = QuickFiltersManager.QuickFiltersList[nextIndex];
-                SetText(_currentQuickFilter.Name);
-            }
+            else
+                Logger.log.Warn("Previous button pressed when it wasn't supposed to be able to");
 
             PreviousButtonInteractable = nextIndex > 0;
             NextButtonInteractable = nextIndex < QuickFiltersManager.Count - 1;
+            ResetButton();
         }
 
         [UIAction("quick-filter-button-clicked")]
@@ -201,6 +248,7 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
         {
             if (_applyAnimation != null)
                 return;
+
             StartCoroutine(QuickFilterAppliedAnimationCoroutine());
 
             // let the installed delegate handle applying the quick filter
@@ -211,8 +259,10 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
 
         private IEnumerator QuickFilterAppliedAnimationCoroutine()
         {
+            const float TextFadeOutRatio = 0.8f;
+            const float TextFadeOutRatioRemainder = 0.2f;
             float seconds = 0;
-            _text.text = "Applied!";
+            SetText("Applied!");
             _strokeImage.color = AppliedButtonColour;
 
             yield return null;
@@ -221,18 +271,35 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
                 Color currentColour = new Color();
                 float ratio = seconds / ApplyAnimationDurationSeconds;
 
+                // stroke colour
                 currentColour.r = Mathf.Lerp(AppliedButtonColour.r, Color.white.r, ratio);
                 currentColour.g = Mathf.Lerp(AppliedButtonColour.g, Color.white.g, ratio);
                 currentColour.b = Mathf.Lerp(AppliedButtonColour.b, Color.white.b, ratio);
                 currentColour.a = 1f;
                 _strokeImage.color = currentColour;
 
+                // text colour
+                currentColour = _text.color;
+                currentColour.a = ratio > TextFadeOutRatio ? Mathf.Lerp(1f, 0f, (ratio - TextFadeOutRatio) / TextFadeOutRatioRemainder) : 1f;
+                _text.color = currentColour;
+
                 seconds += Time.deltaTime;
                 yield return null;
             }
 
+            _strokeImage.color = Color.white;
+            _text.color = _hoverEventHandler.IsPointedAt ? Color.black : Color.white;
+
             _applyAnimation = null;
             ResetButton();
+        }
+
+        private void ShowLoadingText()
+        {
+            PreviousButtonInteractable = false;
+            NextButtonInteractable = false;
+            QuickFilterButtonInteractable = false;
+            SetText(LoadingText);
         }
 
         private void ResetButton()
@@ -263,6 +330,8 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
                 StopCoroutine(_scrollAnimation);
                 _scrollAnimation = null;
             }
+
+            _text.color = _hoverEventHandler.IsPointedAt ? Color.black : Color.white;
 
             // only use animation if the requested text is a lot bigger,
             // otherwise, just scale it
