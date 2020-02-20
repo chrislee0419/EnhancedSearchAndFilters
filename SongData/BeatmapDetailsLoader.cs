@@ -15,6 +15,9 @@ namespace EnhancedSearchAndFilters.SongData
 {
     class BeatmapDetailsLoader : PersistentSingleton<BeatmapDetailsLoader>
     {
+        public event Action CachingStarted;
+        public event Action CachingFinished;
+
         public bool IsLoading { get; private set; } = false;
         public bool IsCaching { get; private set; } = false;
         public bool SongsAreCached { get; private set; } = false;
@@ -85,6 +88,7 @@ namespace EnhancedSearchAndFilters.SongData
             if (!IsCaching)
             {
                 IsCaching = true;
+                SongsAreCached = false;
                 _manualResetEvent = new ManualResetEvent(true);
                 _cachingTokenSource = new CancellationTokenSource();
 
@@ -105,9 +109,12 @@ namespace EnhancedSearchAndFilters.SongData
 
                         SongsAreCached = true;
                         IsCaching = false;
+
+                        CachingFinished?.Invoke();
                     });
 
                 _cachingTask.Run();
+                CachingStarted?.Invoke();
             }
             else
             {
