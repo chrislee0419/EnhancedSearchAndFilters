@@ -119,7 +119,7 @@ namespace EnhancedSearchAndFilters.Filters
             List<BeatmapDetails> filteredBeatmapDetails = pairs.Keys.ToList();
             bool hasApplied = ApplyFilter(ref filteredBeatmapDetails, applyStagedSettings);
 
-            Logger.log.Info($"Filter applied, {filteredBeatmapDetails.Count} songs left");
+            Logger.log.Debug($"Filter applied, {filteredBeatmapDetails.Count} songs left");
 
             filteredLevels = pairs.Where(x => filteredBeatmapDetails.Contains(x.Key)).Select(x => x.Value);
             return hasApplied;
