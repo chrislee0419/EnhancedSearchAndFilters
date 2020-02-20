@@ -9,7 +9,7 @@ namespace EnhancedSearchAndFilters.SongData
     {
         public string LevelID { get; }
         [JsonIgnore]
-        public bool IsOST { get { return !LevelID.StartsWith(CustomLevelLoader.kCustomLevelPackPrefixId); } }
+        public bool IsOST { get { return !LevelID.StartsWith(CustomLevelLoader.kCustomLevelPrefixId); } }
         public string SongName { get; }
         //public string SongSubName { get; }
         //public string SongAuthorName { get; }

@@ -211,8 +211,12 @@ namespace EnhancedSearchAndFilters.Filters
                 return;
 
             List<CustomPreviewBeatmapLevel> customLevels = null;
+            bool mappingExtensionsApplied = false;
             if (_mappingExtensionsAppliedValue != SongRequirementFilterOption.Off)
+            {
+                mappingExtensionsApplied = true;
                 customLevels = Loader.CustomLevels.Values.ToList();
+            }
 
             for (int i = 0; i < detailsList.Count;)
             {
@@ -239,10 +243,11 @@ namespace EnhancedSearchAndFilters.Filters
                 {
                     detailsList.RemoveAt(i);
                 }
-                else if (_mappingExtensionsAppliedValue != SongRequirementFilterOption.Off && !beatmap.IsOST)
+                else if (mappingExtensionsApplied && !beatmap.IsOST)
                 {
                     // remove songs that somehow aren't OST, but also aren't custom levels handled by SongCore
-                    CustomPreviewBeatmapLevel customLevel = customLevels.FirstOrDefault(x => x.levelID == beatmap.LevelID);
+                    // get any level that starts with the level ID stored in the BeatmapDetails object since there could be duplicates
+                    CustomPreviewBeatmapLevel customLevel = customLevels.FirstOrDefault(x => x.levelID.StartsWith(beatmap.LevelID));
                     if (customLevel == null)
                     {
                         detailsList.RemoveAt(i);
