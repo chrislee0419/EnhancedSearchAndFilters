@@ -78,9 +78,9 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
         private const float ApplyAnimationDurationSeconds = 3f;
 
         private const float TextScrollAnimationScaleThreshold = 1.2f;
-        private const float TextScrollAnimationDurationSeconds = 2f;
+        private const float TextScrollAnimationSpeed = 20f;
         private const float TextFadeAnimationDurationSeconds = 0.6f;
-        private static readonly WaitForSeconds TextScrollAnimationWait = new WaitForSeconds(TextScrollAnimationDurationSeconds);
+        private static readonly WaitForSeconds TextScrollAnimationWait = new WaitForSeconds(2f);
 
         private void Awake()
         {
@@ -338,7 +338,7 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
             float sizeRatio = textWidth / _maxTextWidth;
             if (sizeRatio < TextScrollAnimationScaleThreshold && sizeRatio > 1f)
             {
-                _text.text = $"<size={(100f / sizeRatio).ToString("N0")}%>" + text + "</size>";
+                _text.text = $"<size={(98f / sizeRatio).ToString("N0")}%>" + text + "</size>";
                 _text.rectTransform.anchoredPosition = Vector2.zero;
             }
             else if (sizeRatio >= TextScrollAnimationScaleThreshold)
@@ -361,12 +361,12 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
             float halfMaxWidth = _maxTextWidth / 2f;
             Vector2 startPos = new Vector2(halfWidth - halfMaxWidth + 1, 0f);
             Vector2 endPos = new Vector2(halfMaxWidth - halfWidth - 1, 0f);
-            Vector2 currentPos = new Vector2();
 
             while (true)
             {
                 rt.anchoredPosition = startPos;
 
+                // fade in
                 float seconds = 0f;
                 while (seconds < TextFadeAnimationDurationSeconds)
                 {
@@ -380,19 +380,20 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
                 }
                 yield return TextScrollAnimationWait;
 
-                seconds = 0;
-                while (seconds < TextScrollAnimationDurationSeconds)
+                // scroll
+                Vector2 nextPos = startPos;
+                nextPos.x -= Time.deltaTime * 20f;
+                while (nextPos.x > endPos.x)
                 {
-                    currentPos.x = Mathf.Lerp(startPos.x, endPos.x, seconds / TextScrollAnimationDurationSeconds);
-                    rt.anchoredPosition = currentPos;
-
-                    seconds += Time.deltaTime;
+                    rt.anchoredPosition = nextPos;
                     yield return null;
+                    nextPos.x -= Time.deltaTime * TextScrollAnimationSpeed;
                 }
 
                 rt.anchoredPosition = endPos;
                 yield return TextScrollAnimationWait;
 
+                // fade out
                 seconds = 0f;
                 while (seconds < TextFadeAnimationDurationSeconds)
                 {

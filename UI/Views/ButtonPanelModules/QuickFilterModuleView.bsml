@@ -18,7 +18,7 @@
                on-click='previous-button-clicked' />
   <button id='quick-filter-button'
           text='~quick-filter-loading-text'
-          font-size='3.5'
+          font-size='3.7'
           interactable='false'
           stroke-type='Clean'
           preferred-width='22'
