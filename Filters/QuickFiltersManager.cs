@@ -147,7 +147,9 @@ namespace EnhancedSearchAndFilters.Filters
         private const char FilterListStartCharacter = ';';
         private const char FilterListSeparatorCharacter = '|';
 
-        public const int MaxNameLength = 20;
+        // NOTE: there is a text-based reference to this constant in the FilterTutorialView.bsml
+        // if i ever change this again, make sure to update that reference too
+        public const int MaxNameLength = 30;
 
         public QuickFilter()
         {

@@ -332,7 +332,7 @@
                    min-width='32'
                    min-height='12' />
       </vertical>
-      <text text='&lt;b&gt;4.&lt;/b&gt;  Enter a name for the new quick filter. The name has to be &lt;u&gt;&lt;color=#FFCCCC&gt;less than 20 characters&lt;/color&gt;&lt;/u&gt;.'
+      <text text='&lt;b&gt;4.&lt;/b&gt;  Enter a name for the new quick filter. The name has to be &lt;u&gt;&lt;color=#FFCCCC&gt;less than 30 characters&lt;/color&gt;&lt;/u&gt;.'
             font-size='3'
             font-align='TopLeft'
             overflow-mode='Overflow'
