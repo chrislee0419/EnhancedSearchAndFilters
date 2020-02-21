@@ -38,7 +38,7 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
 
         private void Start()
         {
-            Utilities.ParseBSML("EnhancedSearchAndFilters.UI.Views.ButtonPanelModules.SortModeView.bsml", this.gameObject, this);
+            Utilities.ParseBSML("EnhancedSearchAndFilters.UI.Views.ButtonPanelModules.SortModeModuleView.bsml", this.gameObject, this);
 
             Utilities.ScaleButton(_defaultSortButton);
             Utilities.ScaleButton(_newestSortButton);

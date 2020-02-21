@@ -89,7 +89,7 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
 
         private void Start()
         {
-            Utilities.ParseBSML("EnhancedSearchAndFilters.UI.Views.ButtonPanelModules.QuickFilterView.bsml", this.gameObject, this);
+            Utilities.ParseBSML("EnhancedSearchAndFilters.UI.Views.ButtonPanelModules.QuickFilterModuleView.bsml", this.gameObject, this);
 
             Utilities.ScaleButton(_quickFilterButton, 0.5f);
 

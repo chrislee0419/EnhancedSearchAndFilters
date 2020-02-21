@@ -230,10 +230,10 @@
     <EmbeddedResource Include="UI\Views\ButtonPanelModules\MainModuleView.bsml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="UI\Views\ButtonPanelModules\SortModeView.bsml" />
+    <EmbeddedResource Include="UI\Views\ButtonPanelModules\SortModeModuleView.bsml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="UI\Views\ButtonPanelModules\QuickFilterView.bsml" />
+    <EmbeddedResource Include="UI\Views\ButtonPanelModules\QuickFilterModuleView.bsml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
