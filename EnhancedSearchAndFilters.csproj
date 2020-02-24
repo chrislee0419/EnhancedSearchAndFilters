@@ -120,6 +120,11 @@
     <Reference Include="UnityEngine.UIModule">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\UnityEngine.UIModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <Private>False</Private>
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.UnityWebRequestModule.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
     <Reference Include="UnityEngine.VRModule">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\UnityEngine.VRModule.dll</HintPath>
     </Reference>
@@ -165,6 +170,7 @@
     <Compile Include="UI\Components\SearchKeyboard.cs" />
     <Compile Include="UI\FlowCoordinators\FilterFlowCoordinator.cs" />
     <Compile Include="UI\FlowCoordinators\SearchFlowCoordinator.cs" />
+    <Compile Include="UI\GitHubAPIHelper.cs" />
     <Compile Include="UI\SettingsMenu.cs" />
     <Compile Include="UI\SongListUI.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
