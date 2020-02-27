@@ -11,6 +11,7 @@ using BS_Utils.Utilities;
 using BeatSaberMarkupLanguage;
 using EnhancedSearchAndFilters.Filters;
 using EnhancedSearchAndFilters.Tweaks;
+using EnhancedSearchAndFilters.UI.Components;
 using EnhancedSearchAndFilters.UI.FlowCoordinators;
 using EnhancedSearchAndFilters.SongData;
 
@@ -23,11 +24,13 @@ namespace EnhancedSearchAndFilters.UI
         Campaign
     }
 
-    class SongListUI : PersistentSingleton<SongListUI>
+    internal class SongListUI : PersistentSingleton<SongListUI>
     {
         private FlowCoordinator _freePlayFlowCoordinator;
         private SearchFlowCoordinator _searchFlowCoordinator;
         private FilterFlowCoordinator _filterFlowCoordinator;
+
+        private SongListUIAdditions _uiAdditions;
 
         private LevelCollectionTableView _levelCollectionTableView;
         private TableView _levelsTableView;
@@ -148,18 +151,21 @@ namespace EnhancedSearchAndFilters.UI
         private void InitializeButtonPanel(bool forceReinit = false)
         {
             ButtonPanel.instance.Setup(forceReinit);
+            _uiAdditions = LevelSelectionNavigationController.gameObject.AddComponent<SongListUIAdditions>();
 
             ButtonPanel.instance.SearchButtonPressed -= SearchButtonPressed;
             ButtonPanel.instance.FilterButtonPressed -= FilterButtonPressed;
             ButtonPanel.instance.ClearFilterButtonPressed -= ClearButtonPressed;
             ButtonPanel.instance.SortButtonPressed -= SortButtonPressed;
             ButtonPanel.instance.ApplyQuickFilterPressed -= ApplyQuickFilterPressed;
+            ButtonPanel.instance.ReportButtonPressed -= ReportButtonPressed;
 
             ButtonPanel.instance.SearchButtonPressed += SearchButtonPressed;
             ButtonPanel.instance.FilterButtonPressed += FilterButtonPressed;
             ButtonPanel.instance.ClearFilterButtonPressed += ClearButtonPressed;
             ButtonPanel.instance.SortButtonPressed += SortButtonPressed;
             ButtonPanel.instance.ApplyQuickFilterPressed += ApplyQuickFilterPressed;
+            ButtonPanel.instance.ReportButtonPressed += ReportButtonPressed;
         }
 
         private void OnFreePlayFlowCoordinatorFinished(FlowCoordinator unused)
@@ -345,6 +351,11 @@ namespace EnhancedSearchAndFilters.UI
                 LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView"));
 
             ButtonPanel.instance.SetFilterStatus(true);
+        }
+
+        private void ReportButtonPressed()
+        {
+            _uiAdditions.ShowBugReportModal();
         }
 
         private BeatmapLevelPack CreateSortedBeatmapLevelPack(IBeatmapLevelPack levelPack)

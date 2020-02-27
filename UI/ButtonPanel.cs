@@ -17,6 +17,7 @@ namespace EnhancedSearchAndFilters.UI
         public event Action ClearFilterButtonPressed;
         public event Action SortButtonPressed;
         public event Action<QuickFilter> ApplyQuickFilterPressed;
+        public event Action ReportButtonPressed;
 
         public bool Initialized { get; private set; } = false;
 
@@ -30,6 +31,7 @@ namespace EnhancedSearchAndFilters.UI
         private MainModule _mainModule;
         private SortModeModule _sortModeModule;
         private QuickFilterModule _quickFilterModule;
+        private MiscModule _miscModule;
 
         private const float DefaultYScale = 0.02f;
         private const float HiddenYScale = 0f;
@@ -166,6 +168,17 @@ namespace EnhancedSearchAndFilters.UI
                 anchoredPos -= sizeDelta;
                 _expandedXSize += sizeDelta.x;
             }
+
+            _miscModule = new GameObject("MiscModule").AddComponent<MiscModule>();
+            _miscModule.ReportButtonPressed += () => ReportButtonPressed?.Invoke();
+
+            _miscModule.RectTransform.SetParent(_container.transform, false);
+            _miscModule.RectTransform.anchorMin = anchorMin;
+            _miscModule.RectTransform.anchorMax = anchorMax;
+            _miscModule.RectTransform.sizeDelta = sizeDelta;
+            _miscModule.RectTransform.anchoredPosition = anchoredPos;
+            anchoredPos -= sizeDelta;
+            _expandedXSize += sizeDelta.x;
 
             Initialized = true;
 

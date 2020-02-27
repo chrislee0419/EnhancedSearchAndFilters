@@ -1,0 +1,80 @@
+﻿<bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+    xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'
+    anchor-min-x='0' anchor-min-y='0'
+    anchor-max-x='1' anchor-max-y='1'
+    size-delta-x='0' size-delta-y='0'>
+  
+  <!-- bug report modal -->
+  <modal show-event='show-bug-report-modal'
+         hide-event='hide-bug-report-modal'
+         size-delta-x='120' size-delta-y='70'
+         click-off-closes='true'>
+    <vertical anchor-min-x='0' anchor-min-y='0'
+              anchor-max-x='1' anchor-max-y='1'
+              size-delta-x='0' size-delta-y='0'
+              spacing='3' pad='3'>
+      <vertical preferred-width='112' spacing='1'>
+        <text text='Found an issue in &lt;color=#FFFFDD&gt;Enhanced Search And Filters&lt;/color&gt;? Have a suggestion on how to make the mod better? Open an issue on the GitHub page or message me through Discord!'
+              font-size='3.4'
+              overflow-mode='Overflow'
+              word-wrapping='true' />
+        <text text='More information can be found on the GitHub page.'
+              font-size='3.4'
+              overflow-mode='Overflow'
+              word-wrapping='true' />
+        </vertical>
+      <horizontal preferred-width='110'
+                  spacing='2'>
+        <vertical preferred-width='75'
+                  spacing='1'>
+          <text text='Reported Issues'
+                font-size='4.5'
+                font-align='Center'
+                underlined='true' />
+          <horizontal bg='round-rect-panel'
+                      preferred-width='75'
+                      preferred-height='38'>
+            <bg anchor-min-x='0' anchor-min-y='0'
+                anchor-max-x='1' anchor-max-y='1'
+                size-delta-x='0' size-delta-y='0'>
+              <vertical id='issues-list'
+                        anchor-min-x='0' anchor-min-y='0'
+                        anchor-max-x='1' anchor-max-y='1'
+                        size-delta-x='0' size-delta-y='0'
+                        child-align='UpperCenter'
+                        horizontal-fit='Unconstrained'
+                        vertical-fit='Unconstrained'
+                        child-control-height='false'
+                        pad='2' />
+            </bg>
+          </horizontal>
+        </vertical>
+        <vertical spacing='10'>
+          <vertical spacing='1'>
+            <button text='Open Logs Folder'
+                    font-size='3.5'
+                    preferred-width='33'
+                    preferred-height='8'
+                    stroke-type='Clean'
+                    pad='1'
+                    on-click='open-logs-folder-button-clicked' />
+            <button text='Open GitHub Page'
+                    font-size='3.5'
+                    preferred-width='33'
+                    preferred-height='8'
+                    stroke-type='Clean'
+                    pad='1'
+                    on-click='open-github-page-button-clicked' />
+          </vertical>
+          <button text='Close'
+                  font-size='3.5'
+                  preferred-width='33'
+                  preferred-height='8'
+                  stroke-type='Clean'
+                  pad='1'
+                  click-event='hide-bug-report-modal' />
+        </vertical>
+      </horizontal>
+    </vertical>
+  </modal>
+</bg>
