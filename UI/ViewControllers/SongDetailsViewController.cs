@@ -279,18 +279,23 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
             // ensure that there are only 5 stats rect transforms, representing each difficulty
             // another mod could add/remove these, which would mess up the layout for our use
-            RectTransform original = statsPanel.GetComponentsInChildren<RectTransform>(true).First(x => x.name == "Highscore");
-            while (statsPanel.GetComponentsInChildren<RectTransform>(true).Count(getStatsRectTransforms) < _difficultyStrings.Length)
-                Instantiate(original, statsPanel.transform, false);
-            while (statsPanel.GetComponentsInChildren<RectTransform>(true).Count(getStatsRectTransforms) > _difficultyStrings.Length)
-                Destroy(statsPanel.GetComponentsInChildren<RectTransform>(true).First(getStatsRectTransforms));
+            RectTransform prefab = statsPanel.GetComponentsInChildren<RectTransform>(true).First(x => x.name == "Highscore");
 
-            RectTransform[] rectTransforms = statsPanel.GetComponentsInChildren<RectTransform>(true).Where(getStatsRectTransforms).ToArray();
+            foreach (var statsRectTransform in statsPanel.GetComponentsInChildren<RectTransform>().Where(x => x.parent == statsPanel))
+            {
+                if (statsRectTransform != prefab)
+                    Destroy(statsRectTransform.gameObject);
+            }
+            List<RectTransform> rectTransforms = new List<RectTransform>(_difficultyStrings.Length);
+            rectTransforms.Add(prefab);
+
+            while (rectTransforms.Count < _difficultyStrings.Length)
+                rectTransforms.Add(Instantiate(prefab, statsPanel.transform, false));
 
             float width = 16f;      // parent width = 80u
             float height = 8f;      // parent height = 9u
             float xPos = 1f;
-            for (int i = 0; i < rectTransforms.Length; ++i)
+            for (int i = 0; i < rectTransforms.Count; ++i)
             {
                 RectTransform rt = rectTransforms[i];
                 rt.name = _difficultyStrings[i];
