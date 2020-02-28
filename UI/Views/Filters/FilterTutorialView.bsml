@@ -237,7 +237,7 @@
             vertical-fit='PreferredSize'
             child-align='UpperCenter'
             spacing='2'>
-    <text text='What Are Quick Filters'
+    <text text='What Are Quick Filters?'
           font-size='6'
           font-align='Center'
           underlined='true' />
