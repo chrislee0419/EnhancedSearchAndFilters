@@ -126,6 +126,12 @@ namespace EnhancedSearchAndFilters.UI.Components
             randomImage.sprite = randomSprite;
             randomImage.rectTransform.sizeDelta = new Vector2(4f, 3f);
 
+            // move buttons to the correct transform
+            Transform parent = (_tableView.dataSource as LevelCollectionTableView).transform;
+            _pageUpButton.transform.SetParent(parent, true);
+            _pageDownButton.transform.SetParent(parent, true);
+            _randomButton.transform.SetParent(parent, true);
+
             this.gameObject.GetComponent<LevelSelectionNavigationController>().didDeactivateEvent += OnNavigationControllerDeactivation;
 
             _initialized = true;
