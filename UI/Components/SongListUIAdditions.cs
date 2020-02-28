@@ -251,6 +251,9 @@ namespace EnhancedSearchAndFilters.UI.Components
         [UIAction("random-button-clicked")]
         private void OnRandomButtonClicked()
         {
+            if (_tableView.numberOfCells == 0)
+                return;
+
             int index = _rng.Next(_tableView.numberOfCells);
             while (index == 0 && (_tableView.dataSource as LevelCollectionTableView).GetPrivateField<bool>("_showLevelPackHeader"))
                 index = _rng.Next(_tableView.numberOfCells);
