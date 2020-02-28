@@ -4,6 +4,7 @@ using IPA;
 using UnityEngine.SceneManagement;
 using IPALogger = IPA.Logging.Logger;
 using IPAPluginManager = IPA.Loader.PluginManager;
+using SemVer;
 using SongCore;
 using BeatSaberMarkupLanguage.Settings;
 using BS_Utils.Utilities;
@@ -16,6 +17,8 @@ namespace EnhancedSearchAndFilters
 {
     public class Plugin : IBeatSaberPlugin
     {
+        public static Version Version => IPAPluginManager.GetPluginFromId("EnhancedSearchAndFilters")?.Metadata.Version;
+
         public void Init(IPALogger logger)
         {
             Logger.log = logger;

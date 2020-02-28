@@ -48,9 +48,10 @@ _**If you have any suggestions or found any bugs**_, please report it [here](htt
 
 ## Icon Credits
 
-Filter icon made by [Freepik](https://www.freepik.com/) on [www.flaticon.com](https://www.flaticon.com/), modified with colours inverted.
+Checkmark icon made by [Silviu Runceanu](https://www.flaticon.com/authors/silviu-runceanu) on [www.flaticon.com](https://www.flaticon.com/), modified with colours inverted (licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/legalcode)).
 
-Checkmark icon made by [Silviu Runceanu](https://www.flaticon.com/authors/silviu-runceanu) on [www.flaticon.com](https://www.flaticon.com/), modified with colours inverted (licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/)).
+Cross icon made by [Silviu Runceanu](https://www.flaticon.com/authors/silviu-runceanu) on [www.flaticon.com](https://www.flaticon.com/), modified with colours inverted (licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/legalcode)).
 
-Cross icon made by [Silviu Runceanu](https://www.flaticon.com/authors/silviu-runceanu) on [www.flaticon.com](https://www.flaticon.com/), modified with colours inverted (licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/)).
+Garbage can icon made by Aleksandr Demchenko, modified with colours inverted (licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/legalcode))
 
+Shuffle icon made by [Freepik](https://www.flaticon.com/authors/freepik) from [www.flaticon.com](https://www.flaticon.com/).

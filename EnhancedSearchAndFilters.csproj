@@ -120,6 +120,11 @@
     <Reference Include="UnityEngine.UIModule">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\UnityEngine.UIModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <Private>False</Private>
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.UnityWebRequestModule.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
     <Reference Include="UnityEngine.VRModule">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\UnityEngine.VRModule.dll</HintPath>
     </Reference>
@@ -130,6 +135,7 @@
   <ItemGroup>
     <Compile Include="Filters\FilterList.cs" />
     <Compile Include="Filters\PlayerStatsFilter.cs" />
+    <Compile Include="Filters\QuickFiltersManager.cs" />
     <Compile Include="Search\BKTree.cs" />
     <Compile Include="Search\FuzzyStringMatching.cs" />
     <Compile Include="Search\Trie.cs" />
@@ -155,14 +161,23 @@
     <Compile Include="Tweaks\SongBrowserTweaks.cs" />
     <Compile Include="Tweaks\SongDataCoreTweaks.cs" />
     <Compile Include="UI\ButtonPanel.cs" />
+    <Compile Include="UI\Components\ButtonPanelModules\MainModule.cs" />
+    <Compile Include="UI\Components\ButtonPanelModules\MiscModule.cs" />
+    <Compile Include="UI\Components\ButtonPanelModules\QuickFilterModule.cs" />
+    <Compile Include="UI\Components\ButtonPanelModules\SortModeModule.cs" />
+    <Compile Include="UI\Components\ClickEventHandler.cs" />
     <Compile Include="UI\Components\EnterExitEventHandler.cs" />
+    <Compile Include="UI\Components\FilterTutorialPages.cs" />
     <Compile Include="UI\Components\PredictionBar.cs" />
+    <Compile Include="UI\Components\ScrollingText.cs" />
     <Compile Include="UI\Components\SearchKeyboard.cs" />
     <Compile Include="UI\FlowCoordinators\FilterFlowCoordinator.cs" />
     <Compile Include="UI\FlowCoordinators\SearchFlowCoordinator.cs" />
+    <Compile Include="UI\GitHubAPIHelper.cs" />
     <Compile Include="UI\SettingsMenu.cs" />
     <Compile Include="UI\SongListUI.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UI\Components\SongListUIAdditions.cs" />
     <Compile Include="UI\Utilities.cs" />
     <Compile Include="UI\Components\CompactSearchKeyboard.cs" />
     <Compile Include="UI\ViewControllers\FilterSideViewController.cs" />
@@ -173,40 +188,74 @@
     <Compile Include="UI\ViewControllers\SearchResultsNavigationController.cs" />
     <Compile Include="UI\ViewControllers\SearchResultsListViewController.cs" />
     <Compile Include="UI\ViewControllers\SongDetailsViewController.cs" />
-    <EmbeddedResource Include="UI\Views\DifficultyFilterView.bsml" />
-    <EmbeddedResource Include="UI\Views\DurationFilterView.bsml" />
-    <EmbeddedResource Include="UI\Views\NJSFilterView.bsml" />
-    <EmbeddedResource Include="UI\Views\OtherFilterView.bsml" />
-    <EmbeddedResource Include="UI\Views\PlayerStatsFilterView.bsml" />
-    <EmbeddedResource Include="UI\Views\PPFilterView.bsml" />
-    <EmbeddedResource Include="UI\Views\StarDifficultyFilterView.bsml" />
+    <EmbeddedResource Include="UI\Views\Filters\DifficultyFilterView.bsml" />
+    <EmbeddedResource Include="UI\Views\Filters\DurationFilterView.bsml" />
+    <EmbeddedResource Include="UI\Views\Filters\NJSFilterView.bsml" />
+    <EmbeddedResource Include="UI\Views\Filters\OtherFilterView.bsml" />
+    <EmbeddedResource Include="UI\Views\Filters\PlayerStatsFilterView.bsml" />
+    <EmbeddedResource Include="UI\Views\Filters\PPFilterView.bsml" />
+    <EmbeddedResource Include="UI\Views\Filters\StarDifficultyFilterView.bsml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="manifest.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Assets\filter.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Assets\checkmark.png" />
     <EmbeddedResource Include="Assets\cross.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="UI\Views\FilterMainView.bsml" />
+    <EmbeddedResource Include="UI\Views\Filters\FilterMainView.bsml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="UI\Views\ButtonPanelView.bsml" />
     <EmbeddedResource Include="UI\Views\SearchOptionsView.bsml" />
     <EmbeddedResource Include="UI\Views\SearchResultsNavigationView.bsml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="UI\Views\FilterLoadingView.bsml" />
+    <EmbeddedResource Include="UI\Views\Filters\FilterLoadingView.bsml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="UI\Views\FilterSideView.bsml" />
+    <EmbeddedResource Include="UI\Views\Filters\FilterSideView.bsml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="UI\Views\SettingsView.bsml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\chevron.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\garbagecan.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UI\Views\Filters\FilterTutorialView.bsml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\circle.png" />
+    <EmbeddedResource Include="Assets\FilterTutorial\filterlistexample.jpg" />
+    <EmbeddedResource Include="Assets\FilterTutorial\quickfilterexample.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\FilterTutorial\savingquickfilterexample.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UI\Views\ButtonPanelModules\MainModuleView.bsml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UI\Views\ButtonPanelModules\SortModeModuleView.bsml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UI\Views\ButtonPanelModules\QuickFilterModuleView.bsml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UI\Views\SongListUIView.bsml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UI\Views\ButtonPanelModules\MiscModuleView.bsml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\doublechevron.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\shuffle.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

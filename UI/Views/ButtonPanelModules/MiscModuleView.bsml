@@ -1,0 +1,37 @@
+﻿<vertical xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'
+          child-align='MiddleCenter'
+          spacing='2'
+          pad='3'>
+  <vertical preferred-height='11'
+            spacing='0.5'>
+    <horizontal preferred-width='22'
+                preferred-height='4.5'>
+      <text text='~version-text'
+            font-size='2.6'
+            font-align='Center' />
+    </horizontal>
+    <button id='update-button'
+            text='Up-to-Date'
+            interactable='false'
+            font-size='3'
+            font-align='Center'
+            preferred-width='22'
+            preferred-height='6'
+            stroke-type='Clean'
+            on-click='update-button-clicked'
+            pad='1' />
+  </vertical>
+  <button id='report-button'
+          text='Report an Issue'
+          font-size='3'
+          font-align='Center'
+          overflow-mode='Overflow'
+          word-wrapping='true'
+          preferred-width='22'
+          preferred-height='9'
+          stroke-type='Clean'
+          stroke-color='#FF8888'
+          on-click='report-button-clicked'
+          pad='1' />
+</vertical>

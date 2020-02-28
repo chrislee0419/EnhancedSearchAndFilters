@@ -7,6 +7,8 @@ namespace EnhancedSearchAndFilters
     {
         private static readonly Config config = new Config("EnhancedSearchAndFilters");
         private const string MainSection = "EnhancedSearchAndFilters";
+        private const string QuickFiltersSection = "QuickFilters";
+        private const string QuickFilterPrefix = "QuickFilter";
 
         /// <summary>
         /// The maximum number of songs that can be displayed as an intermediate search result.
@@ -95,6 +97,16 @@ namespace EnhancedSearchAndFilters
             get => config.GetBool(MainSection, "DisableFilter", false, true);
             set => config.SetBool(MainSection, "DisableFilter", value);
         }
+
+        public static float FastScrollSpeed
+        {
+            get => config.GetFloat(MainSection, "FastScrollSpeed", 5f, true);
+            set => config.SetFloat(MainSection, "FastScrollSpeed", value);
+        }
+
+        public static string GetQuickFilterData(int slot) => config.GetString(QuickFiltersSection, $"{QuickFilterPrefix}{slot}", "", true);
+
+        public static void SetQuickFilterData(int slot, string serializedData) => config.SetString(QuickFiltersSection, $"{QuickFilterPrefix}{slot}", serializedData);
     }
 
     internal enum SearchableSongFields

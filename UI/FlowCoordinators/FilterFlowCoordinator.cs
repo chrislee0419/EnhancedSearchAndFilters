@@ -16,8 +16,6 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
         public event Action<IPreviewBeatmapLevel[]> FilterApplied;
         public event Action FiltersUnapplied;
 
-        public bool AreFiltersApplied { get; private set; } = false;
-
         private FilterMainViewController _filterMainViewController;
         private FilterSideViewController _filterSideViewController;
 
@@ -42,8 +40,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                 _filterSideViewController.FilterSelected += FilterSelected;
                 _filterSideViewController.ClearButtonPressed += ClearAllFilterChanges;
                 _filterSideViewController.DefaultButtonPressed += SetAllFiltersToDefault;
-
-                _filterSideViewController.SetFilterList(FilterList.ActiveFilters);
+                _filterSideViewController.QuickFilterApplied += ApplyQuickFilter;
 
                 FilterList.FilterListChanged -= FilterListChanged;
                 FilterList.FilterListChanged += FilterListChanged;
@@ -59,6 +56,8 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             // filter will be re-selected during the LoadBeatmaps on finish handler, which will re-install this delegate
             if (_currentFilter != null)
                 _currentFilter.SettingChanged -= FilterSettingChanged;
+
+            _filterSideViewController.HideModals();
 
             BackButtonPressed?.Invoke();
         }
@@ -80,15 +79,17 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
         private void RefreshUI()
         {
             bool anyAppliedNoChanges = FilterList.ActiveFilters.Any(x => x.Status == FilterStatus.Applied);
-            bool anyChanged = FilterList.ActiveFilters.Any(x => x.HasChanges);
+            bool anyChanged = FilterList.AnyChanged;
             bool allDefaults = FilterList.ActiveFilters.All(x => x.IsStagingDefaultValues);
             bool currentChanged = _currentFilter.HasChanges;
             bool currentDefault = _currentFilter.IsStagingDefaultValues;
 
             _filterMainViewController.SetButtonInteractivity(anyAppliedNoChanges || anyChanged, currentChanged, !currentDefault);
             _filterMainViewController.SetApplyUnapplyButton(!anyAppliedNoChanges || anyChanged);
-            _filterSideViewController.SetButtonInteractivity(anyChanged, !allDefaults);
-            _filterSideViewController.RefreshFilterList();
+
+            _filterSideViewController.ClearButtonInteractable = anyChanged;
+            _filterSideViewController.DefaultButtonInteractable = !allDefaults;
+            _filterSideViewController.RefreshFilterListCellContent();
         }
 
         // beatmaps have to be loaded after everything is created, since only then will the loading view exist
@@ -119,17 +120,23 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                 delegate (BeatmapDetails[] levels)
                 {
                     // on finish
-                    _filterSideViewController.SetFilterListVisibility(true);
+                    _filterSideViewController.FilterListActive = true;
+                    _filterSideViewController.QuickFilterSectionActive = true;
+
+                    // NOTE: this quick filter check is done here, since the text size calculation cannot be done during DidActivate
+                    // it also can't happen before FilterListActive is set to true, otherwise the first time this text is shown,
+                    // it will be a tenth of the size of what it should be
+                    _filterSideViewController.CheckSelectedQuickFilter();
 
                     if (_currentFilter != null)
                     {
                         FilterSelected(_currentFilter);
-                        _filterSideViewController.SelectCell(FilterList.ActiveFilters.IndexOf(_currentFilter));
+                        _filterSideViewController.SelectFilterCell(FilterList.ActiveFilters.IndexOf(_currentFilter));
                     }
                     else
                     {
                         FilterSelected(FilterList.ActiveFilters.First());
-                        _filterSideViewController.SelectCell(0);
+                        _filterSideViewController.SelectFilterCell(0);
                     }
                     RefreshUI();
 
@@ -164,78 +171,45 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             if (!Tweaks.SongBrowserTweaks.Initialized)
                 Logger.log.Debug($"Applying filter, starting with {_beatmapDetails.Count} songs");
 
-            List<BeatmapDetails> filteredLevels = _beatmapDetails.Values.Distinct().ToList();
+            List<BeatmapDetails> filteredLevels = null;
 
-            bool hasApplied = false;
-            foreach (var filter in FilterList.ActiveFilters)
-            {
-                filter.ApplyStagingValues();
-
-                if (filter.Status == FilterStatus.Applied)
-                {
-                    // if SongBrowser is loaded, we will apply the filter after the call to SongBrowserUI:ProcessSongList()
-                    if (!Tweaks.SongBrowserTweaks.Initialized)
-                        filter.FilterSongList(ref filteredLevels);
-                    hasApplied = true;
-                }
-            }
-
+            bool hasApplied;
             if (!Tweaks.SongBrowserTweaks.Initialized)
+            {
+                filteredLevels = new List<BeatmapDetails>(_beatmapDetails.Values);
+                hasApplied = FilterList.ApplyFilter(ref filteredLevels);
                 Logger.log.Debug($"Filter completed, {filteredLevels.Count} songs left");
+            }
+            else
+            {
+                foreach (var filter in FilterList.ActiveFilters)
+                    filter.ApplyStagingValues();
+                hasApplied = FilterList.AnyApplied;
+            }
 
             RefreshUI();
 
             if (hasApplied)
             {
-                AreFiltersApplied = true;
-
                 if (Tweaks.SongBrowserTweaks.ModLoaded && Tweaks.SongBrowserTweaks.Initialized)
+                {
                     _filterMainViewController.ShowInfoText("Filter applied");
+                }
                 else
+                {
                     _filterMainViewController.ShowInfoText($"{filteredLevels.Count} out of {_beatmapDetails.Count} songs found");
 
-                // SongBrowser will create its own BeatmapLevelPack when it gets our filtered levels via:
-                // ProcessSongList() -> CustomFilterHandler() -> ApplyFiltersForSongBrowser() -> ApplyFilters()
-                // filters are applied once this flow coordinator is dismissed
-                if (!Tweaks.SongBrowserTweaks.Initialized)
+                    // SongBrowser will create its own BeatmapLevelPack when it gets our filtered levels via:
+                    // ProcessSongList() -> CustomFilterHandler() -> ApplyFiltersForSongBrowser() -> ApplyFilters()
+                    // filters are applied once this flow coordinator is dismissed
                     FilterApplied?.Invoke(_beatmapDetails.Where(x => filteredLevels.Contains(x.Value)).Select(x => x.Key).ToArray());
+                }
             }
             else
             {
                 // default values were applied (no filtering or undo filtering)
-                AreFiltersApplied = false;
-
                 FiltersUnapplied?.Invoke();
             }
-        }
-
-        /// <summary>
-        /// Filter application logic intended for use when filters are applied outside of this flow coordinator.
-        /// </summary>
-        /// <param name="levels">Array of levels to filter.</param>
-        /// <returns>The filtered list of beatmaps.</returns>
-        public List<IPreviewBeatmapLevel> ApplyFiltersFromExternalViewController(IPreviewBeatmapLevel[] levels)
-        {
-            Logger.log.Debug($"Applying filters from an external view controller. Starting with {levels.Length} songs");
-
-            BeatmapDetails[] detailsList = BeatmapDetailsLoader.instance.LoadBeatmapsInstant(levels);
-
-            Dictionary<BeatmapDetails, IPreviewBeatmapLevel> pairs = new Dictionary<BeatmapDetails, IPreviewBeatmapLevel>(levels.Length);
-            for (int i = 0; i < levels.Length; ++i)
-            {
-                if (detailsList[i] != null && !pairs.ContainsKey(detailsList[i]))
-                    pairs.Add(detailsList[i], levels[i]);
-            }
-
-            var filteredLevels = pairs.Keys.ToList();
-            foreach (var filter in FilterList.ActiveFilters)
-            {
-                if (filter.Status == FilterStatus.Applied || filter.Status == FilterStatus.AppliedAndChanged)
-                    filter.FilterSongList(ref filteredLevels);
-            }
-            Logger.log.Debug($"Filter completed, {filteredLevels.Count} songs left");
-
-            return pairs.Where(x => filteredLevels.Contains(x.Key)).Select(x => x.Value).ToList();
         }
 
         /// <summary>
@@ -247,7 +221,6 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             foreach (var filter in FilterList.ActiveFilters)
                 filter.ApplyDefaultValues();
 
-            AreFiltersApplied = false;
             RefreshUI();
 
             if (sendEvent)
@@ -264,6 +237,12 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
         {
             _currentFilter.SetDefaultValuesToStaging();
             RefreshUI();
+        }
+
+        private void ApplyQuickFilter(QuickFilter quickFilter)
+        {
+            FilterList.ApplyQuickFilter(quickFilter);
+            ApplyFilters();
         }
 
         private void FilterSelected(IFilter selectedFilter)
@@ -294,7 +273,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 
         private void FilterListChanged()
         {
-            _filterSideViewController.SetFilterList(FilterList.ActiveFilters);
+            _filterSideViewController.SetFilterList();
 
             // the filter list isn't intended to be changed when in the filter screen
             // so if the current filter has been removed, just set it to null and

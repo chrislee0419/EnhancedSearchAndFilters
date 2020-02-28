@@ -1,0 +1,347 @@
+﻿<bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+    xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'
+    anchor-min-x='0' anchor-min-y='0'
+    anchor-max-x='1' anchor-max-y='1'
+    size-delta-x='0' size-delta-y='0'>
+  <!-- close button -->
+  <button-with-icon icon='EnhancedSearchAndFilters.Assets.cross.png'
+                    stroke-type='Clean'
+                    stroke-color='#FF5555'
+                    anchor-min-x='1' anchor-min-y='1'
+                    anchor-max-x='1' anchor-max-y='1'
+                    anchor-pos-x='-2' anchor-pos-y='-2'
+                    size-delta-x='6' size-delta-y='6'
+                    pivot-x='1' pivot-y='1'
+                    on-click='close-button-clicked'
+                    pad='2' />
+  
+  <!-- bottom nav bar -->
+  <bg anchor-min-x='0' anchor-min-y='0'
+      anchor-max-x='1' anchor-max-y='0'
+      anchor-pos-x='0' anchor-pos-y='2'
+      size-delta-x='-4' size-delta-y='6'
+      pivot-x='0.5' pivot-y='0'>
+    <button text='Previous'
+            font-size='4'
+            active='~previous-button-active'
+            stroke-type='Clean'
+            anchor-min-x='0' anchor-min-y='0'
+            anchor-max-x='0' anchor-max-y='1'
+            anchor-pos-x='0' anchor-pos-y='0'
+            preferred-width='24' preferred-height='6'
+            pivot-x='0' pivot-y='0.5'
+            on-click='previous-button-clicked'
+            pad='1' />
+    <button text='Next'
+            font-size='4'
+            active='~next-button-active'
+            stroke-type='Clean'
+            anchor-min-x='1' anchor-min-y='0'
+            anchor-max-x='1' anchor-max-y='1'
+            anchor-pos-x='0' anchor-pos-y='0'
+            preferred-width='24' preferred-height='6'
+            pivot-x='1' pivot-y='0.5'
+            on-click='next-button-clicked'
+            pad='1' />
+    <!-- page indicator bar -->
+    <horizontal bg='round-rect-panel'
+                anchor-min-x='0' anchor-min-y='0'
+                anchor-max-x='1' anchor-max-y='0'
+                anchor-pos-x='0' anchor-pos-y='0'
+                min-width='22' min-height='6'
+                horizontal-fit='MinSize'
+                vertical-fit='MinSize'
+                pivot-x='0.5' pivot-y='0'
+                spacing='1' pad-top='2' pad-bottom='2' pad-left='4' pad-right='4'>
+      <raw-image id='indicator-1'
+                 source='EnhancedSearchAndFilters.Assets.circle.png'
+                 min-width='2' min-height='2' />
+      <raw-image id='indicator-2'
+                 source='EnhancedSearchAndFilters.Assets.circle.png'
+                 min-width='2' min-height='2' />
+      <raw-image id='indicator-3'
+                 source='EnhancedSearchAndFilters.Assets.circle.png'
+                 min-width='2' min-height='2' />
+      <raw-image id='indicator-4'
+                 source='EnhancedSearchAndFilters.Assets.circle.png'
+                 min-width='2' min-height='2' />
+      <raw-image id='indicator-5'
+                 source='EnhancedSearchAndFilters.Assets.circle.png'
+                 min-width='2' min-height='2' />
+    </horizontal>
+  </bg>
+  
+  <!-- filter intro page -->
+  <vertical active='~filter-page-active'
+            anchor-min-x='0' anchor-min-y='1'
+            anchor-max-x='1' anchor-max-y='1'
+            anchor-pos-x='0' anchor-pos-y='-1'
+            size-delta-x='-6' size-delta-y='-12'
+            pivot-x='0.5' pivot-y='1'
+            vertical-fit='PreferredSize'
+            child-align='UpperCenter'
+            spacing='2'>
+    <text text='What Are Filters?'
+          font-size='6'
+          font-align='Center'
+          underlined='true' />
+    <horizontal vertical-fit='PreferredSize'
+                horizontal-fit='PreferredSize'
+                spacing='5'>
+      <vertical preferred-width='60'>
+        <text text='Filters allow you to &lt;color=#FFFFDD&gt;reduce the number of songs shown by removing songs that don&apos;t fulfill the criteria you set&lt;/color&gt;.'
+              font-size='3'
+              font-align='TopLeft'
+              overflow-mode='Overflow'
+              word-wrapping='true' />
+        <text text='The colors next to each filter represent the filter&apos;s status. Refer to the legend below for more information.'
+              font-size='3'
+              font-align='TopLeft'
+              overflow-mode='Overflow'
+              word-wrapping='true' />
+      </vertical>
+      <vertical horizontal-fit='MinSize' vertical-fit='MinSize'>
+        <raw-image id='filter-list-example-image'
+                   source='EnhancedSearchAndFilters.Assets.FilterTutorial.filterlistexample.jpg'
+                   min-width='30'
+                   min-height='20' />
+      </vertical>
+    </horizontal>
+    <vertical bg='round-rect-panel'
+              pad='2'>
+      <text text='Filter Color Legend'
+            font-size='3' 
+            font-align='Center'
+            underlined='true' />
+      <horizontal preferred-width='50'>
+        <vertical preferred-width='20'>
+          <text text='&lt;color=#FF5555&gt;Red&lt;/color&gt;' 
+                font-size='2.8' />
+          <text text='&lt;color=#FFFF77&gt;Yellow&lt;/color&gt;'
+                font-size='2.8' />
+          <text text='&lt;color=#55FF55&gt;Green&lt;/color&gt;'
+                font-size='2.8' />
+          <text text='&lt;color=#55AAFF&gt;Blue&lt;/color&gt;'
+                font-size='2.8' />
+        </vertical>
+        <vertical>
+          <text text='Not applied'
+                font-size='2.8' />
+          <text text='Not applied, but has changes'
+                font-size='2.8' />
+          <text text='Applied'
+                font-size='2.8' />
+          <text text='Applied, but has changes'
+                font-size='2.8' />
+        </vertical>
+      </horizontal>
+    </vertical>
+  </vertical>
+  
+  <!-- filter loading page -->
+  <vertical active='~filter-loading-page-active'
+            anchor-min-x='0' anchor-min-y='1'
+            anchor-max-x='1' anchor-max-y='1'
+            anchor-pos-x='0' anchor-pos-y='-1'
+            size-delta-x='-6' size-delta-y='-12'
+            pivot-x='0.5' pivot-y='1'
+            vertical-fit='PreferredSize'
+            child-align='UpperCenter'
+            spacing='2'>
+    <text text='Loading Levels for Filtering'
+          font-size='6'
+          font-align='Center'
+          underlined='true' />
+    <vertical preferred-width='100'
+              spacing='2'>
+      <text text='Before you are able to use filters, the mod must &lt;color=#FFDDDD&gt;load all of your custom maps&lt;/color&gt;. This loading process may take a long time &lt;color=#FFFFDD&gt;(about 10 to 15 seconds for every 100 songs in your library)&lt;/color&gt;, but should only occur during the very first time you use this mod or during the next play session after downloading a large amount of songs.'
+            font-size='3'
+            font-align='TopLeft'
+            overflow-mode='Overflow'
+            word-wrapping='true' />
+      <text text='Once the first load finishes, loading should occur almost instantly for every subsequent play session.'
+            font-size='3'
+            font-align='TopLeft'
+            overflow-mode='Overflow'
+            word-wrapping='true' />
+    </vertical>
+    <vertical bg='round-rect-panel'
+              preferred-width='100'
+              pad='3'>
+      <text text='&lt;color=#EEFFEE&gt;Tip&lt;/color&gt;'
+            font-size='3.2'
+            font-align='TopLeft'
+            underlined='true' />
+      <text text='&lt;color=#EEFFEE&gt;You don&apos;t need to worry the about the loading process causing lag when playing the game! Loading is always paused during gameplay to minimize any potential of causing lag.&lt;/color&gt;'
+            font-size='2.6'
+            font-align='TopLeft'
+            overflow-mode='Overflow'
+            word-wrapping='true' />
+    </vertical>
+  </vertical>
+
+  <!-- disable filter page -->
+  <vertical active='~disable-filter-page-active'
+            anchor-min-x='0' anchor-min-y='1'
+            anchor-max-x='1' anchor-max-y='1'
+            anchor-pos-x='0' anchor-pos-y='-1'
+            size-delta-x='-6' size-delta-y='-12'
+            pivot-x='0.5' pivot-y='1'
+            vertical-fit='PreferredSize'
+            child-align='UpperCenter'
+            spacing='2'>
+    <text text='Disabling the Filter Feature'
+          font-size='6'
+          font-align='Center'
+          underlined='true' />
+    <vertical preferred-width='100'
+              spacing='2'>
+      <text text='If you are a competitive player, you may want to disable the Filter feature.'
+            font-size='3'
+            font-align='TopLeft'
+            overflow-mode='Overflow'
+            word-wrapping='true' />
+      <text text='The Filter feature is the largest part of this mod and works on relatively large chunks of data, so it may present a heavy load on your system. Although the filtering system is not active during gameplay, disabling this feature could help reduce additional load on the garbage collection system.'
+            font-size='3'
+            font-align='TopLeft'
+            overflow-mode='Overflow'
+            word-wrapping='true' />
+      <text text='You can disable this feature in the &lt;color=#FFFFDD&gt;"Enhanced Search And Filters"&lt;/color&gt; section of the &lt;color=#FFFFDD&gt;"Mod Settings"&lt;/color&gt; menu.'
+            font-size='3'
+            font-align='TopLeft'
+            overflow-mode='Overflow'
+            word-wrapping='true' />
+    </vertical>
+    <vertical bg='round-rect-panel'
+              preferred-width='100'
+              pad='2'>
+      <text text='&lt;color=#EEFFEE&gt;Tip&lt;/color&gt;'
+            font-size='3.2'
+            font-align='TopLeft'
+            underlined='true' />
+      <text text='&lt;color=#EEFFEE&gt;Although disabling filters is provided as an option for competitive players who want to minimize any effects on gameplay, I highly recommend using the mod "Trash Man" instead of disabling filters. You can find the mod on BeatMods.&lt;/color&gt;'
+            font-size='2.6'
+            font-align='TopLeft'
+            overflow-mode='Overflow'
+            word-wrapping='true' />
+    </vertical>
+  </vertical>
+  
+  <!-- quick filter page 1 -->
+  <vertical active='~quick-filter-page-active'
+            anchor-min-x='0' anchor-min-y='1'
+            anchor-max-x='1' anchor-max-y='1'
+            anchor-pos-x='0' anchor-pos-y='-1'
+            size-delta-x='-6' size-delta-y='-12'
+            pivot-x='0.5' pivot-y='1'
+            vertical-fit='PreferredSize'
+            child-align='UpperCenter'
+            spacing='2'>
+    <text text='What Are Quick Filters'
+          font-size='6'
+          font-align='Center'
+          underlined='true' />
+    <horizontal vertical-fit='PreferredSize'
+                horizontal-fit='PreferredSize'
+                spacing='5'>
+      <vertical preferred-width='65' spacing='2'>
+        <text text='Quick filters are a way for you to save your most frequently used filter settings and apply them from the song list menu.'
+              font-size='3'
+              font-align='TopLeft'
+              overflow-mode='Overflow'
+              word-wrapping='true' />
+        <vertical bg='round-rect-panel'
+                  preferred-width='60'
+                  pad='2'>
+          <text text='&lt;color=#EEFFEE&gt;Example&lt;/color&gt;'
+                font-size='2.8'
+                font-align='TopLeft'
+                underlined='true'
+                overflow-mode='Overflow'
+                word-wrapping='true' />
+          <text text='&lt;color=#EEFFEE&gt;If you often have friends over that have differing levels of skill in Beat Saber, you can :&lt;/color&gt;'
+                font-size='2.4'
+                font-align='TopLeft'
+                overflow-mode='Overflow'
+                word-wrapping='true' />
+          <text text='&lt;color=#EEFFEE&gt; -  Save a quick filter to show only Easy, Normal, or Hard levels&lt;/color&gt;'
+                font-size='2.4'
+                font-align='TopLeft'
+                overflow-mode='Overflow'
+                word-wrapping='true' />
+          <text text='&lt;color=#EEFFEE&gt; -  Save a quick filter to show only Expert or Expert+ levels&lt;/color&gt;'
+                font-size='2.4'
+                font-align='TopLeft'
+                overflow-mode='Overflow'
+                word-wrapping='true' />
+          <text text='&lt;color=#EEFFEE&gt;This way, you don&apos;t have to constantly change each filter&apos;s settings manually when each friend wants to play.&lt;/color&gt;'
+                font-size='2.4'
+                font-align='TopLeft'
+                overflow-mode='Overflow'
+                word-wrapping='true' />
+        </vertical>
+        <text text='You may save a &lt;color=#FFCCCC&gt;&lt;u&gt;&lt;b&gt;maximum of 10&lt;/b&gt;&lt;/u&gt;&lt;/color&gt; quick filters.'
+              font-size='3'
+              font-align='TopLeft'
+              overflow-mode='Overflow'
+              word-wrapping='true' />
+      </vertical>
+      <vertical horizontal-fit='MinSize' vertical-fit='MinSize'>
+        <raw-image id='quick-filter-example-image'
+                   source='EnhancedSearchAndFilters.Assets.FilterTutorial.quickfilterexample.jpg'
+                   min-width='25'
+                   min-height='25' />
+      </vertical>
+    </horizontal>
+  </vertical>
+
+  <!-- quick filter page 2 -->
+  <vertical active='~quick-filter-page-2-active'
+            anchor-min-x='0' anchor-min-y='1'
+            anchor-max-x='1' anchor-max-y='1'
+            anchor-pos-x='0' anchor-pos-y='-1'
+            size-delta-x='-6' size-delta-y='-12'
+            pivot-x='0.5' pivot-y='1'
+            vertical-fit='PreferredSize'
+            child-align='UpperCenter'
+            spacing='2'>
+    <text text='Creating a Quick Filter'
+          font-size='6'
+          font-align='Center'
+          underlined='true' />
+    <vertical preferred-width='100'
+              spacing='2'>
+      <text text='&lt;b&gt;1.&lt;/b&gt;  Set up each filter with the settings you want saved.'
+            font-size='3'
+            font-align='TopLeft'
+            overflow-mode='Overflow'
+            word-wrapping='true' />
+      <text text='&lt;b&gt;2.&lt;/b&gt;  Click the &lt;b&gt;&lt;color=#FFFFDD&gt;"Apply"&lt;/color&gt;&lt;/b&gt; button on the center screen. Make sure that at least one of the filters shows the &lt;color=#CCFFCC&gt;green "Applied" status&lt;/color&gt; (unapplied settings will not be saved).'
+            font-size='3'
+            font-align='TopLeft'
+            overflow-mode='Overflow'
+            word-wrapping='true' />
+      <text text='&lt;b&gt;3.&lt;/b&gt;  On the left screen, click the &lt;b&gt;&lt;color=#FFFFDD&gt;"Save Settings To Quick Filter"&lt;/color&gt;&lt;/b&gt; button.'
+            font-size='3'
+            font-align='TopLeft'
+            overflow-mode='Overflow'
+            word-wrapping='true' />
+      <vertical horizontal-fit='MinSize' vertical-fit='MinSize'>
+        <raw-image id='saving-quick-filter-example-image'
+                   source='EnhancedSearchAndFilters.Assets.FilterTutorial.savingquickfilterexample.jpg'
+                   min-width='32'
+                   min-height='12' />
+      </vertical>
+      <text text='&lt;b&gt;4.&lt;/b&gt;  Enter a name for the new quick filter. The name has to be &lt;u&gt;&lt;color=#FFCCCC&gt;less than 30 characters&lt;/color&gt;&lt;/u&gt;.'
+            font-size='3'
+            font-align='TopLeft'
+            overflow-mode='Overflow'
+            word-wrapping='true' />
+      <text text='&lt;b&gt;5.&lt;/b&gt;  Click the &lt;b&gt;&lt;color=#FFFFDD&gt;"Save Settings"&lt;/color&gt;&lt;/b&gt; button.'
+            font-size='3'
+            font-align='TopLeft'
+            overflow-mode='Overflow'
+            word-wrapping='true' />
+    </vertical>
+  </vertical>
+</bg>

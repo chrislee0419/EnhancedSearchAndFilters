@@ -71,7 +71,7 @@ namespace EnhancedSearchAndFilters.Filters
 
         private bool _minEnabledStagingValue = false;
         [UIValue("min-checkbox-value")]
-        public bool MinEnableStagingValue
+        public bool MinEnabledStagingValue
         {
             get => _minEnabledStagingValue;
             set
@@ -83,7 +83,7 @@ namespace EnhancedSearchAndFilters.Filters
         }
         private bool _maxEnabledStagingValue = false;
         [UIValue("max-checkbox-value")]
-        public bool MaxEnableStagingValue
+        public bool MaxEnabledStagingValue
         {
             get => _maxEnabledStagingValue;
             set
@@ -197,8 +197,12 @@ namespace EnhancedSearchAndFilters.Filters
             if (_viewGameObject != null)
                 return;
 
-            _parserParams = BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.NJSFilterView.bsml"), viewContainer, this);
+            _parserParams = BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.Filters.NJSFilterView.bsml"), viewContainer, this);
             _viewGameObject.name = "NJSFilterViewContainer";
+
+            // ensure that the UI correctly reflects the staging values
+            _minSetting.gameObject.SetActive(_minEnabledStagingValue);
+            _maxSetting.gameObject.SetActive(_maxEnabledStagingValue);
         }
 
         public void Cleanup()

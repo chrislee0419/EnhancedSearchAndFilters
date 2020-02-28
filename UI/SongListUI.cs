@@ -9,7 +9,9 @@ using TableView = HMUI.TableView;
 using TableViewScroller = HMUI.TableViewScroller;
 using BS_Utils.Utilities;
 using BeatSaberMarkupLanguage;
+using EnhancedSearchAndFilters.Filters;
 using EnhancedSearchAndFilters.Tweaks;
+using EnhancedSearchAndFilters.UI.Components;
 using EnhancedSearchAndFilters.UI.FlowCoordinators;
 using EnhancedSearchAndFilters.SongData;
 
@@ -22,11 +24,13 @@ namespace EnhancedSearchAndFilters.UI
         Campaign
     }
 
-    class SongListUI : PersistentSingleton<SongListUI>
+    internal class SongListUI : PersistentSingleton<SongListUI>
     {
         private FlowCoordinator _freePlayFlowCoordinator;
         private SearchFlowCoordinator _searchFlowCoordinator;
         private FilterFlowCoordinator _filterFlowCoordinator;
+
+        private SongListUIAdditions _uiAdditions;
 
         private LevelCollectionTableView _levelCollectionTableView;
         private TableView _levelsTableView;
@@ -63,18 +67,7 @@ namespace EnhancedSearchAndFilters.UI
             else if (!PluginConfig.DisableSearch || !PluginConfig.DisableFilters)
             {
                 Logger.log.Debug("Creating button panel");
-
-                ButtonPanel.instance.Setup(PluginConfig.DisableSearch, PluginConfig.DisableFilters, true);
-
-                ButtonPanel.instance.SearchButtonPressed -= SearchButtonPressed;
-                ButtonPanel.instance.FilterButtonPressed -= FilterButtonPressed;
-                ButtonPanel.instance.ClearFilterButtonPressed -= ClearButtonPressed;
-                ButtonPanel.instance.SortButtonPressed -= SortButtonPressed;
-
-                ButtonPanel.instance.SearchButtonPressed += SearchButtonPressed;
-                ButtonPanel.instance.FilterButtonPressed += FilterButtonPressed;
-                ButtonPanel.instance.ClearFilterButtonPressed += ClearButtonPressed;
-                ButtonPanel.instance.SortButtonPressed += SortButtonPressed;
+                InitializeButtonPanel(true);
             }
             else
             {
@@ -151,8 +144,28 @@ namespace EnhancedSearchAndFilters.UI
             if (tries <= 0)
             {
                 Logger.log.Warn("SongBrowser buttons could not be found. Creating default buttons panel");
-                ButtonPanel.instance.Setup(PluginConfig.DisableSearch, PluginConfig.DisableFilters);
+                InitializeButtonPanel();
             }
+        }
+
+        private void InitializeButtonPanel(bool forceReinit = false)
+        {
+            ButtonPanel.instance.Setup(forceReinit);
+            _uiAdditions = LevelSelectionNavigationController.gameObject.AddComponent<SongListUIAdditions>();
+
+            ButtonPanel.instance.SearchButtonPressed -= SearchButtonPressed;
+            ButtonPanel.instance.FilterButtonPressed -= FilterButtonPressed;
+            ButtonPanel.instance.ClearFilterButtonPressed -= ClearButtonPressed;
+            ButtonPanel.instance.SortButtonPressed -= SortButtonPressed;
+            ButtonPanel.instance.ApplyQuickFilterPressed -= ApplyQuickFilterPressed;
+            ButtonPanel.instance.ReportButtonPressed -= ReportButtonPressed;
+
+            ButtonPanel.instance.SearchButtonPressed += SearchButtonPressed;
+            ButtonPanel.instance.FilterButtonPressed += FilterButtonPressed;
+            ButtonPanel.instance.ClearFilterButtonPressed += ClearButtonPressed;
+            ButtonPanel.instance.SortButtonPressed += SortButtonPressed;
+            ButtonPanel.instance.ApplyQuickFilterPressed += ApplyQuickFilterPressed;
+            ButtonPanel.instance.ReportButtonPressed += ReportButtonPressed;
         }
 
         private void OnFreePlayFlowCoordinatorFinished(FlowCoordinator unused)
@@ -165,7 +178,7 @@ namespace EnhancedSearchAndFilters.UI
                 (_freePlayFlowCoordinator as CampaignFlowCoordinator).didFinishEvent -= OnFreePlayFlowCoordinatorFinished;
 
             // unapply filters before leaving the screen
-            if (_filterFlowCoordinator?.AreFiltersApplied == true)
+            if (FilterList.AnyApplied == true)
             {
                 UnapplyFilters();
 
@@ -173,14 +186,6 @@ namespace EnhancedSearchAndFilters.UI
             }
 
             _freePlayFlowCoordinator = null;
-        }
-
-        /// <summary>
-        /// Used by SongBrowserTweaks to apply an existing filter onto another set of beatmaps.
-        /// </summary>
-        public List<IPreviewBeatmapLevel> ApplyFiltersForSongBrowser(IPreviewBeatmapLevel[] levels)
-        {
-            return _filterFlowCoordinator.ApplyFiltersFromExternalViewController(levels);
         }
 
         /// <summary>
@@ -241,7 +246,7 @@ namespace EnhancedSearchAndFilters.UI
 
         public void ClearButtonPressed()
         {
-            if (_filterFlowCoordinator?.AreFiltersApplied == true)
+            if (FilterList.AnyApplied == true)
                 _filterFlowCoordinator?.UnapplyFilters();
 
             if (_levelsToApply != null)
@@ -261,10 +266,12 @@ namespace EnhancedSearchAndFilters.UI
 
         private void SortButtonPressed()
         {
-            if (_filterFlowCoordinator?.AreFiltersApplied ?? false)
+            if (_lastPack == null)
+                _lastPack = LevelSelectionNavigationController.GetPrivateField<IBeatmapLevelPack>("_levelPack");
+
+            if (FilterList.AnyApplied)
             {
-                // if filters are applied, _lastPack should not be null
-                var filteredLevels = _filterFlowCoordinator.ApplyFiltersFromExternalViewController(_lastPack.beatmapLevelCollection.beatmapLevels);
+                FilterList.ApplyFilter(_lastPack.beatmapLevelCollection.beatmapLevels, out IEnumerable<IPreviewBeatmapLevel> filteredLevels, false);
 
                 var filteredAndSortedLevels = new BeatmapLevelPack(
                     "",
@@ -281,13 +288,10 @@ namespace EnhancedSearchAndFilters.UI
             }
             else
             {
-                if (_lastPack == null)
-                    _lastPack = LevelSelectionNavigationController.GetPrivateField<IBeatmapLevelPack>("_levelPack");
-
-                if (_lastPack is IBeatmapLevelPack && _lastPack != null)
+                if (_lastPack != null && _lastPack is IBeatmapLevelPack beatmapLevelPack)
                 {
                     LevelSelectionNavigationController.SetData(
-                        CreateSortedBeatmapLevelPack(_lastPack as IBeatmapLevelPack),
+                        CreateSortedBeatmapLevelPack(beatmapLevelPack),
                         true,
                         LevelSelectionNavigationController.GetPrivateField<bool>("_showPlayerStatsInDetailView"),
                         LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView"));
@@ -311,6 +315,47 @@ namespace EnhancedSearchAndFilters.UI
 
                 }
             }
+        }
+
+        private void ApplyQuickFilterPressed(QuickFilter quickFilter)
+        {
+            FilterList.ApplyQuickFilter(quickFilter);
+
+            IPreviewBeatmapLevel[] unfilteredLevels = null;
+            if (_lastPack == null)
+                _lastPack = LevelSelectionNavigationController.GetPrivateField<IBeatmapLevelPack>("_levelPack");
+            if (_lastPack == null)
+                unfilteredLevels = _levelCollectionTableView.GetPrivateField<IPreviewBeatmapLevel[]>("_previewBeatmapLevels");
+            else
+                unfilteredLevels = _lastPack.beatmapLevelCollection.beatmapLevels;
+
+            if (unfilteredLevels == null)
+            {
+                Logger.log.Warn("Unable to apply quick filter (could not find songs to filter)");
+                return;
+            }
+
+            FilterList.ApplyFilter(unfilteredLevels, out IEnumerable<IPreviewBeatmapLevel> filteredLevels);
+
+            var filteredAndSortedLevels = new BeatmapLevelPack(
+                "",
+                FilteredSongsPackName,
+                FilteredSongsCollectionName,
+                Sprite.Create(Texture2D.whiteTexture, Rect.zero, Vector2.zero),
+                new BeatmapLevelCollection(SongSortModule.SortSongs(filteredLevels.ToArray())));
+
+            LevelSelectionNavigationController.SetData(
+                filteredAndSortedLevels,
+                true,
+                LevelSelectionNavigationController.GetPrivateField<bool>("_showPlayerStatsInDetailView"),
+                LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView"));
+
+            ButtonPanel.instance.SetFilterStatus(true);
+        }
+
+        private void ReportButtonPressed()
+        {
+            _uiAdditions.ShowBugReportModal();
         }
 
         private BeatmapLevelPack CreateSortedBeatmapLevelPack(IBeatmapLevelPack levelPack)
@@ -345,7 +390,7 @@ namespace EnhancedSearchAndFilters.UI
                 // that being said, without SongBrowser, we are still going to cancel filters upon switching level packs
                 // because i'd rather the player have to go into the FilterViewController,
                 // so that it can check if all the beatmap details have been loaded
-                if (_filterFlowCoordinator?.AreFiltersApplied ?? false)
+                if (FilterList.AnyApplied)
                     Logger.log.Debug("Another level pack has been selected, unapplying filters");
                 UnapplyFilters();
             }
@@ -364,7 +409,7 @@ namespace EnhancedSearchAndFilters.UI
 
             // instead of applying filters inside the filter flow coordinator, apply the filters when the flow coordinator is dismissed
             // that way, we don't get the unity complaining about the LevelSelectionNavigationController being not active
-            if (SongBrowserTweaks.Initialized && _filterFlowCoordinator.AreFiltersApplied)
+            if (SongBrowserTweaks.Initialized && FilterList.AnyApplied)
             {
                 SongBrowserTweaks.ApplyFilters();
             }

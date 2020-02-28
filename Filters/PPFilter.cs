@@ -162,8 +162,15 @@ namespace EnhancedSearchAndFilters.Filters
             if (_viewGameObject != null)
                 return;
 
-            _parserParams = BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.PPFilterView.bsml"), viewContainer, this);
+            _parserParams = BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.Filters.PPFilterView.bsml"), viewContainer, this);
             _viewGameObject.name = "PPFilterViewContainer";
+
+            // ensure that the UI correctly reflects the staging values
+            bool isRankedOption = _rankedStagingValue == RankFilterOption.Ranked;
+            _minCheckbox.gameObject.SetActive(isRankedOption);
+            _minIncrement.gameObject.SetActive(isRankedOption && _minEnabledStagingValue);
+            _maxCheckbox.gameObject.SetActive(isRankedOption);
+            _maxIncrement.gameObject.SetActive(isRankedOption && _maxEnabledStagingValue);
         }
 
         public void Cleanup()

@@ -1,0 +1,271 @@
+﻿<bg anchor-min-x="0" anchor-min-y="0" anchor-max-x="1" anchor-max-y="1">
+  <!-- filter list -->
+  <horizontal bg="round-rect-panel"
+              child-expand-width="true"
+              vertical-fit="Unconstrained"
+              anchor-min-x="1" anchor-min-y="1"
+              anchor-max-x="1" anchor-max-y="1"
+              size-delta-x="60" size-delta-y="6"
+              anchor-pos-x="-38" anchor-pos-y="-6">
+    <text text="Filters"
+          font-size="4.8"
+          font-align="Center" />
+  </horizontal>
+  <custom-list id="filter-list"
+               contents="filter-cell-list"
+               list-direction="Vertical"
+               list-width="60"
+               cell-size="8"
+               clickable-cells="true"
+               active="~filter-list-active"
+               select-cell="filter-cell-selected"
+               anchor-min-x="1" anchor-min-y="0"
+               anchor-max-x="1" anchor-max-y="1"
+               size-delta-x="60" size-delta-y="-20"
+               anchor-pos-x="-38" anchor-pos-y="-2">
+    <raw-image id='hovered-image'
+            tags='hovered'
+            anchor-min-x='0' anchor-min-y='0'
+            anchor-max-x='1' anchor-max-y='1'
+            size-delta-x='0' size-delta-y='0' />
+    <raw-image id='selected-image'
+            tags='selected'
+            anchor-min-x='0' anchor-min-y='0'
+            anchor-max-x='1' anchor-max-y='1'
+            size-delta-x='0' size-delta-y='0' />
+    <raw-image id='status-image'
+            anchor-min-x='0' anchor-min-y='0'
+            anchor-max-x='0' anchor-max-y='1'
+            size-delta-x='3' size-delta-y='0'
+            anchored-pos-x='1.5' anchored-pos-y='0' />
+    <text id='text'
+          text=''
+          font-align='Left'
+          font-size='4'
+          anchor-min-x='0' anchor-min-y='0'
+          anchor-max-x='1' anchor-max-y='1'
+          size-delta-x='-5' size-delta-y='0'
+          anchored-pos-x='1' anchored-pos-y='0' />
+  </custom-list>
+  <!-- tutorial modal -->
+  <button text="Filters Tutorial"
+          font-size="3.5"
+          stroke-type="Clean"
+          anchor-min-x="1" anchor-min-y="0"
+          anchor-max-x="1" anchor-max-y="0"
+          preferred-width="40" preferred-height="7"
+          anchor-pos-x="-38" anchor-pos-y="6"
+          pad="1"
+          on-click="tutorial-button-clicked" />
+  <modal id="tutorial-modal"
+         show-event="show-tutorial-modal"
+         hide-event="hide-tutorial-modal"
+         click-off-closes="true"
+         size-delta-x="110" size-delta-y="70">
+    
+  </modal>
+  
+  <!-- quick filter options -->
+  <horizontal bg="round-rect-panel"
+              child-expand-width="true"
+              vertical-fit="Unconstrained"
+              anchor-min-x="0" anchor-min-y="1"
+              anchor-max-x="0" anchor-max-y="1"
+              size-delta-x="40" size-delta-y="6"
+              anchor-pos-x="25" anchor-pos-y="-6">
+    <text text="Quick Filter Options"
+          font-size="4.2"
+          font-align="Center" />
+  </horizontal>
+  <vertical bg="round-rect-panel"
+            anchor-min-x="0" anchor-min-y="1"
+            anchor-max-x="0" anchor-max-y="1"
+            size-delta-x="40" size-delta-y="38"
+            anchor-pos-x="25" anchor-pos-y="-29"
+            pad="1" spacing="2">
+    <vertical child-align="UpperCenter"
+              expand-width="true"
+              preferred-height="20"
+              vertical-fit="PreferredSize"
+              active="~quick-filter-section-active"
+              pad="1" spacing="2">
+      <!-- dropdown -->
+      <horizontal id="quick-filter-dropdown-container"
+                  bg="round-rect-panel"
+                  vertical-fit="PreferredSize"
+                  preferred-height="8"
+                  preferred-width="38"
+                  pad="1" spacing="1">
+        <horizontal preferred-height="6"
+                    preferred-width="30">
+          <text id="quick-filter-dropdown-text"
+                text="~quick-filter-dropdown-text-value"
+                font-size="3.6"
+                font-align="Center"
+                font-color="#00BBFF" />
+        </horizontal>
+        <horizontal preferred-width="6"
+                    preferred-height="6"
+                    horizontal-fit="MinSize"
+                    vertical-fit="MinSize"
+                    child-align="MiddleCenter">
+          <raw-image id="dropdown-chevron"
+                     source="EnhancedSearchAndFilters.Assets.chevron.png"
+                     min-width="4"
+                     min-height="2.45" />
+        </horizontal>
+      </horizontal>
+      <modal show-event="show-quick-filter-list-modal"
+             hide-event="hide-quick-filter-list-modal"
+             click-off-closes="true"
+             size-delta-x="64" size-delta-y="70">
+        <vertical pad="1">
+          <text text="Saved Quick Filters"
+                font-align="Center"
+                font-size="4.5" />
+          <page-button direction="Up"
+                       preferred-height="6"
+                       preferred-width="60"
+                       click-event="quick-filter-list#PageUp" />
+          <list id="quick-filter-list"
+                list-style="Simple"
+                cell-size="7"
+                list-width="60"
+                select-cell="quick-filter-list-cell-selected" />
+          <page-button direction="Down"
+                       preferred-height="6"
+                       preferred-width="60"
+                       click-event="quick-filter-list#PageDown" />
+        </vertical>
+      </modal>
+      <!-- apply/delete buttons -->
+      <horizontal preferred-width="38"
+                  preferred-height="7"
+                  pad-left="1" pad-right="1"
+                  active="~quick-filter-section-active"
+                  spacing="1">
+        <button text="Apply Quick Filter"
+                font-size="3"
+                interactable="~apply-quick-filter-button-interactable"
+                on-click="apply-quick-filter-button-clicked"
+                preferred-height="7"
+                preferred-width="28"
+                stroke-type="Clean"
+                pad="1" />
+        <icon-button icon="EnhancedSearchAndFilters.Assets.garbagecan.png"
+                     interactable="~delete-quick-filter-button-interactable"
+                     on-click="delete-quick-filter-button-clicked"
+                     hover-hint="Delete selected quick filter"
+                     preferred-height="7"
+                     preferred-width="7"
+                     stroke-type="Clean"
+                     stroke-color="#FF3333"
+                     pad="2" />
+        <!-- delete quick filter modal -->
+        <modal show-event="show-delete-quick-filter-modal"
+               hide-event="hide-delete-quick-filter-modal"
+               click-off-closes="true"
+               size-delta-x="100" size-delta-y="24">
+          <vertical pad="3">
+            <text id="delete-quick-filter-modal-text"
+                  text="~delete-quick-filter-modal-text-value"
+                  font-size="4" />
+            <horizontal>
+              <button text="Cancel"
+                      font-size="3.5"
+                      preferred-width="32" preferred-height="8"
+                      pad="1"
+                      click-event="hide-delete-quick-filter-modal" />
+              <button text="Delete"
+                      font-size="3.5"
+                      stroke-color="#FF3333"
+                      preferred-width="40" preferred-height="8"
+                      pad="1"
+                      on-click="modal-delete-quick-filter-button-clicked" />
+            </horizontal>
+          </vertical>
+        </modal>
+      </horizontal>
+    </vertical>
+    <!-- save quick filter button -->
+    <button id="save-quick-filter-button"
+            active="~quick-filter-section-active"
+            interactable="~save-quick-filter-button-interactable"
+            text="~save-quick-filter-button-text"
+            font-size="2.8"
+            on-click="save-quick-filter-button-clicked"
+            preferred-width="38" preferred-height="9"
+            pad="2" />
+    <!-- save quick filter modal -->
+    <modal show-event="show-save-quick-filter-modal"
+           hide-event="hide-save-quick-filter-modal"
+           click-off-closes="true"
+           size-delta-x="100" size-delta-y="40">
+      <vertical pad="3">
+        <text text="&lt;u&gt;Save the currently applied settings to a quick filter.&lt;/u&gt;"
+              font-size="4.2" />
+        <text text="~save-quick-filter-modal-warning-text"
+              font-size="4"
+              font-color="#FF8888" />
+        <horizontal>
+          <string-setting id="quick-filter-name-setting"
+                          text="Enter a name for the quick filter"
+                          font-size="4"
+                          value="quick-filter-name"
+                          apply-on-change="true"
+                          on-change="quick-filter-name-changed"
+                          get-event="get-quick-filter-name"
+                          formatter="quick-filter-name-formatter" />
+        </horizontal>
+        <horizontal>
+          <button text="Cancel"
+                  font-size="3.5"
+                  preferred-width="32" preferred-height="8"
+                  pad="1"
+                  click-event="hide-save-quick-filter-modal" />
+          <button text="Save Settings"
+                  font-size="3.5"
+                  interactable="~modal-save-quick-filter-button-interactable"
+                  preferred-width="32" preferred-height="8"
+                  pad="1"
+                  on-click="modal-save-quick-filter-button-clicked" />
+        </horizontal>
+      </vertical>
+    </modal>
+  </vertical>
+  
+  <!-- setting reset options -->
+  <horizontal bg="round-rect-panel"
+              child-expand-width="true"
+              vertical-fit="Unconstrained"
+              anchor-min-x="0" anchor-min-y="0"
+              anchor-max-x="0" anchor-max-y="0"
+              size-delta-x="40" size-delta-y="6"
+              anchor-pos-x="25" anchor-pos-y="26">
+    <text text="Reset Settings"
+          font-size="4.2"
+          font-align="Center" />
+  </horizontal>
+  <vertical bg="round-rect-panel"
+            child-expand-width="true"
+            anchor-min-x="0" anchor-min-y="0"
+            anchor-max-x="0" anchor-max-y="0"
+            size-delta-x="40" size-delta-y="19"
+            anchor-pos-x="25" anchor-pos-y="12.5"
+            pad="2" spacing="1">
+    <button id="clear-button"
+            text="Clear All Changes"
+            font-size="3.6"
+            interactable="~clear-button-interactable"
+            on-click="clear-button-clicked"
+            preferred-width="35" preferred-height="7"
+            pad="2" />
+    <button id="default-button"
+            text="Reset All To Defaults"
+            font-size="3.3"
+            interactable="~default-button-interactable"
+            on-click="default-button-clicked"
+            preferred-width="35" preferred-height="7"
+            pad="2" />
+  </vertical>
+</bg>
