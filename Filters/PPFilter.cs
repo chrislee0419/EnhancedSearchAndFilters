@@ -165,6 +165,9 @@ namespace EnhancedSearchAndFilters.Filters
             _parserParams = BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.Filters.PPFilterView.bsml"), viewContainer, this);
             _viewGameObject.name = "PPFilterViewContainer";
 
+            if (!IsAvailable)
+                return;
+
             // ensure that the UI correctly reflects the staging values
             bool isRankedOption = _rankedStagingValue == RankFilterOption.Ranked;
             _minCheckbox.gameObject.SetActive(isRankedOption);
