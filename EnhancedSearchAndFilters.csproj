@@ -250,5 +250,8 @@
   <ItemGroup>
     <EmbeddedResource Include="UI\Views\ButtonPanelModules\MiscModuleView.bsml" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\doublechevron.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

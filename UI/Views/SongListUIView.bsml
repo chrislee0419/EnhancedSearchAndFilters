@@ -77,4 +77,24 @@
       </horizontal>
     </vertical>
   </modal>
+  
+  <!-- page up/down buttons -->
+  <page-button id='page-up-button'
+               interactable='~page-up-interactable'
+               direction='Up'
+               anchor-min-x='0.5' anchor-min-y='0.5'
+               anchor-max-x='0.5' anchor-max-y='0.5'
+               size-delta-x='12' size-delta-y='6'
+               preferred-width='12' preferred-height='6'
+               anchor-pos-x='-65' anchor-pos-y='34.5'
+               on-click='page-up-button-clicked' />
+  <page-button id='page-down-button'
+               interactable='~page-down-interactable'
+               direction='Down'
+               anchor-min-x='0.5' anchor-min-y='0.5'
+               anchor-max-x='0.5' anchor-max-y='0.5'
+               size-delta-x='12' size-delta-y='6'
+               preferred-width='12' preferred-height='6'
+               anchor-pos-x='-65' anchor-pos-y='-34.5'
+               on-click='page-down-button-clicked' />
 </bg>
