@@ -12,6 +12,7 @@ using BS_Utils.Utilities;
 using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.Notify;
 using BeatSaberMarkupLanguage.Parser;
+using Random = System.Random;
 using Image = UnityEngine.UI.Image;
 
 namespace EnhancedSearchAndFilters.UI.Components
@@ -57,11 +58,14 @@ namespace EnhancedSearchAndFilters.UI.Components
         private GameObject _pageUpButton;
         [UIObject("page-down-button")]
         private GameObject _pageDownButton;
+        [UIObject("random-button")]
+        private GameObject _randomButton;
 #pragma warning restore CS0649
 
         private BSMLParserParams _parserParams;
 
         private List<ReportedIssue> _issues = new List<ReportedIssue>();
+        private Random _rng = new Random();
 
         private LevelCollectionViewController _levelCollectionViewController;
         private TableView _tableView;
@@ -114,6 +118,13 @@ namespace EnhancedSearchAndFilters.UI.Components
             Image pageDownImage = _pageDownButton.GetComponentsInChildren<Image>().First(x => x.name == "Arrow");
             pageDownImage.sprite = doubleChevronSprite;
             pageDownImage.rectTransform.sizeDelta = new Vector2(4f, 3f);
+
+            // replace random button icon
+            tex = UIUtilities.LoadTextureFromResources("EnhancedSearchAndFilters.Assets.shuffle.png");
+            Sprite randomSprite = Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+            Image randomImage = _randomButton.GetComponentsInChildren<Image>().First(x => x.name == "Arrow");
+            randomImage.sprite = randomSprite;
+            randomImage.rectTransform.sizeDelta = new Vector2(4f, 3f);
 
             this.gameObject.GetComponent<LevelSelectionNavigationController>().didDeactivateEvent += OnNavigationControllerDeactivation;
 
@@ -235,6 +246,17 @@ namespace EnhancedSearchAndFilters.UI.Components
 
             RefreshPageButtons();
             _tableView.InvokeMethod("RefreshScrollButtons", true);
+        }
+
+        [UIAction("random-button-clicked")]
+        private void OnRandomButtonClicked()
+        {
+            int index = _rng.Next(_tableView.numberOfCells);
+            while (index == 0 && (_tableView.dataSource as LevelCollectionTableView).GetPrivateField<bool>("_showLevelPackHeader"))
+                index = _rng.Next(_tableView.numberOfCells);
+
+            _tableView.ScrollToCellWithIdx(index, TableViewScroller.ScrollPositionType.Beginning, false);
+            RefreshPageButtons();
         }
         #endregion
 

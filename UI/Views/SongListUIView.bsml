@@ -97,4 +97,12 @@
                preferred-width='12' preferred-height='6'
                anchor-pos-x='-65' anchor-pos-y='-34.5'
                on-click='page-down-button-clicked' />
+
+  <!-- random button -->
+  <page-button id='random-button'
+               anchor-min-x='0.5' anchor-min-y='0.5'
+               anchor-max-x='0.5' anchor-max-y='0.5'
+               preferred-width='12' preferred-height='6'
+               anchor-pos-x='-9' anchor-pos-y='34.5'
+               on-click='random-button-clicked' />
 </bg>

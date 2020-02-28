@@ -253,5 +253,8 @@
   <ItemGroup>
     <EmbeddedResource Include="Assets\doublechevron.png" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\shuffle.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

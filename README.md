@@ -53,3 +53,5 @@ Checkmark icon made by [Silviu Runceanu](https://www.flaticon.com/authors/silviu
 Cross icon made by [Silviu Runceanu](https://www.flaticon.com/authors/silviu-runceanu) on [www.flaticon.com](https://www.flaticon.com/), modified with colours inverted (licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/legalcode)).
 
 Garbage can icon made by Aleksandr Demchenko, modified with colours inverted (licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/legalcode))
+
+Shuffle icon made by [Freepik](https://www.flaticon.com/authors/freepik) from [www.flaticon.com](https://www.flaticon.com/).
