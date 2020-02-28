@@ -131,12 +131,14 @@ namespace EnhancedSearchAndFilters.Tweaks
                     _filterButton.gameObject.SetActive(false);
                 });
 
-                // custom filter handler when the same level pack is selected
-                SongBrowserModel.CustomFilterHandler = delegate (IBeatmapLevelPack levelPack)
-                {
-                    FilterList.ApplyFilter(levelPack.beatmapLevelCollection.beatmapLevels, out var filteredLevels, false);
-                    return filteredLevels.ToList();
-                };
+                // TODO: uncomment the below once SongBrowser has been updated to game version 1.8.0
+                //       the CustomFilterHandler references MainAssembly, which has since been renamed to Main
+                //// custom filter handler when the same level pack is selected
+                //SongBrowserModel.CustomFilterHandler = delegate (IBeatmapLevelPack levelPack)
+                //{
+                //    FilterList.ApplyFilter(levelPack.beatmapLevelCollection.beatmapLevels, out var filteredLevels, false);
+                //    return filteredLevels.ToList();
+                //};
 
                 // on first load, SongBrowser uses the previously applied settings
                 // if this mod's filters was applied last, we have to disable it, since our filters aren't saved across sessions

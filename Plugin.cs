@@ -15,17 +15,22 @@ using WordPredictionEngine = EnhancedSearchAndFilters.Search.WordPredictionEngin
 
 namespace EnhancedSearchAndFilters
 {
-    public class Plugin : IBeatSaberPlugin
+    [Plugin(RuntimeOptions.SingleStartInit)]
+    public class Plugin
     {
-        public static Version Version => IPAPluginManager.GetPluginFromId("EnhancedSearchAndFilters")?.Metadata.Version;
+        public static Version Version => IPAPluginManager.GetPluginFromId("EnhancedSearchAndFilters")?.Version;
 
+        [Init]
         public void Init(IPALogger logger)
         {
             Logger.log = logger;
         }
 
+        [OnStart]
         public void OnApplicationStart()
         {
+            SceneManager.activeSceneChanged += OnActiveSceneChanged;
+
             BSEvents.menuSceneLoadedFresh += OnMenuSceneLoadedFresh;
             Loader.DeletingSong += SongCoreLoaderDeletingSong;
             Loader.LoadingStartedEvent += SongCoreLoaderLoadingStarted;
@@ -34,6 +39,7 @@ namespace EnhancedSearchAndFilters
             BSMLSettings.instance.AddSettingsMenu("<size=75%>Enhanced Search And Filters</size>", "EnhancedSearchAndFilters.UI.Views.SettingsView.bsml", SettingsMenu.instance);
         }
 
+        [OnExit]
         public void OnApplicationQuit()
         {
             WordPredictionEngine.instance.CancelTasks();
@@ -43,15 +49,7 @@ namespace EnhancedSearchAndFilters
             BeatmapDetailsLoader.instance.SaveCacheToFile();
         }
 
-        public void OnFixedUpdate()
-        {
-        }
-
-        public void OnUpdate()
-        {
-        }
-
-        public void OnActiveSceneChanged(Scene prevScene, Scene nextScene)
+        private void OnActiveSceneChanged(Scene prevScene, Scene nextScene)
         {
             if (nextScene.name == "MenuCore")
             {
@@ -75,7 +73,7 @@ namespace EnhancedSearchAndFilters
 #pragma warning disable CS0618 // remove PluginManager.Plugins is obsolete warning
             SongBrowserTweaks.ModLoaded = IPAPluginManager.GetPluginFromId("SongBrowser") != null || IPAPluginManager.GetPlugin("Song Browser") != null || IPAPluginManager.Plugins.Any(x => x.Name == "Song Browser");
             SongDataCoreTweaks.ModLoaded = IPAPluginManager.GetPluginFromId("SongDataCore") != null;
-            SongDataCoreTweaks.ModVersion = IPAPluginManager.GetPluginFromId("SongDataCore")?.Metadata.Version;
+            SongDataCoreTweaks.ModVersion = IPAPluginManager.GetPluginFromId("SongDataCore")?.Version;
 #pragma warning restore CS0618
 
             if (SongBrowserTweaks.ModLoaded)
@@ -88,14 +86,14 @@ namespace EnhancedSearchAndFilters
 
             SongListUI.instance.OnMenuSceneLoadedFresh();
         }
-        public void SongCoreLoaderDeletingSong()
+        private void SongCoreLoaderDeletingSong()
         {
             WordPredictionEngine.instance.CancelTasks();
             BeatmapDetailsLoader.instance.CancelPopulatingCache();
             Loader.OnLevelPacksRefreshed += SongCoreLoaderOnLevelPacksRefreshed;
         }
 
-        public void SongCoreLoaderOnLevelPacksRefreshed()
+        private void SongCoreLoaderOnLevelPacksRefreshed()
         {
             Loader.OnLevelPacksRefreshed -= SongCoreLoaderOnLevelPacksRefreshed;
             BeatmapDetailsLoader.instance.StartPopulatingCache();
@@ -103,26 +101,18 @@ namespace EnhancedSearchAndFilters
             WordPredictionEngine.instance.ClearCache();
         }
 
-        public void SongCoreLoaderLoadingStarted(Loader loader)
+        private void SongCoreLoaderLoadingStarted(Loader loader)
         {
             WordPredictionEngine.instance.CancelTasks();
             BeatmapDetailsLoader.instance.CancelPopulatingCache();
         }
 
-        public void SongCoreLoaderFinishedLoading(Loader loader, Dictionary<string, CustomPreviewBeatmapLevel> beatmaps)
+        private void SongCoreLoaderFinishedLoading(Loader loader, Dictionary<string, CustomPreviewBeatmapLevel> beatmaps)
         {
             // force load, since there might be new songs that can be cached
             BeatmapDetailsLoader.instance.StartPopulatingCache(true);
 
             WordPredictionEngine.instance.ClearCache();
-        }
-
-        public void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode)
-        {
-        }
-
-        public void OnSceneUnloaded(Scene scene)
-        {
         }
     }
 }
