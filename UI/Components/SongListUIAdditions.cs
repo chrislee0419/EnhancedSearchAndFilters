@@ -204,7 +204,7 @@ namespace EnhancedSearchAndFilters.UI.Components
             });
         }
 
-        private void RefreshPageButtons()
+        public void RefreshPageButtons()
         {
             PageDownButtonInteractable = _scroller.targetPosition < _scroller.scrollableSize - 0.01f;
             PageUpButtonInteractable = _scroller.targetPosition > 0.01f;

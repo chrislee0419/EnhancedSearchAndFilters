@@ -125,7 +125,7 @@ namespace EnhancedSearchAndFilters.UI
                 yield return new WaitForSeconds(0.5f);
             }
 
-            Logger.log.Warn("Unable to get PlaylistsViewController. Filters may not work as intended");
+            Logger.log.Warn("Unable to get LevelFilteringNavigationController. Filters may not work as intended");
         }
 
         private IEnumerator GetSongBrowserButtons()
@@ -394,6 +394,9 @@ namespace EnhancedSearchAndFilters.UI
                     Logger.log.Debug("Another level pack has been selected, unapplying filters");
                 UnapplyFilters();
             }
+
+            if (_uiAdditions != null)
+                _uiAdditions.RefreshPageButtons();
         }
 
         private void DismissSearchFlowCoordinator()
