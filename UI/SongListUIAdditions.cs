@@ -12,10 +12,11 @@ using BS_Utils.Utilities;
 using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.Notify;
 using BeatSaberMarkupLanguage.Parser;
+using EnhancedSearchAndFilters.UI.Components;
 using Random = System.Random;
 using Image = UnityEngine.UI.Image;
 
-namespace EnhancedSearchAndFilters.UI.Components
+namespace EnhancedSearchAndFilters.UI
 {
     internal class SongListUIAdditions : MonoBehaviour, INotifiableHost
     {
