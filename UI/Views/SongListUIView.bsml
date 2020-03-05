@@ -78,6 +78,42 @@
     </vertical>
   </modal>
   
+  <!-- delete confirmation modal -->
+  <modal show-event='show-delete-confirmation-modal'
+         hide-event='hide-delete-confirmation-modal'
+         size-delta-x='100' size-delta-y='40'
+         click-off-closes='true'>
+    <vertical>
+      <vertical child-align='UpperCenter'
+                preferred-width='100' preferred-height='26'
+                pad='4'>
+        <text text='~delete-confirmation-text'
+              font-size='4.2'
+              font-align='Center'
+              overflow-mode='Overflow'
+              word-wrapping='true' />
+      </vertical>
+      <horizontal preferred-width='100' preferred-height='14'
+                  spacing='8'
+                  pad-bottom='4' pad-left='6' pad-right='6'>
+        <button text='Cancel'
+                preferred-width='40'
+                click-event='hide-delete-confirmation-modal' />
+        <button text='Delete'
+                stroke-color='#FF5555'
+                preferred-width='40'
+                on-click='confirm-delete-button-clicked' />
+      </horizontal>
+    </vertical>
+  </modal>
+  <!-- creating delete button here, but will reparent it in Start() -->
+  <icon-button id='delete-button'
+               icon='EnhancedSearchAndFilters.Assets.garbagecan.png'
+               active='false'
+               size-delta-x='14.5' size-delta-y='8.8'
+               on-click='delete-button-clicked'
+               pad='2' />
+  
   <!-- page up/down buttons -->
   <page-button id='page-up-button'
                interactable='~page-up-interactable'

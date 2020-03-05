@@ -20,6 +20,7 @@ namespace EnhancedSearchAndFilters.UI
 {
     internal class SongListUIAdditions : MonoBehaviour, INotifiableHost
     {
+        public event Action<CustomBeatmapLevel> ConfirmDeleteButtonPressed;
         public event PropertyChangedEventHandler PropertyChanged;
 
         private bool _pageUpInteractable = false;
@@ -51,9 +52,36 @@ namespace EnhancedSearchAndFilters.UI
             }
         }
 
+        private string _deleteConfirmationText;
+        [UIValue("delete-confirmation-text")]
+        public string DeleteConfirmationText
+        {
+            get => _deleteConfirmationText;
+            set
+            {
+                if (_deleteConfirmationText == value)
+                    return;
+
+                _deleteConfirmationText = value;
+                NotifyPropertyChanged();
+            }
+        }
+        public bool DeleteButtonInteractable
+        {
+            get => _deleteButton == null ? false : _deleteButton.interactable;
+            set
+            {
+                if (_deleteButton != null)
+                    _deleteButton.interactable = value;
+            }
+        }
+
 #pragma warning disable CS0649
         [UIObject("issues-list")]
         private GameObject _issuesContainer;
+
+        [UIComponent("delete-button")]
+        private Button _deleteButton;
 
         [UIObject("page-up-button")]
         private GameObject _pageUpButton;
@@ -68,9 +96,12 @@ namespace EnhancedSearchAndFilters.UI
         private List<ReportedIssue> _issues = new List<ReportedIssue>();
         private Random _rng = new Random();
 
+        private StandardLevelDetailView _standardLevelDetailView;
         private LevelCollectionViewController _levelCollectionViewController;
         private TableView _tableView;
         private TableViewScroller _scroller;
+
+        private CustomBeatmapLevel _levelToDelete;
 
         private bool _initialized = false;
 
@@ -90,7 +121,7 @@ namespace EnhancedSearchAndFilters.UI
             Button pageUpButton = _tableView.GetPrivateField<Button>("_pageUpButton");
             if (pageUpButton != null)
             {
-                buttonBinder.AddBinding(pageUpButton, () => StartCoroutine(DelayedRefreshPageButtons()));
+                buttonBinder.AddBinding(pageUpButton, () => StartCoroutine(DelayedAction(RefreshPageButtons)));
 
                 var rt = (pageUpButton.transform as RectTransform);
                 rt.anchorMin = new Vector2(0.5f, rt.anchorMin.y);
@@ -100,7 +131,7 @@ namespace EnhancedSearchAndFilters.UI
             Button pageDownButton = _tableView.GetPrivateField<Button>("_pageDownButton");
             if (pageDownButton != null)
             {
-                buttonBinder.AddBinding(pageDownButton, () => StartCoroutine(DelayedRefreshPageButtons()));
+                buttonBinder.AddBinding(pageDownButton, () => StartCoroutine(DelayedAction(RefreshPageButtons)));
 
                 var rt = (pageDownButton.transform as RectTransform);
                 rt.anchorMin = new Vector2(0.5f, rt.anchorMin.y);
@@ -133,6 +164,10 @@ namespace EnhancedSearchAndFilters.UI
             _pageDownButton.transform.SetParent(parent, true);
             _randomButton.transform.SetParent(parent, true);
 
+            // since the StandardLevelDetailViewController isn't parented to the navigation controller at the start,
+            // we have to delay the setup for the delete button until it is parented (after a level is selected)
+            _levelCollectionViewController.didSelectLevelEvent += SetupDeleteButton;
+
             this.gameObject.GetComponent<LevelSelectionNavigationController>().didDeactivateEvent += OnNavigationControllerDeactivation;
 
             _initialized = true;
@@ -142,7 +177,7 @@ namespace EnhancedSearchAndFilters.UI
         {
             if (!_initialized)
                 return;
-            _parserParams.EmitEvent("hide-bug-report-modal");
+            _parserParams.EmitEvent("hide-bug-report-modal,hide-delete-confirmation-modal");
         }
 
         private void OnNavigationControllerDeactivation(ViewController.DeactivationType deactivationType) => OnDisable();
@@ -155,6 +190,28 @@ namespace EnhancedSearchAndFilters.UI
             var navController = this.gameObject.GetComponent<LevelSelectionNavigationController>();
             if (navController != null)
                 navController.didDeactivateEvent -= OnNavigationControllerDeactivation;
+
+            _levelCollectionViewController.didSelectLevelEvent -= SetupDeleteButton;
+            _levelCollectionViewController.didSelectLevelEvent -= OnLevelSelected;
+        }
+
+        private void SetupDeleteButton(LevelCollectionViewController viewController, IPreviewBeatmapLevel level)
+        {
+            StartCoroutine(DelayedAction(delegate ()
+            {
+                // can't use GetComponentInChildren to get the StandardLevelDetailView,
+                // since it may not be parented to the StandardLevelDetailViewController (doesn't get parented until it needs to be?)
+                // at least we can take it directly through the private field in StandardLevelDetailViewController
+                _standardLevelDetailView = this.GetComponentInChildren<StandardLevelDetailViewController>().GetPrivateField<StandardLevelDetailView>("_standardLevelDetailView", typeof(StandardLevelDetailViewController));
+                _deleteButton.transform.SetParent(_standardLevelDetailView.GetComponentsInChildren<HorizontalLayoutGroup>().First(x => x.name == "PlayButtons").transform, false);
+                _deleteButton.gameObject.SetActive(true);
+
+                viewController.didSelectLevelEvent += OnLevelSelected;
+
+                OnLevelSelected(viewController, level);
+            }));
+
+            viewController.didSelectLevelEvent -= SetupDeleteButton;
         }
 
         public void ShowBugReportModal()
@@ -211,11 +268,13 @@ namespace EnhancedSearchAndFilters.UI
             PageUpButtonInteractable = _scroller.targetPosition > 0.01f;
         }
 
-        private IEnumerator DelayedRefreshPageButtons()
+        private IEnumerator DelayedAction(Action action)
         {
             yield return new WaitForEndOfFrame();
-            RefreshPageButtons();
+            action?.Invoke();
         }
+
+        private void OnLevelSelected(LevelCollectionViewController _, IPreviewBeatmapLevel level) => DeleteButtonInteractable = level is CustomPreviewBeatmapLevel;
 
         #region BSML Actions
         [UIAction("open-logs-folder-button-clicked")]
@@ -237,6 +296,43 @@ namespace EnhancedSearchAndFilters.UI
 
             RefreshPageButtons();
             _tableView.InvokeMethod("RefreshScrollButtons", true);
+        }
+
+        [UIAction("delete-button-clicked")]
+        private void OnDeleteButtonClicked()
+        {
+            IBeatmapLevel level = _standardLevelDetailView.GetPrivateField<IBeatmapLevel>("_level", typeof(StandardLevelDetailView));
+
+            if (level is CustomBeatmapLevel customLevel)
+            {
+                _levelToDelete = customLevel;
+                DeleteConfirmationText = $"Are you sure you would like to delete '<color=#FFFFCC>{customLevel.songName}</color>' by {customLevel.levelAuthorName}?";
+
+                _parserParams.EmitEvent("show-delete-confirmation-modal");
+            }
+            else
+            {
+                Logger.log.Debug("Unable to delete level (not a custom level)");
+                _deleteButton.interactable = false;
+            }
+        }
+
+        [UIAction("confirm-delete-button-clicked")]
+        private void OnConfirmDeleteButtonClicked()
+        {
+            if (_levelToDelete != null)
+            {
+                Logger.log.Info($"Deleting beatmap '{_levelToDelete.songName}' by {_levelToDelete.levelAuthorName}");
+
+                int indexOfTopCell = 0;
+                if (_tableView.visibleCells.Count() > 0)
+                    indexOfTopCell = _tableView.visibleCells.Min(x => x.idx);
+
+                ConfirmDeleteButtonPressed?.Invoke(_levelToDelete);
+
+                // scroll back to where we were
+                _tableView.ScrollToCellWithIdx(indexOfTopCell, TableViewScroller.ScrollPositionType.Beginning, false);
+            }
         }
 
         [UIAction("page-down-button-clicked")]
