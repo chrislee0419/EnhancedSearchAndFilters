@@ -55,6 +55,7 @@ namespace EnhancedSearchAndFilters.UI
                         JObject content = JObject.Parse(request.downloadHandler.text);
                         _latestVersion = new SemVerVersion(content["name"].ToString());
 
+                        _lastRequest = DateTime.Now;
 
                         try
                         {
@@ -65,21 +66,17 @@ namespace EnhancedSearchAndFilters.UI
                             Logger.log.Error($"Exception thrown by delegate in GetLatestReleaseVersion ({e.Message})");
                             Logger.log.Debug(e);
                         }
-
-                        _lastRequest = DateTime.Now;
                     }
                     catch (Exception e)
                     {
                         Logger.log.Error($"Unable to retrieve latest version number from GitHub API ({e.Message})");
                         Logger.log.Debug(e);
-
                         onFinish.Invoke(false, null);
                     }
                 }
                 else
                 {
                     Logger.log.Error($"Unable to retrieve latest version number from GitHub API (response code = {request.responseCode})");
-
                     onFinish.Invoke(false, null);
                 }
             }
@@ -102,6 +99,8 @@ namespace EnhancedSearchAndFilters.UI
                         foreach (JObject issue in content)
                             _openIssues.Add(issue["title"].ToString());
 
+                        _lastRequest = DateTime.Now;
+
                         try
                         {
                             onFinish.Invoke(true, _openIssues);
@@ -111,8 +110,6 @@ namespace EnhancedSearchAndFilters.UI
                             Logger.log.Error($"Exception thrown by delegate in GetOpenIssues ({e.Message})");
                             Logger.log.Debug(e);
                         }
-
-                        _lastRequest = DateTime.Now;
                     }
                     catch (Exception e)
                     {
