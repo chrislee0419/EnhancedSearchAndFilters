@@ -59,7 +59,11 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
 
         public RectTransform RectTransform { get; private set; }
 
-        private const string ModRepositoryLatestReleaseURL = "https://github.com/chrislee0419/EnhancedSearchAndFilters/releases/latest";
+#if BEATMODS_RELEASE
+        private const string LatestReleaseURL = "https://beatmods.com/";
+#else
+        private const string LatestReleaseURL = "https://github.com/chrislee0419/EnhancedSearchAndFilters/releases/latest";
+#endif
 
         private void Awake()
         {
@@ -81,23 +85,29 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
             if (_updateButton == null)
                 return;
 
-            GitHubAPIHelper.instance.GetLatestReleaseVersion(delegate (bool success, SemVerVersion latestVersion)
-            {
-                if (success && Plugin.Version < latestVersion)
-                {
-                    _updateButton.GetComponentInChildren<TextMeshProUGUI>().text = "Update Available";
-                    _updateButton.interactable = true;
-                    _updateButton.GetComponentsInChildren<Image>().First(x => x.name == "Stroke").color = new Color(0.7f, 0.6f, 1f);
+#if BEATMODS_RELEASE
+            BeatModsAPIHelper.instance.GetLatestReleaseVersion(OnLatestVersionRetrieved);
+#else
+            GitHubAPIHelper.instance.GetLatestReleaseVersion(OnLatestVersionRetrieved);
+#endif
+        }
 
-                    LatestVersion = latestVersion;
-                }
-            });
+        private void OnLatestVersionRetrieved(bool success, SemVerVersion latestVersion)
+        {
+            if (success && Plugin.Version < latestVersion)
+            {
+                _updateButton.GetComponentInChildren<TextMeshProUGUI>().text = "Update Available";
+                _updateButton.interactable = true;
+                _updateButton.GetComponentsInChildren<Image>().First(x => x.name == "Stroke").color = new Color(0.7f, 0.6f, 1f);
+
+                LatestVersion = latestVersion;
+            }
         }
 
         [UIAction("report-button-clicked")]
         private void OnReportButtonClicked() => ReportButtonPressed?.Invoke();
 
         [UIAction("update-button-clicked")]
-        private void OnInfoButtonClicked() => Process.Start(ModRepositoryLatestReleaseURL);
+        private void OnInfoButtonClicked() => Process.Start(LatestReleaseURL);
     }
 }

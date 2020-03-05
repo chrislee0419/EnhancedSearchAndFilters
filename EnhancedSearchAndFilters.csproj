@@ -23,13 +23,23 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release %28GitHub%29|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release %28BeatMods%29|AnyCPU'">
+    <OutputPath>bin\Release %28BeatMods%29\</OutputPath>
+    <DefineConstants>TRACE;BEATMODS_RELEASE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony.1.2.0.1">
@@ -188,6 +198,7 @@
     <Compile Include="UI\ViewControllers\SearchResultsNavigationController.cs" />
     <Compile Include="UI\ViewControllers\SearchResultsListViewController.cs" />
     <Compile Include="UI\ViewControllers\SongDetailsViewController.cs" />
+    <Compile Include="UI\BeatModsAPIHelper.cs" />
     <EmbeddedResource Include="UI\Views\Filters\DifficultyFilterView.bsml" />
     <EmbeddedResource Include="UI\Views\Filters\DurationFilterView.bsml" />
     <EmbeddedResource Include="UI\Views\Filters\NJSFilterView.bsml" />
