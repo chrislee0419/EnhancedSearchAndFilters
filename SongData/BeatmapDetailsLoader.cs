@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 using SongCore;
@@ -62,7 +63,6 @@ namespace EnhancedSearchAndFilters.SongData
         private CancellationTokenSource _cachingTokenSource;
 
         private HMTask _loadingTask;
-        private Action<int> _update;
         private CancellationTokenSource _loadingTokenSource;
 
         private IPreviewBeatmapLevel[] _levels;
@@ -189,7 +189,8 @@ namespace EnhancedSearchAndFilters.SongData
                     cache = cache.Where(c => levels.Any(level => level == c.LevelID)).ToList();
             }
 
-            BeatmapDetailsCache.SaveBeatmapDetailsToCache(CachedBeatmapDetailsFilePath, cache);
+            if (cache.Count > 0)
+                BeatmapDetailsCache.SaveBeatmapDetailsToCache(CachedBeatmapDetailsFilePath, cache);
         }
 
         /// <summary>
@@ -223,8 +224,7 @@ namespace EnhancedSearchAndFilters.SongData
 
             _levels = levels;
 
-            _update = update;
-            StartCoroutine(UpdateCoroutine());
+            StartCoroutine(UpdateCoroutine(update));
 
             if (_loadingTokenSource != null)
                 _loadingTokenSource.Dispose();
@@ -306,18 +306,21 @@ namespace EnhancedSearchAndFilters.SongData
                 StartPopulatingCache();
         }
 
-        private IEnumerator UpdateCoroutine()
+        private IEnumerator UpdateCoroutine(Action<int> action)
         {
-            while (IsLoading && _update != null)
+            if (action == null)
+                yield break;
+
+            while (IsLoading)
             {
-                _update.Invoke(_loadedLevelsUnsorted.Count);
+                action.Invoke(_loadedLevelsUnsorted.Count);
                 yield return new WaitForSeconds(0.1f);
             }
         }
 
         private void CacheAllBeatmapLevelsAsync()
         {
-            var sw = System.Diagnostics.Stopwatch.StartNew();
+            var sw = Stopwatch.StartNew();
 
             // load beatmap details from cache if it exists
             PopulateCacheFromFile().GetAwaiter().GetResult();
@@ -404,7 +407,7 @@ namespace EnhancedSearchAndFilters.SongData
             // record errors from SongDataCore for logging
             List<SongDataCoreDataStatus> sdcErrorStatuses = new List<SongDataCoreDataStatus>(_levels.Length);
 
-            var sw = System.Diagnostics.Stopwatch.StartNew();
+            var sw = Stopwatch.StartNew();
 
             int index = 0;
             while (index < _levels.Length)
