@@ -65,7 +65,6 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 _blankSprite = Sprite.Create(Texture2D.blackTexture, new Rect(0f, 0f, 1f, 1f), Vector2.zero);
 
                 RemoveCustomUIElements(this.rectTransform);
-                RemoveSongRequirementsButton();
                 ModifyPanelElements();
                 ModifyTextElements();
                 ModifySelectionElements();
@@ -202,7 +201,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             {
                 Transform child = parent.GetChild(i);
 
-                if (child.name.StartsWith("CustomUI"))
+                if (child.name.StartsWith("CustomUI") || child.name.StartsWith("BSML"))
                 {
                     Destroy(child.gameObject);
                 }
@@ -211,17 +210,6 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                     RemoveCustomUIElements(child);
                 }
             }
-        }
-
-        private void RemoveSongRequirementsButton()
-        {
-            // remove SongCore's info button if it exists
-            var songCoreBackground = _standardLevelDetailView.transform.Find("BSMLBackground");
-
-            if (songCoreBackground == null)
-                Logger.log.Notice("Could not find (and remove) SongCore's requirements info button in custom StandardLevelDetailView object");
-            else
-                Destroy(songCoreBackground.gameObject);
         }
 
         // NOTE: also deletes any elements added in by other mods
