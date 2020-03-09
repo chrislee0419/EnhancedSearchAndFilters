@@ -498,6 +498,9 @@ namespace EnhancedSearchAndFilters.UI
                     LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView"),
                     null);
                 _levelsToApply = null;
+
+                if (_uiAdditions != null)
+                    _uiAdditions.RefreshPageButtons();
             }
         }
 
