@@ -333,6 +333,8 @@ namespace EnhancedSearchAndFilters.UI
                 // scroll back to where we were
                 _tableView.ScrollToCellWithIdx(indexOfTopCell, TableViewScroller.ScrollPositionType.Beginning, false);
             }
+
+            _parserParams.EmitEvent("hide-delete-confirmation-modal");
         }
 
         [UIAction("page-down-button-clicked")]
