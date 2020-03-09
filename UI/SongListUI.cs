@@ -217,7 +217,7 @@ namespace EnhancedSearchAndFilters.UI
             IBeatmapLevelPack levelPack = LevelSelectionNavigationController.GetPrivateField<IBeatmapLevelPack>("_levelPack");
             _searchFlowCoordinator.Activate(_freePlayFlowCoordinator, levelPack);
 
-            if (!ButtonPanel.instance.Initialized)
+            if (!ButtonPanel.IsSingletonAvailable || !ButtonPanel.instance.Initialized)
                 Logger.log.Debug("'Search' button pressed.");
         }
 
@@ -244,7 +244,7 @@ namespace EnhancedSearchAndFilters.UI
 
             _filterFlowCoordinator.Activate(_freePlayFlowCoordinator, levels);
 
-            if (!ButtonPanel.instance.Initialized)
+            if (!ButtonPanel.IsSingletonAvailable || !ButtonPanel.instance.Initialized)
                 Logger.log.Debug("'Filter' button pressed.");
         }
 
@@ -264,7 +264,7 @@ namespace EnhancedSearchAndFilters.UI
                 _levelsToApply = null;
             }
 
-            if (!ButtonPanel.instance.Initialized)
+            if (!ButtonPanel.IsSingletonAvailable || !ButtonPanel.instance.Initialized)
                 Logger.log.Debug("'Clear Filter' button pressed.");
         }
 
