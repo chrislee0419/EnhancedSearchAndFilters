@@ -233,11 +233,30 @@ namespace EnhancedSearchAndFilters.UI
                 _filterFlowCoordinator.FiltersUnapplied += FilterFlowCoordinatorFiltersUnapplied;
             }
 
-            var levelPack = LevelSelectionNavigationController.GetPrivateField<IBeatmapLevelPack>("_levelPack");
-            if (_lastPack == null || (levelPack.packID != FilteredSongsIDCollectionName && !levelPack.packID.Contains(SortedLevelPackIDSuffix)))
+            if (_lastPack == null)
             {
-                _lastPack = levelPack;
-                Logger.log.Debug($"Storing '{levelPack.packName}' (id = '{levelPack.packID}') level pack as last pack");
+                var levelPack = LevelSelectionNavigationController.GetPrivateField<IBeatmapLevelPack>("_levelPack");
+                if (levelPack != null && levelPack.packID != FilteredSongsIDCollectionName && !levelPack.packID.Contains(SortedLevelPackIDSuffix))
+                {
+                    _lastPack = levelPack;
+                    Logger.log.Debug($"Storing '{levelPack.packName}' (id = '{levelPack.packID}') level pack as last pack");
+                }
+                else
+                {
+                    var playlistsViewController = Resources.FindObjectsOfTypeAll<PlaylistsViewController>().FirstOrDefault();
+                    if (playlistsViewController != null)
+                        _lastPack = playlistsViewController.selectedPlaylist;
+
+                    if (_lastPack == null)
+                    {
+                        Logger.log.Error("Unable to find currently selected level pack for filtering. Will not display FilterFlowCoordinator");
+                        return;
+                    }
+                    else
+                    {
+                        Logger.log.Debug($"Storing '{_lastPack.collectionName}' level collection as last pack");
+                    }
+                }
             }
 
             IPreviewBeatmapLevel[] levels = _lastPack.beatmapLevelCollection.beatmapLevels;
