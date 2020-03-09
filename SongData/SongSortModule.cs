@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 
@@ -26,8 +27,11 @@ namespace EnhancedSearchAndFilters.SongData
             }
         }
 
-        public static IPreviewBeatmapLevel[] SortSongs(IPreviewBeatmapLevel[] unsortedLevels)
+        public static IPreviewBeatmapLevel[] SortSongs(IEnumerable<IPreviewBeatmapLevel> unsortedLevels)
         {
+            if (unsortedLevels == null)
+                return new IPreviewBeatmapLevel[0];
+
             switch (_currentSortMode)
             {
                 case SortMode.Default:
@@ -37,19 +41,24 @@ namespace EnhancedSearchAndFilters.SongData
                 case SortMode.PlayCount:
                     return SortByPlayCount(unsortedLevels);
                 default:
-                    return unsortedLevels;
+                    if (unsortedLevels is IPreviewBeatmapLevel[] levelsArray)
+                        return levelsArray;
+                    else
+                        return unsortedLevels.ToArray();
             }
         }
 
-        private static IPreviewBeatmapLevel[] SortByDefault(IPreviewBeatmapLevel[] unsortedLevels)
+        private static IPreviewBeatmapLevel[] SortByDefault(IEnumerable<IPreviewBeatmapLevel> unsortedLevels)
         {
             if (Reversed)
                 return unsortedLevels.Reverse().ToArray();
+            else if (unsortedLevels is IPreviewBeatmapLevel[] levelsArray)
+                return levelsArray;
             else
-                return unsortedLevels;
+                return unsortedLevels.ToArray();
         }
 
-        private static IPreviewBeatmapLevel[] SortByNewest(IPreviewBeatmapLevel[] unsortedLevels)
+        private static IPreviewBeatmapLevel[] SortByNewest(IEnumerable<IPreviewBeatmapLevel> unsortedLevels)
         {
             var directoriesWithCreationTime = unsortedLevels
                 .Select(delegate (IPreviewBeatmapLevel level)
@@ -82,10 +91,15 @@ namespace EnhancedSearchAndFilters.SongData
                 return unsortedLevels.OrderByDescending(getCreationTime).ToArray();
         }
 
-        private static IPreviewBeatmapLevel[] SortByPlayCount(IPreviewBeatmapLevel[] unsortedLevels)
+        private static IPreviewBeatmapLevel[] SortByPlayCount(IEnumerable<IPreviewBeatmapLevel> unsortedLevels)
         {
             if (PlayerDataHelper.Instance == null)
-                return unsortedLevels;
+            {
+                if (unsortedLevels is IPreviewBeatmapLevel[] levelsArray)
+                    return levelsArray;
+                else
+                    return unsortedLevels.ToArray();
+            }
 
             var levelsWithPlays = unsortedLevels.AsParallel().Select(level => new Tuple<IPreviewBeatmapLevel, int>(level, PlayerDataHelper.Instance.GetPlayCountForLevel(level.levelID)));
 
