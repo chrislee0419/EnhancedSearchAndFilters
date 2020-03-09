@@ -143,6 +143,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Filters\FilteredLevelsPlaylist.cs" />
     <Compile Include="Filters\FilterList.cs" />
     <Compile Include="Filters\PlayerStatsFilter.cs" />
     <Compile Include="Filters\QuickFiltersManager.cs" />

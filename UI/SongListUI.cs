@@ -34,8 +34,10 @@ namespace EnhancedSearchAndFilters.UI
 
         private LevelCollectionTableView _levelCollectionTableView;
         private TableView _levelsTableView;
+
         private IAnnotatedBeatmapLevelCollection _lastPack;
         private IAnnotatedBeatmapLevelCollection _levelsToApply;
+        private FilteredLevelsPlaylist _filteredLevelsPlaylist = new FilteredLevelsPlaylist();
 
         private bool _isDeletingSongInModOwnedLevelPack = false;
 
@@ -294,20 +296,12 @@ namespace EnhancedSearchAndFilters.UI
 
             if (FilterList.AnyApplied)
             {
-                FilterList.ApplyFilter(_lastPack.beatmapLevelCollection.beatmapLevels, out IEnumerable<IPreviewBeatmapLevel> filteredLevels, false);
-
-                var filteredAndSortedLevels = new BeatmapLevelPack(
-                    FilteredSongsIDCollectionName,
-                    FilteredSongsPackName,
-                    FilteredSongsIDCollectionName,
-                    Sprite.Create(Texture2D.whiteTexture, Rect.zero, Vector2.zero),
-                    new BeatmapLevelCollection(SongSortModule.SortSongs(filteredLevels.ToArray())));
-
-                LevelSelectionNavigationController.SetData(
-                    filteredAndSortedLevels,
+                _filteredLevelsPlaylist.SetupFromUnfilteredLevels(_lastPack.beatmapLevelCollection.beatmapLevels, false);
+                LevelSelectionNavigationController.SetData(_filteredLevelsPlaylist,
                     true,
                     LevelSelectionNavigationController.GetPrivateField<bool>("_showPlayerStatsInDetailView"),
-                    LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView"));
+                    LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView"),
+                    null);
             }
             else
             {
@@ -357,20 +351,13 @@ namespace EnhancedSearchAndFilters.UI
                 return;
             }
 
-            FilterList.ApplyFilter(unfilteredLevels, out IEnumerable<IPreviewBeatmapLevel> filteredLevels);
-
-            var filteredAndSortedLevels = new BeatmapLevelPack(
-                FilteredSongsIDCollectionName,
-                FilteredSongsPackName,
-                FilteredSongsIDCollectionName,
-                Sprite.Create(Texture2D.whiteTexture, Rect.zero, Vector2.zero),
-                new BeatmapLevelCollection(SongSortModule.SortSongs(filteredLevels.ToArray())));
-
+            _filteredLevelsPlaylist.SetupFromUnfilteredLevels(unfilteredLevels);
             LevelSelectionNavigationController.SetData(
-                filteredAndSortedLevels,
+                _filteredLevelsPlaylist,
                 true,
                 LevelSelectionNavigationController.GetPrivateField<bool>("_showPlayerStatsInDetailView"),
-                LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView"));
+                LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView"),
+                null);
 
             ButtonPanel.instance.SetFilterStatus(true);
         }
@@ -542,12 +529,8 @@ namespace EnhancedSearchAndFilters.UI
 
             // the filter view controller is always provided a default-sorted array of levels,
             // so we apply sorting here
-            _levelsToApply = new BeatmapLevelPack(
-                FilteredSongsIDCollectionName,
-                FilteredSongsPackName,
-                FilteredSongsIDCollectionName,
-                Sprite.Create(Texture2D.whiteTexture, Rect.zero, Vector2.zero),
-                new BeatmapLevelCollection(SongSortModule.SortSongs(levels)));
+            _filteredLevelsPlaylist.SetupFromPrefilteredLevels(levels);
+            _levelsToApply = _filteredLevelsPlaylist;
 
             ButtonPanel.instance.SetFilterStatus(true);
         }
