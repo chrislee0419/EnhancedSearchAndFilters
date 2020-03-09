@@ -37,6 +37,8 @@ namespace EnhancedSearchAndFilters.UI
         private IAnnotatedBeatmapLevelCollection _lastPack;
         private IAnnotatedBeatmapLevelCollection _levelsToApply;
 
+        private bool _isDeletingSongInModOwnedLevelPack = false;
+
         public LevelSelectionNavigationController LevelSelectionNavigationController { get; private set; } = null;
 
         public const string FilteredSongsIDCollectionName = "EnhancedFilterFilteredSongs";
@@ -383,7 +385,7 @@ namespace EnhancedSearchAndFilters.UI
             // if it is, just remove the song from the level pack and show it again
             else if (currentPack.packID == FilteredSongsIDCollectionName || currentPack.packID.Contains(SortedLevelPackIDSuffix))
             {
-                // remove song from pack
+                // remove the song from the pack
                 var replacementPack = new BeatmapLevelPack(
                     currentPack.packID,
                     currentPack.packName,
@@ -391,25 +393,27 @@ namespace EnhancedSearchAndFilters.UI
                     currentPack.coverImage,
                     new BeatmapLevelCollection(currentPack.beatmapLevelCollection.beatmapLevels.Where(x => x.levelID != level.levelID).ToArray()));
 
+                try
+                {
+                    _isDeletingSongInModOwnedLevelPack = true;
+                    Loader.Instance.DeleteSong(level.customLevelPath);
+                }
+                finally
+                {
+                    _isDeletingSongInModOwnedLevelPack = false;
+                }
+
                 LevelSelectionNavigationController.SetData(
                     replacementPack,
                     true,
                     LevelSelectionNavigationController.GetPrivateField<bool>("_showPlayerStatsInDetailView", typeof(LevelSelectionNavigationController)),
                     LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView", typeof(LevelSelectionNavigationController)));
-
-                Loader.Instance.DeleteSong(level.customLevelPath);
             }
-            // if the current level pack is not from this mod, delete first, and then reselect the same pack
-            // the pack should automatically be updated by SongCore/PlaylistCore
+            // if the current level pack is not from this mod, just delete
+            // SongCore should automatically reload the pack
             else
             {
                 Loader.Instance.DeleteSong(level.customLevelPath);
-
-                LevelSelectionNavigationController.SetData(
-                    currentPack,
-                    true,
-                    LevelSelectionNavigationController.GetPrivateField<bool>("_showPlayerStatsInDetailView", typeof(LevelSelectionNavigationController)),
-                    LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView", typeof(LevelSelectionNavigationController)));
             }
         }
 
@@ -425,6 +429,13 @@ namespace EnhancedSearchAndFilters.UI
 
         private void LevelPackSelected(LevelFilteringNavigationController navController, IAnnotatedBeatmapLevelCollection levelPack, GameObject noDataInfoPrefab, BeatmapCharacteristicSO preferredCharacteristic)
         {
+            // in ConfirmDeleteButtonClicked, the call to SongCore.Loader.Instance.DeleteSong will reload the level packs
+            // which causes the custom level pack to be re-selected. but, if filters are applied or level pack is sorted,
+            // we want to reshow our own filtered/sorted level pack and not reset our UI, so we don't have to handle this event
+            // this code is kinda smelly tbh, but can't do anything about it unless there are changes to SongCore
+            if (_isDeletingSongInModOwnedLevelPack)
+                return;
+
             if (levelPack.collectionName != FilteredSongsIDCollectionName)
             {
                 _lastPack = levelPack;
