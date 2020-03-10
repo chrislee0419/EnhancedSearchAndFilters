@@ -19,7 +19,7 @@
     <DebugSymbols>true</DebugSymbols>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -199,7 +199,6 @@
     <Compile Include="UI\ViewControllers\SearchResultsNavigationController.cs" />
     <Compile Include="UI\ViewControllers\SearchResultsListViewController.cs" />
     <Compile Include="UI\ViewControllers\SongDetailsViewController.cs" />
-    <Compile Include="UI\BeatModsAPIHelper.cs" />
     <EmbeddedResource Include="UI\Views\Filters\DifficultyFilterView.bsml" />
     <EmbeddedResource Include="UI\Views\Filters\DurationFilterView.bsml" />
     <EmbeddedResource Include="UI\Views\Filters\NJSFilterView.bsml" />

@@ -16,6 +16,15 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
         public event Action ReportButtonPressed;
         public event PropertyChangedEventHandler PropertyChanged;
 
+#pragma warning disable CS0414
+        [UIValue("beatmods-release")]
+#if BEATMODS_RELEASE
+        private const bool IsBeatModsRelease = true;
+#else
+        private const bool IsBeatModsRelease = false;
+#endif
+#pragma warning restore CS0414
+
         [UIValue("version-text")]
         public string VersionText
         {
@@ -50,18 +59,18 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
             }
         }
 
+#pragma warning disable CS0169
 #pragma warning disable CS0649
         [UIComponent("report-button")]
         private Button _reportButton;
         [UIComponent("update-button")]
         private Button _updateButton;
+#pragma warning restore CS0169
 #pragma warning restore CS0649
 
         public RectTransform RectTransform { get; private set; }
 
-#if BEATMODS_RELEASE
-        private const string LatestReleaseURL = "https://beatmods.com/";
-#else
+#if !BEATMODS_RELEASE
         private const string LatestReleaseURL = "https://github.com/chrislee0419/EnhancedSearchAndFilters/releases/latest";
 #endif
 
@@ -75,21 +84,20 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
             Utilities.ParseBSML("EnhancedSearchAndFilters.UI.Views.ButtonPanelModules.MiscModuleView.bsml", this.gameObject, this);
 
             Utilities.ScaleButton(_reportButton);
-            Utilities.ScaleButton(_updateButton);
 
+#if !BEATMODS_RELEASE
+            Utilities.ScaleButton(_updateButton);
             OnEnable();
+#endif
         }
 
+#if !BEATMODS_RELEASE
         private void OnEnable()
         {
             if (_updateButton == null)
                 return;
 
-#if BEATMODS_RELEASE
-            BeatModsAPIHelper.instance.GetLatestReleaseVersion(OnLatestVersionRetrieved);
-#else
             GitHubAPIHelper.instance.GetLatestReleaseVersion(OnLatestVersionRetrieved);
-#endif
         }
 
         private void OnLatestVersionRetrieved(bool success, SemVerVersion latestVersion)
@@ -103,11 +111,14 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
                 LatestVersion = latestVersion;
             }
         }
+#endif
 
         [UIAction("report-button-clicked")]
         private void OnReportButtonClicked() => ReportButtonPressed?.Invoke();
 
+#if !BEATMODS_RELEASE
         [UIAction("update-button-clicked")]
         private void OnInfoButtonClicked() => Process.Start(LatestReleaseURL);
+#endif
     }
 }
