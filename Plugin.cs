@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
 using IPA;
+using IPA.Loader;
 using UnityEngine.SceneManagement;
 using IPALogger = IPA.Logging.Logger;
 using IPAPluginManager = IPA.Loader.PluginManager;
@@ -18,12 +19,13 @@ namespace EnhancedSearchAndFilters
     [Plugin(RuntimeOptions.SingleStartInit)]
     public class Plugin
     {
-        public static Version Version => IPAPluginManager.GetPluginFromId("EnhancedSearchAndFilters")?.Version;
+        public static Version Version { get; private set; }
 
         [Init]
-        public void Init(IPALogger logger)
+        public void Init(IPALogger logger, PluginMetadata metadata)
         {
             Logger.log = logger;
+            Version = metadata.Version;
         }
 
         [OnStart]
