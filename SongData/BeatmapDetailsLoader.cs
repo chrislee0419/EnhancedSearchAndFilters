@@ -571,7 +571,7 @@ namespace EnhancedSearchAndFilters.SongData
             // Since custom levels have their IDs formatted like "custom_level_(hash)[_(directory)]", where the "_(directory)" part is optional,
             // we have to remove that part to get a consistent naming. Also, we don't care about duplicate songs;
             // if they have the same hash, we can use the same BeatmapDetails object.
-            if (!(level is CustomPreviewBeatmapLevel) && !level.levelID.StartsWith(CustomLevelLoader.kCustomLevelPackPrefixId))
+            if (!(level is CustomPreviewBeatmapLevel) && !level.levelID.StartsWith(CustomLevelLoader.kCustomLevelPrefixId))
                 return level.levelID;
             else
                 return GetCustomLevelIDWithoutDirectory(level.levelID);
@@ -584,7 +584,7 @@ namespace EnhancedSearchAndFilters.SongData
         /// <returns>The level ID, minus the directory when applicable.</returns>
         public static string GetSimplifiedLevelID(string levelID)
         {
-            if (levelID.StartsWith(CustomLevelLoader.kCustomLevelPackPrefixId))
+            if (levelID.StartsWith(CustomLevelLoader.kCustomLevelPrefixId))
                 return GetCustomLevelIDWithoutDirectory(levelID);
             else
                 return levelID;
