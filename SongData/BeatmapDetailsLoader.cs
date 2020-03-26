@@ -95,19 +95,26 @@ namespace EnhancedSearchAndFilters.SongData
                 _cachingTask = new HMTask(
                     delegate ()
                     {
-                        Logger.log.Info("Starting to cache all custom song details");
+                        try
+                        {
+                            Logger.log.Info("Starting to cache all custom song details");
 
-                        CacheAllBeatmapLevelsAsync();
-                        SaveCacheToFile();
+                            CacheAllBeatmapLevelsAsync();
+                            SongsAreCached = true;
+                            SaveCacheToFile();
 
-                        Logger.log.Info("Finished caching and storing all custom song details");
+                            Logger.log.Info("Finished caching and storing all custom song details");
+                        }
+                        catch
+                        {
+                            Logger.log.Warn($"Uncaught exception occurred in the caching thread");
+                        }
                     },
                     delegate ()
                     {
                         _manualResetEvent = null;
                         _cachingTask = null;
 
-                        SongsAreCached = true;
                         IsCaching = false;
 
                         CachingFinished?.Invoke();
