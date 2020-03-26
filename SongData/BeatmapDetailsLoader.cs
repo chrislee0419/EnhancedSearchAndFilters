@@ -524,16 +524,17 @@ namespace EnhancedSearchAndFilters.SongData
 
         private async Task CacheCustomBeatmapDetailsAsync(CustomPreviewBeatmapLevel level)
         {
-            CustomBeatmapLevel customLevel = await LoadCustomBeatmapLevelAsync(level, _cachingTokenSource.Token).ConfigureAwait(false);
-
             try
             {
+                CustomBeatmapLevel customLevel = await LoadCustomBeatmapLevelAsync(level, _cachingTokenSource.Token).ConfigureAwait(false);
+
                 if (customLevel != null)
                     _cache[GetSimplifiedLevelID(level)] = new BeatmapDetails(customLevel);
             }
             catch (Exception e)
             {
-                Logger.log.Warn(e);
+                Logger.log.Warn($"Exception encountered while trying to cache '{level.songName}'");
+                Logger.log.Debug(e);
             }
         }
 
@@ -555,7 +556,8 @@ namespace EnhancedSearchAndFilters.SongData
             { }
             catch (Exception e)
             {
-                Logger.log.Warn(e);
+                Logger.log.Warn($"Exception encountered while trying to load '{level.songName}'");
+                Logger.log.Debug(e);
             }
 
             return new Tuple<int, BeatmapDetails>(index, null);
