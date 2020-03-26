@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
@@ -245,9 +244,9 @@ namespace EnhancedSearchAndFilters.UI
                 }
                 else
                 {
-                    var playlistsViewController = Resources.FindObjectsOfTypeAll<PlaylistsViewController>().FirstOrDefault();
-                    if (playlistsViewController != null)
-                        _lastPack = playlistsViewController.selectedPlaylist;
+                    var levelCollectionsViewController = Resources.FindObjectsOfTypeAll<AnnotatedBeatmapLevelCollectionsViewController>().FirstOrDefault();
+                    if (levelCollectionsViewController != null)
+                        _lastPack = levelCollectionsViewController.selectedAnnotatedBeatmapLevelCollection;
 
                     if (_lastPack == null)
                     {

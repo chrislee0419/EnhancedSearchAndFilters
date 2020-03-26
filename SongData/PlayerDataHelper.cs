@@ -13,8 +13,8 @@ namespace EnhancedSearchAndFilters.SongData
             {
                 if (_instance == null)
                 {
-                    var playerDataModelSO = Resources.FindObjectsOfTypeAll<PlayerDataModelSO>().FirstOrDefault();
-                    _playerData = playerDataModelSO?.playerData;
+                    var playerDataModel = Resources.FindObjectsOfTypeAll<PlayerDataModel>().FirstOrDefault();
+                    _playerData = playerDataModel?.playerData;
 
                     if (_playerData != null)
                     {

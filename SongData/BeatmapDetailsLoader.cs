@@ -95,19 +95,26 @@ namespace EnhancedSearchAndFilters.SongData
                 _cachingTask = new HMTask(
                     delegate ()
                     {
-                        Logger.log.Info("Starting to cache all custom song details");
+                        try
+                        {
+                            Logger.log.Info("Starting to cache all custom song details");
 
-                        CacheAllBeatmapLevelsAsync();
-                        SaveCacheToFile();
+                            CacheAllBeatmapLevelsAsync();
+                            SongsAreCached = true;
+                            SaveCacheToFile();
 
-                        Logger.log.Info("Finished caching and storing all custom song details");
+                            Logger.log.Info("Finished caching and storing all custom song details");
+                        }
+                        catch
+                        {
+                            Logger.log.Warn($"Uncaught exception occurred in the caching thread");
+                        }
                     },
                     delegate ()
                     {
                         _manualResetEvent = null;
                         _cachingTask = null;
 
-                        SongsAreCached = true;
                         IsCaching = false;
 
                         CachingFinished?.Invoke();
@@ -524,16 +531,17 @@ namespace EnhancedSearchAndFilters.SongData
 
         private async Task CacheCustomBeatmapDetailsAsync(CustomPreviewBeatmapLevel level)
         {
-            CustomBeatmapLevel customLevel = await LoadCustomBeatmapLevelAsync(level, _cachingTokenSource.Token).ConfigureAwait(false);
-
             try
             {
+                CustomBeatmapLevel customLevel = await LoadCustomBeatmapLevelAsync(level, _cachingTokenSource.Token).ConfigureAwait(false);
+
                 if (customLevel != null)
                     _cache[GetSimplifiedLevelID(level)] = new BeatmapDetails(customLevel);
             }
             catch (Exception e)
             {
-                Logger.log.Warn(e);
+                Logger.log.Warn($"Exception encountered while trying to cache '{level.songName}'");
+                Logger.log.Debug(e);
             }
         }
 
@@ -555,7 +563,8 @@ namespace EnhancedSearchAndFilters.SongData
             { }
             catch (Exception e)
             {
-                Logger.log.Warn(e);
+                Logger.log.Warn($"Exception encountered while trying to load '{level.songName}'");
+                Logger.log.Debug(e);
             }
 
             return new Tuple<int, BeatmapDetails>(index, null);
@@ -571,7 +580,7 @@ namespace EnhancedSearchAndFilters.SongData
             // Since custom levels have their IDs formatted like "custom_level_(hash)[_(directory)]", where the "_(directory)" part is optional,
             // we have to remove that part to get a consistent naming. Also, we don't care about duplicate songs;
             // if they have the same hash, we can use the same BeatmapDetails object.
-            if (!(level is CustomPreviewBeatmapLevel) && !level.levelID.StartsWith(CustomLevelLoader.kCustomLevelPackPrefixId))
+            if (!(level is CustomPreviewBeatmapLevel) && !level.levelID.StartsWith(CustomLevelLoader.kCustomLevelPrefixId))
                 return level.levelID;
             else
                 return GetCustomLevelIDWithoutDirectory(level.levelID);
@@ -584,7 +593,7 @@ namespace EnhancedSearchAndFilters.SongData
         /// <returns>The level ID, minus the directory when applicable.</returns>
         public static string GetSimplifiedLevelID(string levelID)
         {
-            if (levelID.StartsWith(CustomLevelLoader.kCustomLevelPackPrefixId))
+            if (levelID.StartsWith(CustomLevelLoader.kCustomLevelPrefixId))
                 return GetCustomLevelIDWithoutDirectory(levelID);
             else
                 return levelID;
