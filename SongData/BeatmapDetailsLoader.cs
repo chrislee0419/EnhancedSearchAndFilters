@@ -347,8 +347,9 @@ namespace EnhancedSearchAndFilters.SongData
             // record errors from SongDataCore for logging
             List<SongDataCoreDataStatus> sdcErrorStatuses = new List<SongDataCoreDataStatus>(allLevels.Count);
 
-            List<Task> taskList = new List<Task>(WorkChunkSize);
+            List<Task<bool>> taskList = new List<Task<bool>>(WorkChunkSize);
             int index = 0;
+            int errorCount = 0;
             while (index < allLevels.Count)
             {
                 _manualResetEvent.WaitOne();
@@ -390,12 +391,23 @@ namespace EnhancedSearchAndFilters.SongData
                     }
                 }
 
-                await Task.WhenAll(taskList).ConfigureAwait(false);
-                taskList.Clear();
+                while (taskList.Any())
+                {
+                    Task<bool> cacheTask = await Task.WhenAny(taskList).ConfigureAwait(false);
+                    bool wasSuccessful = await cacheTask;
+
+                    if (!wasSuccessful)
+                        ++errorCount;
+
+                    taskList.Remove(cacheTask);
+                }
             }
 
             sw.Stop();
             Logger.log.Info($"Finished caching the details of {allLevels.Count} beatmaps (took {sw.ElapsedMilliseconds/1000f} seconds).");
+
+            if (errorCount > 0)
+                Logger.log.Warn($"Unable to cache the beatmap details for {errorCount} songs");
 
             if (sdcErrorStatuses.Count > 0)
             {
@@ -487,6 +499,10 @@ namespace EnhancedSearchAndFilters.SongData
             sw.Stop();
             Logger.log.Debug($"Finished loading the details of {_loadedLevelsUnsorted.Count} beatmaps (took {sw.ElapsedMilliseconds/1000f} seconds)");
 
+            int notLoadedCount = _loadedLevelsUnsorted.Count(x => x.Item2 == null);
+            if (notLoadedCount > 0)
+                Logger.log.Warn($"Unable to load the beatmap details for {notLoadedCount} songs");
+
             if (sdcErrorStatuses.Count > 0)
             {
                 // NOTE: this will need to be updated if i ever add more error status markers
@@ -523,14 +539,14 @@ namespace EnhancedSearchAndFilters.SongData
             Task<BeatmapLevelData> dataLoadTask = LevelLoader.LoadBeatmapLevelDataAsync(level.customLevelPath, customLevel, level.standardLevelInfoSaveData, token);
             if (await Task.WhenAny(dataLoadTask, Task.Delay(TimeoutDelay)).ConfigureAwait(false) != dataLoadTask)
             {
-                Logger.log.Warn($"Unable to load beatmap level data for '{level.songName}' (load task timed out)");
+                Logger.log.Debug($"Unable to load beatmap level data for '{level.songName}' (load task timed out)");
                 return null;
             }
 
             BeatmapLevelData beatmapData = await dataLoadTask;
             if (beatmapData == null)
             {
-                Logger.log.Warn($"Unable to load beatmap level data for '{level.songName}' (no data returned)");
+                Logger.log.Debug($"Unable to load beatmap level data for '{level.songName}' (no data returned)");
                 return null;
             }
             else
@@ -540,20 +556,25 @@ namespace EnhancedSearchAndFilters.SongData
             }
         }
 
-        private async Task CacheCustomBeatmapDetailsAsync(CustomPreviewBeatmapLevel level)
+        private async Task<bool> CacheCustomBeatmapDetailsAsync(CustomPreviewBeatmapLevel level)
         {
             try
             {
                 CustomBeatmapLevel customLevel = await LoadCustomBeatmapLevelAsync(level, _cachingTokenSource.Token);
 
                 if (customLevel != null)
+                {
                     _cache[GetSimplifiedLevelID(level)] = new BeatmapDetails(customLevel);
+                    return true;
+                }
             }
             catch (Exception e)
             {
-                Logger.log.Warn($"Exception encountered while trying to cache '{level.songName}'");
+                Logger.log.Debug($"Exception encountered while trying to cache '{level.songName}'");
                 Logger.log.Debug(e);
             }
+
+            return false;
         }
 
         private async Task<Tuple<int, BeatmapDetails>> GetCustomBeatmapDetailsAsync(CustomPreviewBeatmapLevel level, int index)
@@ -574,7 +595,7 @@ namespace EnhancedSearchAndFilters.SongData
             { }
             catch (Exception e)
             {
-                Logger.log.Warn($"Exception encountered while trying to load '{level.songName}'");
+                Logger.log.Debug($"Exception encountered while trying to load '{level.songName}'");
                 Logger.log.Debug(e);
             }
 
