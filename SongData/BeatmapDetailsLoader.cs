@@ -75,6 +75,9 @@ namespace EnhancedSearchAndFilters.SongData
         // load the details in batches (there is a noticable delay with queueing all async load tasks at once)
         private const int WorkChunkSize = 5;
 
+        // 5 second timeout for loading tasks
+        private static readonly TimeSpan TimeoutDelay = new TimeSpan(0, 0, 5);
+
         private static string CachedBeatmapDetailsFilePath = Path.Combine(Environment.CurrentDirectory, "UserData", "EnhancedFilterDetailsCache.json");
 
         /// <summary>
@@ -516,11 +519,18 @@ namespace EnhancedSearchAndFilters.SongData
                 level.previewDuration, level.environmentInfo, level.allDirectionsEnvironmentInfo, level.previewDifficultyBeatmapSets);
 
             CustomBeatmapLevel customLevel = new CustomBeatmapLevel(copiedLevel, null, null);
-            BeatmapLevelData beatmapData = await LevelLoader.LoadBeatmapLevelDataAsync(level.customLevelPath, customLevel, level.standardLevelInfoSaveData, token).ConfigureAwait(false);
 
+            Task<BeatmapLevelData> dataLoadTask = LevelLoader.LoadBeatmapLevelDataAsync(level.customLevelPath, customLevel, level.standardLevelInfoSaveData, token);
+            if (await Task.WhenAny(dataLoadTask, Task.Delay(TimeoutDelay)).ConfigureAwait(false) != dataLoadTask)
+            {
+                Logger.log.Warn($"Unable to load beatmap level data for '{level.songName}' (load task timed out)");
+                return null;
+            }
+
+            BeatmapLevelData beatmapData = await dataLoadTask;
             if (beatmapData == null)
             {
-                Logger.log.Warn($"Unable to load beatmap level data for '{level.songName}' (LevelID = {level.levelID})");
+                Logger.log.Warn($"Unable to load beatmap level data for '{level.songName}' (no data returned)");
                 return null;
             }
             else
@@ -534,7 +544,7 @@ namespace EnhancedSearchAndFilters.SongData
         {
             try
             {
-                CustomBeatmapLevel customLevel = await LoadCustomBeatmapLevelAsync(level, _cachingTokenSource.Token).ConfigureAwait(false);
+                CustomBeatmapLevel customLevel = await LoadCustomBeatmapLevelAsync(level, _cachingTokenSource.Token);
 
                 if (customLevel != null)
                     _cache[GetSimplifiedLevelID(level)] = new BeatmapDetails(customLevel);
