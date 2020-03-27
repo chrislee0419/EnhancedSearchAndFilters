@@ -50,7 +50,7 @@ namespace EnhancedSearchAndFilters.SongData
             packID = PackIDSuffix;
             packName = PackName;
             shortPackName = PackIDSuffix;
-            coverImage = UIUtilities.BlankBlackSprite;
+            coverImage = UIUtilities.DefaultCoverImage;
 
             _beatmapLevelCollection.SetPrivateField("_levels", SongSortModule.SortSongs(levels), typeof(BeatmapLevelCollection));
 

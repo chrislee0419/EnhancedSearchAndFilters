@@ -12,7 +12,7 @@ namespace EnhancedSearchAndFilters.Filters
         public string shortPackName => CollectionName;
         public string collectionName => CollectionName;
 
-        public Sprite coverImage { get; } = UIUtilities.BlankBlackSprite;
+        public Sprite coverImage { get; private set; }
 
         private BeatmapLevelCollection _beatmapLevelCollection = new BeatmapLevelCollection(new IPreviewBeatmapLevel[0]);
         public IBeatmapLevelCollection beatmapLevelCollection => _beatmapLevelCollection;
@@ -27,8 +27,10 @@ namespace EnhancedSearchAndFilters.Filters
         /// <param name="levels">Levels to filter and sort.</param>
         /// <param name="applyStagedSettings">Apply the staged filter settings before using the filter.</param>
         /// <returns>True if at least one filter has been applied, otherwise false.</returns>
-        public bool SetupFromUnfilteredLevels(IPreviewBeatmapLevel[] levels, bool applyStagedSettings = true)
+        public bool SetupFromUnfilteredLevels(IPreviewBeatmapLevel[] levels, Sprite coverImage = null, bool applyStagedSettings = true)
         {
+            this.coverImage = coverImage != null ? coverImage : UIUtilities.DefaultCoverImage;
+
             if (FilterList.ApplyFilter(levels, out var filteredLevels, applyStagedSettings))
             {
                 IPreviewBeatmapLevel[] filteredAndSortedLevels = SongSortModule.SortSongs(filteredLevels);
@@ -47,8 +49,12 @@ namespace EnhancedSearchAndFilters.Filters
         /// <param name="sortSongs">Sort the songs before storing.</param>
         public void SetupFromPrefilteredLevels(IPreviewBeatmapLevel[] filteredLevels, bool sortSongs = true)
         {
+            if (coverImage == null)
+                coverImage = UIUtilities.DefaultCoverImage;
+
             if (sortSongs)
                 filteredLevels = SongSortModule.SortSongs(filteredLevels);
+
             _beatmapLevelCollection.SetPrivateField("_levels", filteredLevels, typeof(BeatmapLevelCollection));
         }
     }

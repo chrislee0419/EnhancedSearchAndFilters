@@ -292,7 +292,7 @@ namespace EnhancedSearchAndFilters.UI
 
             if (FilterList.AnyApplied)
             {
-                _filteredLevelPack.SetupFromUnfilteredLevels(_lastPack.beatmapLevelCollection.beatmapLevels, false);
+                _filteredLevelPack.SetupFromUnfilteredLevels(_lastPack.beatmapLevelCollection.beatmapLevels, _lastPack.coverImage, false);
                 LevelSelectionNavigationController.SetData(_filteredLevelPack,
                     true,
                     LevelSelectionNavigationController.GetPrivateField<bool>("_showPlayerStatsInDetailView"),
