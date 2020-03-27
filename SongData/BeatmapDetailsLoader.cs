@@ -99,15 +99,16 @@ namespace EnhancedSearchAndFilters.SongData
                         {
                             Logger.log.Info("Starting to cache all custom song details");
 
-                            CacheAllBeatmapLevelsAsync();
+                            CacheAllBeatmapLevelsAsync().GetAwaiter().GetResult();
                             SongsAreCached = true;
                             SaveCacheToFile();
 
                             Logger.log.Info("Finished caching and storing all custom song details");
                         }
-                        catch
+                        catch (Exception e)
                         {
                             Logger.log.Warn($"Uncaught exception occurred in the caching thread");
+                            Logger.log.Debug(e);
                         }
                     },
                     delegate ()
@@ -325,7 +326,7 @@ namespace EnhancedSearchAndFilters.SongData
             }
         }
 
-        private void CacheAllBeatmapLevelsAsync()
+        private async Task CacheAllBeatmapLevelsAsync()
         {
             var sw = Stopwatch.StartNew();
 
@@ -386,7 +387,7 @@ namespace EnhancedSearchAndFilters.SongData
                     }
                 }
 
-                Task.WhenAll(taskList).GetAwaiter().GetResult();
+                await Task.WhenAll(taskList).ConfigureAwait(false);
                 taskList.Clear();
             }
 
