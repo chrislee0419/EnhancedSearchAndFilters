@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Linq;
+using EnhancedSearchAndFilters.Filters;
 
 namespace EnhancedSearchAndFilters.Search
 {
@@ -26,7 +27,7 @@ namespace EnhancedSearchAndFilters.Search
                 storage = new WordCountStorage(levelPack);
 
                 // never cache filtered level packs
-                if (!(levelPack.packName == UI.SongListUI.FilteredSongsPackName) &&
+                if (!(levelPack.packName == FilteredLevelsLevelPack.PackName) &&
                     !Tweaks.SongBrowserTweaks.IsFilterApplied())
                     _cache[levelPack.packName] = storage;
             }

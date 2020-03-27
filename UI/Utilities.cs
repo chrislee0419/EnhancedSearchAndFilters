@@ -23,6 +23,12 @@ namespace EnhancedSearchAndFilters.UI
         /// Colour used in text and the chevron in dropdown components.
         /// </summary>
         public static readonly Color LightBlueElementColour = new Color(0f, 0.75f, 1f);
+        /// <summary>
+        /// Create a blank blank sprite.
+        /// </summary>
+        // a sprite has to be created every time, since i can't use a single, premade sprite
+        // not sure why, but it causes the sprite to have over 65000 vertices
+        public static Sprite BlankBlackSprite => Sprite.Create(Texture2D.blackTexture, new Rect(0f, 0f, 1f, 1f), new Vector2(0.5f, 0.5f));
 
         public static Material NoGlowMaterial
         {

@@ -26,6 +26,7 @@ namespace EnhancedSearchAndFilters.SongData
                 }
             }
         }
+        public static bool IsDefaultSort => _currentSortMode == SortMode.Default && !Reversed;
 
         public static IPreviewBeatmapLevel[] SortSongs(IEnumerable<IPreviewBeatmapLevel> unsortedLevels)
         {

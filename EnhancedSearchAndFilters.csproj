@@ -150,7 +150,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Filters\FilteredLevelsPlaylist.cs" />
+    <Compile Include="Filters\FilteredLevelsLevelPack.cs" />
     <Compile Include="Filters\FilterList.cs" />
     <Compile Include="Filters\PlayerStatsFilter.cs" />
     <Compile Include="Filters\QuickFiltersManager.cs" />
@@ -176,6 +176,7 @@
     <Compile Include="SongData\LocalLeaderboardDataHelper.cs" />
     <Compile Include="SongData\PlayerDataHelper.cs" />
     <Compile Include="SongData\SongSortModule.cs" />
+    <Compile Include="SongData\SortedLevelsLevelPack.cs" />
     <Compile Include="Tweaks\SongBrowserTweaks.cs" />
     <Compile Include="Tweaks\SongDataCoreTweaks.cs" />
     <Compile Include="UI\ButtonPanel.cs" />

@@ -1,17 +1,25 @@
 ﻿using UnityEngine;
 using BS_Utils.Utilities;
 using EnhancedSearchAndFilters.SongData;
+using UIUtilities = EnhancedSearchAndFilters.UI.Utilities;
 
 namespace EnhancedSearchAndFilters.Filters
 {
-    internal class FilteredLevelsPlaylist : IPlaylist
+    internal class FilteredLevelsLevelPack : IBeatmapLevelPack
     {
-        public string collectionName => "Filtered Songs";
+        public string packID => PackID;
+        public string packName => PackName;
+        public string shortPackName => CollectionName;
+        public string collectionName => CollectionName;
 
-        public Sprite coverImage { get; } = Sprite.Create(Texture2D.blackTexture, new Rect(0f, 0f, 1f, 1f), new Vector2(0.5f, 0.5f));
+        public Sprite coverImage { get; } = UIUtilities.BlankBlackSprite;
 
         private BeatmapLevelCollection _beatmapLevelCollection = new BeatmapLevelCollection(new IPreviewBeatmapLevel[0]);
         public IBeatmapLevelCollection beatmapLevelCollection => _beatmapLevelCollection;
+
+        public const string PackID = "EnhancedSearchAndFiltersCustomLevelPack";
+        public const string PackName = "Filtered Songs";
+        public const string CollectionName = "ESAFFiltered";
 
         /// <summary>
         /// Applies filter settings and then filters, sorts, and stores the resulting levels from the provided level collection.
