@@ -108,6 +108,10 @@ namespace EnhancedSearchAndFilters.SongData
 
                             Logger.log.Info("Finished caching and storing all custom song details");
                         }
+                        catch (OperationCanceledException)
+                        {
+                            Logger.log.Debug("Caching task cancelled");
+                        }
                         catch (Exception e)
                         {
                             Logger.log.Warn($"Uncaught exception occurred in the caching thread");
@@ -121,7 +125,11 @@ namespace EnhancedSearchAndFilters.SongData
 
                         IsCaching = false;
 
-                        CachingFinished?.Invoke();
+                        if (!_cachingTokenSource.IsCancellationRequested)
+                            CachingFinished?.Invoke();
+
+                        _cachingTokenSource.Dispose();
+                        _cachingTokenSource = null;
                     });
 
                 _cachingTask.Run();
@@ -158,7 +166,6 @@ namespace EnhancedSearchAndFilters.SongData
             _cachingTokenSource.Cancel();
             _cachingTask.Cancel();
 
-            _cachingTokenSource = null;
             _cachingTask = null;
             IsCaching = false;
         }
@@ -251,14 +258,16 @@ namespace EnhancedSearchAndFilters.SongData
                 delegate ()
                 {
                     _loadingTask = null;
-                    _loadingTokenSource.Dispose();
-                    _loadingTokenSource = null;
                     IsLoading = false;
 
                     if (IsCaching || !SongsAreCached)
                         StartPopulatingCache();
 
-                    onFinish?.Invoke(_loadedLevels.ToArray());
+                    if (!_loadingTokenSource.IsCancellationRequested)
+                        onFinish?.Invoke(_loadedLevels.ToArray());
+
+                    _loadingTokenSource.Dispose();
+                    _loadingTokenSource = null;
                 });
 
             _loadingTask.Run();
@@ -310,7 +319,6 @@ namespace EnhancedSearchAndFilters.SongData
 
             _loadingTokenSource.Cancel();
             _loadingTask.Cancel();
-            _loadingTokenSource = null;
             _loadingTask = null;
 
             if (IsCaching || !SongsAreCached)
@@ -355,7 +363,7 @@ namespace EnhancedSearchAndFilters.SongData
                 _manualResetEvent.WaitOne();
 
                 if (_cachingTokenSource.IsCancellationRequested)
-                    return;
+                    _cachingTokenSource.Token.ThrowIfCancellationRequested();
 
                 for (int i = 0; i < WorkChunkSize && index < allLevels.Count; ++index)
                 {
