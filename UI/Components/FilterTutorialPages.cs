@@ -190,6 +190,14 @@ namespace EnhancedSearchAndFilters.UI.Components
             outline.effectDistance = OutlineEffectDistance;
             outline.effectColor = Color.black;
 
+            // fix pixelation
+            RawImage img = _filterListExampleImageGO.GetComponentInChildren<RawImage>();
+            img.texture.filterMode = FilterMode.Point;
+            img = _filterListExampleImageGO.GetComponentInChildren<RawImage>();
+            img.texture.filterMode = FilterMode.Point;
+            img = _savingQuickFilterExampleImageGO.GetComponentInChildren<RawImage>();
+            img.texture.filterMode = FilterMode.Point;
+
             _isInitialized = true;
         }
 
