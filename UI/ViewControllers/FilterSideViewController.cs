@@ -360,6 +360,13 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             SaveQuickFilterButtonInteractable = QuickFiltersManager.HasSlotsAvailable;
         }
 
+        protected override void DidDeactivate(DeactivationType deactivationType)
+        {
+            base.DidDeactivate(deactivationType);
+
+            HideModals();
+        }
+
         /// <summary>
         /// Set the global list of filters to the filter list TableView.
         /// </summary>
@@ -407,7 +414,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             if (_quickFilterNameSetting != null)
                 _quickFilterNameSetting.modalKeyboard.modalView.Hide(true);
 
-            _parserParams.EmitEvent("hide-save-quick-filter-modal,hide-quick-filter-list-modal,hide-delete-quick-filter-modal");
+            _parserParams.EmitEvent("hide-save-quick-filter-modal,hide-quick-filter-list-modal,hide-delete-quick-filter-modal,hide-tutorial-modal");
         }
 
         /// <summary>

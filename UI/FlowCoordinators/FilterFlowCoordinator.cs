@@ -57,8 +57,6 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             if (_currentFilter != null)
                 _currentFilter.SettingChanged -= FilterSettingChanged;
 
-            _filterSideViewController.HideModals();
-
             BackButtonPressed?.Invoke();
         }
 
