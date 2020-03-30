@@ -40,21 +40,41 @@ namespace EnhancedSearchAndFilters.SongData
             }
         }
 
-        private CachedMediaAsyncLoader _mediaLoader;
-        public CachedMediaAsyncLoader MediaLoader
+        private CachedMediaAsyncLoader _cacheMediaLoader;
+        private CachedMediaAsyncLoader CachingThreadMediaLoader
         {
             get
             {
-                if (_mediaLoader == null)
+                if (_cacheMediaLoader == null)
                 {
                     var beatmapLevelsModel = Resources.FindObjectsOfTypeAll<StandardLevelDetailViewController>().First().GetPrivateField<BeatmapLevelsModel>("_beatmapLevelsModel");
                     var customLevelLoader = beatmapLevelsModel.GetPrivateField<CustomLevelLoader>("_customLevelLoader");
                     var cachedMediaAsyncLoader = customLevelLoader.GetPrivateField<CachedMediaAsyncLoader>("_cachedMediaAsyncLoaderSO");
 
-                    _mediaLoader = Instantiate(cachedMediaAsyncLoader, this.transform);
+                    _cacheMediaLoader = Instantiate(cachedMediaAsyncLoader, this.transform);
+                    _cacheMediaLoader.name = "CachingThreadMediaLoader";
                 }
 
-                return _mediaLoader;
+                return _cacheMediaLoader;
+            }
+        }
+
+        private CachedMediaAsyncLoader _loadMediaLoader;
+        private CachedMediaAsyncLoader LoadingThreadMediaLoader
+        {
+            get
+            {
+                if (_loadMediaLoader == null)
+                {
+                    var beatmapLevelsModel = Resources.FindObjectsOfTypeAll<StandardLevelDetailViewController>().First().GetPrivateField<BeatmapLevelsModel>("_beatmapLevelsModel");
+                    var customLevelLoader = beatmapLevelsModel.GetPrivateField<CustomLevelLoader>("_customLevelLoader");
+                    var cachedMediaAsyncLoader = customLevelLoader.GetPrivateField<CachedMediaAsyncLoader>("_cachedMediaAsyncLoaderSO");
+
+                    _loadMediaLoader = Instantiate(cachedMediaAsyncLoader, this.transform);
+                    _loadMediaLoader.name = "LoadingThreadMediaLoader";
+                }
+
+                return _loadMediaLoader;
             }
         }
 
@@ -241,6 +261,7 @@ namespace EnhancedSearchAndFilters.SongData
                 PausePopulatingCache();
 
             _levels = levels;
+            _loadedLevels = null;
 
             StartCoroutine(UpdateCoroutine(update));
 
@@ -253,7 +274,19 @@ namespace EnhancedSearchAndFilters.SongData
                 {
                     Logger.log.Debug("Starting to load beatmap details");
 
-                    GetBeatmapLevelsAsync().GetAwaiter().GetResult();
+                    try
+                    {
+                        GetBeatmapLevelsAsync().GetAwaiter().GetResult();
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        Logger.log.Debug("Loading task cancelled");
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.log.Warn("Uncaught exception in occurred in the loading thread");
+                        Logger.log.Debug(e);
+                    }
                 },
                 delegate ()
                 {
@@ -263,7 +296,7 @@ namespace EnhancedSearchAndFilters.SongData
                     if (IsCaching || !SongsAreCached)
                         StartPopulatingCache();
 
-                    if (!_loadingTokenSource.IsCancellationRequested)
+                    if (!_loadingTokenSource.IsCancellationRequested && _loadedLevels != null)
                         onFinish?.Invoke(_loadedLevels.ToArray());
 
                     _loadingTokenSource.Dispose();
@@ -448,9 +481,9 @@ namespace EnhancedSearchAndFilters.SongData
                     IPreviewBeatmapLevel level = _levels[index];
                     string levelID = GetSimplifiedLevelID(level);
 
-                    if (level is IBeatmapLevel)
+                    if (level is IBeatmapLevel beatmapLevel)
                     {
-                        _loadedLevelsUnsorted.Add(new Tuple<int, BeatmapDetails>(index, new BeatmapDetails(level as IBeatmapLevel)));
+                        _loadedLevelsUnsorted.Add(new Tuple<int, BeatmapDetails>(index, new BeatmapDetails(beatmapLevel)));
                     }
                     else if (_cache.ContainsKey(levelID))
                     {
@@ -492,7 +525,7 @@ namespace EnhancedSearchAndFilters.SongData
 
                 while (taskList.Any())
                 {
-                    Task<Tuple<int, BeatmapDetails>> finished = await Task.WhenAny(taskList);
+                    Task<Tuple<int, BeatmapDetails>> finished = await Task.WhenAny(taskList).ConfigureAwait(false);
                     Tuple<int, BeatmapDetails> loadedBeatmap = await finished;
 
                     _loadedLevelsUnsorted.Add(loadedBeatmap);
@@ -538,7 +571,7 @@ namespace EnhancedSearchAndFilters.SongData
         private async Task<CustomBeatmapLevel> LoadCustomBeatmapLevelAsync(CustomPreviewBeatmapLevel level, CancellationToken token)
         {
             CancellationTokenSource linkedTokenSource = CreateLinkedCancellationTokenSource(token, out var timedTokenSource, TimeoutDelay);
-            CustomBeatmapLevel customLevel = new CustomBeatmapLevel(CreateLevelCopyWithReplacedMediaLoader(level), null, null);
+            CustomBeatmapLevel customLevel = new CustomBeatmapLevel(CreateLevelCopyWithReplacedMediaLoader(level, LoadingThreadMediaLoader), null, null);
 
             try
             {
@@ -570,7 +603,7 @@ namespace EnhancedSearchAndFilters.SongData
 
             try
             {
-                BeatmapDetails beatmapDetails = await BeatmapDetails.CreateBeatmapDetailsFromFilesAsync(CreateLevelCopyWithReplacedMediaLoader(level), linkedTokenSource.Token);
+                BeatmapDetails beatmapDetails = await BeatmapDetails.CreateBeatmapDetailsFromFilesAsync(CreateLevelCopyWithReplacedMediaLoader(level, CachingThreadMediaLoader), linkedTokenSource.Token);
                 if (beatmapDetails != null)
                 {
                     _cache[GetSimplifiedLevelID(level)] = beatmapDetails;
@@ -601,7 +634,7 @@ namespace EnhancedSearchAndFilters.SongData
 
             try
             {
-                BeatmapDetails beatmapDetails = await BeatmapDetails.CreateBeatmapDetailsFromFilesAsync(CreateLevelCopyWithReplacedMediaLoader(level), linkedTokenSource.Token);
+                BeatmapDetails beatmapDetails = await BeatmapDetails.CreateBeatmapDetailsFromFilesAsync(CreateLevelCopyWithReplacedMediaLoader(level, LoadingThreadMediaLoader), linkedTokenSource.Token);
 
                 if (beatmapDetails != null)
                 {
@@ -623,7 +656,7 @@ namespace EnhancedSearchAndFilters.SongData
             return new Tuple<int, BeatmapDetails>(index, null);
         }
 
-        private CustomPreviewBeatmapLevel CreateLevelCopyWithReplacedMediaLoader(CustomPreviewBeatmapLevel level)
+        private CustomPreviewBeatmapLevel CreateLevelCopyWithReplacedMediaLoader(CustomPreviewBeatmapLevel level, CachedMediaAsyncLoader mediaLoader)
         {
             // recreate the CustomPreviewBeatmapLevel, but replace the original CachedMediaAsyncLoader with our own copy
             // this is necessary since game version 1.6.0, otherwise custom level cover image loading breaks in the LevelCollectionViewController
@@ -631,7 +664,7 @@ namespace EnhancedSearchAndFilters.SongData
             // kind of incompatibility with the original supplied CachedMediaAsyncLoader with multithreading
             return new CustomPreviewBeatmapLevel(level.defaultCoverImageTexture2D,
                 level.standardLevelInfoSaveData, level.customLevelPath,
-                MediaLoader, MediaLoader,
+                mediaLoader, mediaLoader,
                 level.levelID, level.songName, level.songSubName, level.songAuthorName, level.levelAuthorName,
                 level.beatsPerMinute, level.songTimeOffset, level.shuffle, level.shufflePeriod, level.previewStartTime,
                 level.previewDuration, level.environmentInfo, level.allDirectionsEnvironmentInfo, level.previewDifficultyBeatmapSets);
