@@ -41,7 +41,7 @@ namespace EnhancedSearchAndFilters.SongData
         }
 
         private CachedMediaAsyncLoader _mediaLoader;
-        private CachedMediaAsyncLoader MediaLoader
+        public CachedMediaAsyncLoader MediaLoader
         {
             get
             {
@@ -529,52 +529,62 @@ namespace EnhancedSearchAndFilters.SongData
             _loadedLevels = _loadedLevelsUnsorted.Select((tuple) => tuple.Item2).ToList();
         }
 
+        /// <summary>
+        /// Load a CustomBeatmapLevel from a CustomPreviewBeatmapLevel asynchronously. This method should not be used in a separate thread.
+        /// </summary>
+        /// <param name="level">CustomPreviewBeatmapLevel to load</param>
+        /// <param name="token">Token for cancelling this task</param>
+        /// <returns>A task that gets the associated CustomBeatmapLevel.</returns>
         private async Task<CustomBeatmapLevel> LoadCustomBeatmapLevelAsync(CustomPreviewBeatmapLevel level, CancellationToken token)
         {
-            // recreate the CustomPreviewBeatmapLevel, but replace the original CachedMediaAsyncLoader with our own copy
-            // this is necessary since game version 1.6.0, otherwise custom level cover image loading breaks in the LevelCollectionViewController
-            // the problem seems to occur because this mod loads/caches information on another separate thread, and there is some
-            // kind of incompatibility with the original supplied CachedMediaAsyncLoader with multithreading
-            CustomPreviewBeatmapLevel copiedLevel = new CustomPreviewBeatmapLevel(level.defaultCoverImageTexture2D,
-                level.standardLevelInfoSaveData, level.customLevelPath,
-                MediaLoader, MediaLoader,
-                level.levelID, level.songName, level.songSubName, level.songAuthorName, level.levelAuthorName,
-                level.beatsPerMinute, level.songTimeOffset, level.shuffle, level.shufflePeriod, level.previewStartTime,
-                level.previewDuration, level.environmentInfo, level.allDirectionsEnvironmentInfo, level.previewDifficultyBeatmapSets);
+            CancellationTokenSource linkedTokenSource = CreateLinkedCancellationTokenSource(token, out var timedTokenSource, TimeoutDelay);
+            CustomBeatmapLevel customLevel = new CustomBeatmapLevel(CreateLevelCopyWithReplacedMediaLoader(level), null, null);
 
-            CustomBeatmapLevel customLevel = new CustomBeatmapLevel(copiedLevel, null, null);
-
-            Task<BeatmapLevelData> dataLoadTask = LevelLoader.LoadBeatmapLevelDataAsync(level.customLevelPath, customLevel, level.standardLevelInfoSaveData, token);
-            if (await Task.WhenAny(dataLoadTask, Task.Delay(TimeoutDelay)).ConfigureAwait(false) != dataLoadTask)
+            try
             {
-                Logger.log.Debug($"Unable to load beatmap level data for '{level.songName}' (load task timed out)");
-                return null;
+                Task<BeatmapLevelData> dataLoadTask = LevelLoader.LoadBeatmapLevelDataAsync(level.customLevelPath, customLevel, level.standardLevelInfoSaveData, linkedTokenSource.Token);
+
+                BeatmapLevelData beatmapData = await dataLoadTask;
+                if (beatmapData != null)
+                {
+                    customLevel.SetBeatmapLevelData(beatmapData);
+                    return customLevel;
+                }
+                else
+                {
+                    Logger.log.Debug($"Unable to load beatmap level data for '{level.songName}' (no data returned)");
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                if (timedTokenSource.IsCancellationRequested && !token.IsCancellationRequested)
+                    Logger.log.Debug($"Unable to load beatmap level data for '{level.songName}' (load task timed out)");
             }
 
-            BeatmapLevelData beatmapData = await dataLoadTask;
-            if (beatmapData == null)
-            {
-                Logger.log.Debug($"Unable to load beatmap level data for '{level.songName}' (no data returned)");
-                return null;
-            }
-            else
-            {
-                customLevel.SetBeatmapLevelData(beatmapData);
-                return customLevel;
-            }
+            return null;
         }
 
         private async Task<bool> CacheCustomBeatmapDetailsAsync(CustomPreviewBeatmapLevel level)
         {
+            CancellationTokenSource linkedTokenSource = CreateLinkedCancellationTokenSource(_cachingTokenSource.Token, out var timedTokenSource, TimeoutDelay);
+
             try
             {
-                CustomBeatmapLevel customLevel = await LoadCustomBeatmapLevelAsync(level, _cachingTokenSource.Token);
-
-                if (customLevel != null)
+                BeatmapDetails beatmapDetails = await BeatmapDetails.CreateBeatmapDetailsFromFilesAsync(CreateLevelCopyWithReplacedMediaLoader(level), linkedTokenSource.Token);
+                if (beatmapDetails != null)
                 {
-                    _cache[GetSimplifiedLevelID(level)] = new BeatmapDetails(customLevel);
+                    _cache[GetSimplifiedLevelID(level)] = beatmapDetails;
                     return true;
                 }
+                else
+                {
+                    Logger.log.Debug($"Unable to load beatmap details for '{level.songName}' (invalid data)");
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                if (timedTokenSource.IsCancellationRequested && !_cachingTokenSource.IsCancellationRequested)
+                    Logger.log.Debug($"Unable to load beatmap details for '{level.songName}' (load task timed out)");
             }
             catch (Exception e)
             {
@@ -587,20 +597,23 @@ namespace EnhancedSearchAndFilters.SongData
 
         private async Task<Tuple<int, BeatmapDetails>> GetCustomBeatmapDetailsAsync(CustomPreviewBeatmapLevel level, int index)
         {
+            CancellationTokenSource linkedTokenSource = CreateLinkedCancellationTokenSource(_loadingTokenSource.Token, out var timedTokenSource, TimeoutDelay);
+
             try
             {
-                CustomBeatmapLevel customLevel = await LoadCustomBeatmapLevelAsync(level, _loadingTokenSource.Token);
+                BeatmapDetails beatmapDetails = await BeatmapDetails.CreateBeatmapDetailsFromFilesAsync(CreateLevelCopyWithReplacedMediaLoader(level), linkedTokenSource.Token);
 
-                if (customLevel != null)
+                if (beatmapDetails != null)
                 {
-                    var details = new BeatmapDetails(customLevel);
-                    _cache[GetSimplifiedLevelID(level)] = details;
-
-                    return new Tuple<int, BeatmapDetails>(index, details);
+                    _cache[GetSimplifiedLevelID(level)] = beatmapDetails;
+                    return new Tuple<int, BeatmapDetails>(index, beatmapDetails);
                 }
             }
             catch (OperationCanceledException)
-            { }
+            {
+                if (timedTokenSource.IsCancellationRequested && !_loadingTokenSource.IsCancellationRequested)
+                    Logger.log.Debug($"Unable to load beatmap details for '{level.songName}' (load task timed out)");
+            }
             catch (Exception e)
             {
                 Logger.log.Debug($"Exception encountered while trying to load '{level.songName}'");
@@ -608,6 +621,20 @@ namespace EnhancedSearchAndFilters.SongData
             }
 
             return new Tuple<int, BeatmapDetails>(index, null);
+        }
+
+        private CustomPreviewBeatmapLevel CreateLevelCopyWithReplacedMediaLoader(CustomPreviewBeatmapLevel level)
+        {
+            // recreate the CustomPreviewBeatmapLevel, but replace the original CachedMediaAsyncLoader with our own copy
+            // this is necessary since game version 1.6.0, otherwise custom level cover image loading breaks in the LevelCollectionViewController
+            // the problem seems to occur because this mod loads/caches information on another separate thread, and there is some
+            // kind of incompatibility with the original supplied CachedMediaAsyncLoader with multithreading
+            return new CustomPreviewBeatmapLevel(level.defaultCoverImageTexture2D,
+                level.standardLevelInfoSaveData, level.customLevelPath,
+                MediaLoader, MediaLoader,
+                level.levelID, level.songName, level.songSubName, level.songAuthorName, level.levelAuthorName,
+                level.beatsPerMinute, level.songTimeOffset, level.shuffle, level.shufflePeriod, level.previewStartTime,
+                level.previewDuration, level.environmentInfo, level.allDirectionsEnvironmentInfo, level.previewDifficultyBeatmapSets);
         }
 
         /// <summary>
@@ -643,6 +670,16 @@ namespace EnhancedSearchAndFilters.SongData
         {
             // The hash is always 40 characters long
             return levelID.Substring(0, CustomLevelLoader.kCustomLevelPrefixId.Length + 40);
+        }
+
+        private static CancellationTokenSource CreateLinkedCancellationTokenSource(CancellationToken origToken, out CancellationTokenSource newTokenSource, TimeSpan? delay = null)
+        {
+            if (delay.HasValue)
+                newTokenSource = new CancellationTokenSource(delay.Value);
+            else
+                newTokenSource = new CancellationTokenSource();
+
+            return CancellationTokenSource.CreateLinkedTokenSource(origToken, newTokenSource.Token);
         }
     }
 }
