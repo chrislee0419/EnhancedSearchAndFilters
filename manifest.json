@@ -5,7 +5,7 @@
   "gameVersion": "1.8.0",
   "id": "EnhancedSearchAndFilters",
   "name": "EnhancedSearchAndFilters",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "features": [],
   "dependsOn": {
     "SongCore": "^2.9.0",
