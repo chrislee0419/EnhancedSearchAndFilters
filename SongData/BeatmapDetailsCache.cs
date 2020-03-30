@@ -46,7 +46,7 @@ namespace EnhancedSearchAndFilters.SongData
                 }
                 catch (FileNotFoundException)
                 {
-                    Logger.log.Info($"Cache file could not be found in the path: '{path}'");
+                    Logger.log.Warn($"Cache file could not be found in the path: '{path}'");
                 }
                 catch (JsonSerializationException)
                 {
