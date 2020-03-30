@@ -193,6 +193,10 @@ namespace EnhancedSearchAndFilters.SongData
         public async Task PopulateCacheFromFile()
         {
             var detailsList = await BeatmapDetailsCache.GetBeatmapDetailsFromCacheAsync(CachedBeatmapDetailsFilePath);
+
+            if (detailsList.Count > 0)
+                Logger.log.Info($"Retrieved {detailsList.Count} cached beatmap details from file");
+
             foreach (var detail in detailsList)
                 _cache.TryAdd(detail.LevelID, detail);
         }
@@ -391,9 +395,16 @@ namespace EnhancedSearchAndFilters.SongData
             List<Task<bool>> taskList = new List<Task<bool>>(WorkChunkSize);
             int index = 0;
             int errorCount = 0;
+            long elapsed = 0;
             while (index < allLevels.Count)
             {
                 _manualResetEvent.WaitOne();
+
+                if (sw.ElapsedMilliseconds > 60000 + elapsed)
+                {
+                    Logger.log.Debug($"Caching thread has finished caching {index} beatmaps out of {allLevels.Count} ({elapsed} ms elapsed)");
+                    elapsed += sw.ElapsedMilliseconds;
+                }
 
                 if (_cachingTokenSource.IsCancellationRequested)
                     _cachingTokenSource.Token.ThrowIfCancellationRequested();
