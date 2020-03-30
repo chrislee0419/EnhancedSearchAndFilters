@@ -108,7 +108,7 @@ namespace EnhancedSearchAndFilters.Tweaks
                         if (string.IsNullOrEmpty(actualCharacteristicName))
                         {
                             Logger.log.Debug($"Unable to create SimplifiedDifficultyBeatmapSet from BeatSaver data: could not parse '{loadedCharacteristicName.ToString()}' as a valid characteristic.");
-                            return new SimplifiedDifficultyBeatmapSet(null, null);
+                            return null;
                         }
 
                         SimplifiedDifficultyBeatmap[] difficultyBeatmaps = characteristicPair.Value.Where(x => x.Value != null).Select(delegate (KeyValuePair<string, BeatStarSongDifficultyStats> difficultyPair)
@@ -136,7 +136,7 @@ namespace EnhancedSearchAndFilters.Tweaks
 
                 // if there were any errors during the creation of the SimplifiedDifficultyBeatmapSet objects, do not create a BeatmapDetails object from it
                 // currently, the only error we need to check for here is if the characteristic name is invalid
-                if (difficultyBeatmapSets.Any(x => string.IsNullOrEmpty(x.CharacteristicName) || x.DifficultyBeatmaps == null))
+                if (difficultyBeatmapSets.Any(x => x == null || string.IsNullOrEmpty(x.CharacteristicName) || x.DifficultyBeatmaps == null))
                 {
                     beatmapDetails = null;
                     return SongDataCoreDataStatus.InvalidCharacteristicString;

@@ -53,18 +53,24 @@ namespace EnhancedSearchAndFilters.SongData
             DifficultyBeatmapSets = new SimplifiedDifficultyBeatmapSet[levelDifficultyBeatmapSets.Count()];
             for (int i = 0; i < levelDifficultyBeatmapSets.Count(); ++i)
             {
-                DifficultyBeatmapSets[i].CharacteristicName = levelDifficultyBeatmapSets[i].beatmapCharacteristic.serializedName;
+                SimplifiedDifficultyBeatmapSet newSet = new SimplifiedDifficultyBeatmapSet();
+                DifficultyBeatmapSets[i] = newSet;
+
+                newSet.CharacteristicName = levelDifficultyBeatmapSets[i].beatmapCharacteristic.serializedName;
 
                 var levelDifficultyBeatmaps = levelDifficultyBeatmapSets[i].difficultyBeatmaps;
-                DifficultyBeatmapSets[i].DifficultyBeatmaps = new SimplifiedDifficultyBeatmap[levelDifficultyBeatmaps.Length];
+                newSet.DifficultyBeatmaps = new SimplifiedDifficultyBeatmap[levelDifficultyBeatmaps.Length];
                 for (int j = 0; j < levelDifficultyBeatmaps.Length; ++j)
                 {
-                    DifficultyBeatmapSets[i].DifficultyBeatmaps[j].Difficulty = levelDifficultyBeatmaps[j].difficulty;
-                    DifficultyBeatmapSets[i].DifficultyBeatmaps[j].NoteJumpMovementSpeed = levelDifficultyBeatmaps[j].noteJumpMovementSpeed;
-                    DifficultyBeatmapSets[i].DifficultyBeatmaps[j].NotesCount = levelDifficultyBeatmaps[j].beatmapData.notesCount;
-                    DifficultyBeatmapSets[i].DifficultyBeatmaps[j].BombsCount = levelDifficultyBeatmaps[j].beatmapData.bombsCount;
-                    DifficultyBeatmapSets[i].DifficultyBeatmaps[j].ObstaclesCount = levelDifficultyBeatmaps[j].beatmapData.obstaclesCount;
-                    DifficultyBeatmapSets[i].DifficultyBeatmaps[j].SpawnRotationEventsCount = levelDifficultyBeatmaps[j].beatmapData.spawnRotationEventsCount;
+                    SimplifiedDifficultyBeatmap newDiff = new SimplifiedDifficultyBeatmap();
+                    newSet.DifficultyBeatmaps[j] = newDiff;
+
+                    newDiff.Difficulty = levelDifficultyBeatmaps[j].difficulty;
+                    newDiff.NoteJumpMovementSpeed = levelDifficultyBeatmaps[j].noteJumpMovementSpeed;
+                    newDiff.NotesCount = levelDifficultyBeatmaps[j].beatmapData.notesCount;
+                    newDiff.BombsCount = levelDifficultyBeatmaps[j].beatmapData.bombsCount;
+                    newDiff.ObstaclesCount = levelDifficultyBeatmaps[j].beatmapData.obstaclesCount;
+                    newDiff.SpawnRotationEventsCount = levelDifficultyBeatmaps[j].beatmapData.spawnRotationEventsCount;
                 }
             }
         }
