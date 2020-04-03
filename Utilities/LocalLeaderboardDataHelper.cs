@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using SongCore;
+using EnhancedSearchAndFilters.SongData;
 
-namespace EnhancedSearchAndFilters.SongData
+namespace EnhancedSearchAndFilters.Utilities
 {
     internal class LocalLeaderboardDataHelper : MonoBehaviour
     {

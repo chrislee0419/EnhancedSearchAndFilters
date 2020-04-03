@@ -5,7 +5,7 @@ using UnityEngine.Networking;
 using Newtonsoft.Json.Linq;
 using SemVerVersion = SemVer.Version;
 
-namespace EnhancedSearchAndFilters.UI
+namespace EnhancedSearchAndFilters.Utilities
 {
     internal class GitHubAPIHelper : PersistentSingleton<GitHubAPIHelper>
     {

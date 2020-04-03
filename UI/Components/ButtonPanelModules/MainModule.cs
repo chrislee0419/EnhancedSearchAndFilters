@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.Attributes;
+using EnhancedSearchAndFilters.Utilities;
 
 namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
 {
@@ -52,12 +53,12 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
 
         private void Start()
         {
-            Utilities.ParseBSML("EnhancedSearchAndFilters.UI.Views.ButtonPanelModules.MainModuleView.bsml", this.gameObject, this);
+            UIUtilities.ParseBSML("EnhancedSearchAndFilters.UI.Views.ButtonPanelModules.MainModuleView.bsml", this.gameObject, this);
 
             // add ability to check pointer enter/exit events to filter/clear buttons to change colour
             if (_filterButton != null)
             {
-                Utilities.ScaleButton(_filterButton);
+                UIUtilities.ScaleButton(_filterButton);
 
                 _filterButton.gameObject.AddComponent<EnterExitEventHandler>();
                 var handler = _filterButton.gameObject.GetComponent<EnterExitEventHandler>();
@@ -67,7 +68,7 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
             }
             if (_clearFilterButton != null)
             {
-                Utilities.ScaleButton(_clearFilterButton);
+                UIUtilities.ScaleButton(_clearFilterButton);
 
                 _clearFilterButton.gameObject.AddComponent<EnterExitEventHandler>();
                 var handler = _clearFilterButton.gameObject.GetComponent<EnterExitEventHandler>();
@@ -77,7 +78,7 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
             }
 
             if (_searchButton != null)
-                Utilities.ScaleButton(_searchButton);
+                UIUtilities.ScaleButton(_searchButton);
         }
 
         public void SetFilterStatus(bool filterApplied)

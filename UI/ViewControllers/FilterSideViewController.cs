@@ -12,8 +12,8 @@ using BeatSaberMarkupLanguage.Parser;
 using BeatSaberMarkupLanguage.ViewControllers;
 using EnhancedSearchAndFilters.Filters;
 using EnhancedSearchAndFilters.UI.Components;
+using EnhancedSearchAndFilters.Utilities;
 using Image = UnityEngine.UI.Image;
-using UIUtilities = EnhancedSearchAndFilters.UI.Utilities;
 
 namespace EnhancedSearchAndFilters.UI.ViewControllers
 {

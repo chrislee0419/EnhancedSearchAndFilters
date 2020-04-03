@@ -175,8 +175,8 @@
     <Compile Include="Logger.cs" />
     <Compile Include="PluginConfig.cs" />
     <Compile Include="Search\SearchBehaviour.cs" />
-    <Compile Include="SongData\LocalLeaderboardDataHelper.cs" />
-    <Compile Include="SongData\PlayerDataHelper.cs" />
+    <Compile Include="Utilities\LocalLeaderboardDataHelper.cs" />
+    <Compile Include="Utilities\PlayerDataHelper.cs" />
     <Compile Include="SongData\SongSortModule.cs" />
     <Compile Include="SongData\SortedLevelsLevelPack.cs" />
     <Compile Include="Tweaks\SongBrowserTweaks.cs" />
@@ -194,12 +194,12 @@
     <Compile Include="UI\Components\SearchKeyboard.cs" />
     <Compile Include="UI\FlowCoordinators\FilterFlowCoordinator.cs" />
     <Compile Include="UI\FlowCoordinators\SearchFlowCoordinator.cs" />
-    <Compile Include="UI\GitHubAPIHelper.cs" />
+    <Compile Include="Utilities\GitHubAPIHelper.cs" />
     <Compile Include="UI\SettingsMenu.cs" />
     <Compile Include="UI\SongListUI.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UI\SongListUIAdditions.cs" />
-    <Compile Include="UI\Utilities.cs" />
+    <Compile Include="Utilities\UIUtilities.cs" />
     <Compile Include="UI\Components\CompactSearchKeyboard.cs" />
     <Compile Include="UI\ViewControllers\FilterSideViewController.cs" />
     <Compile Include="UI\ViewControllers\FilterMainViewController.cs" />

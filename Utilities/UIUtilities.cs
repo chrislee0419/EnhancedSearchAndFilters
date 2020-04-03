@@ -8,9 +8,9 @@ using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.Parser;
 using BSMLUtilities = BeatSaberMarkupLanguage.Utilities;
 
-namespace EnhancedSearchAndFilters.UI
+namespace EnhancedSearchAndFilters.Utilities
 {
-    internal static class Utilities
+    internal static class UIUtilities
     {
         /// <summary>
         /// Default colour of RoundRectPanel image.

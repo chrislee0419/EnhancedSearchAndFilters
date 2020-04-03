@@ -8,7 +8,10 @@ using HMUI;
 using BS_Utils.Utilities;
 using BeatSaberMarkupLanguage;
 using EnhancedSearchAndFilters.SongData;
+using EnhancedSearchAndFilters.Utilities;
 using Image = UnityEngine.UI.Image;
+using BSUtilsUtilities = BS_Utils.Utilities.UIUtilities;
+using UIUtilities = EnhancedSearchAndFilters.Utilities.UIUtilities;
 
 namespace EnhancedSearchAndFilters.UI.ViewControllers
 {
@@ -60,8 +63,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 _levelParamsPanel = _standardLevelDetailView.GetPrivateField<LevelParamsPanel>("_levelParamsPanel");
                 _songNameText = _standardLevelDetailView.GetPrivateField<TextMeshProUGUI>("_songNameText");
 
-                _checkmarkSprite = UIUtilities.LoadSpriteFromResources("EnhancedSearchAndFilters.Assets.checkmark.png");
-                _crossSprite = UIUtilities.LoadSpriteFromResources("EnhancedSearchAndFilters.Assets.cross.png");
+                _checkmarkSprite = BSUtilsUtilities.LoadSpriteFromResources("EnhancedSearchAndFilters.Assets.checkmark.png");
+                _crossSprite = BSUtilsUtilities.LoadSpriteFromResources("EnhancedSearchAndFilters.Assets.cross.png");
                 _blankSprite = Sprite.Create(Texture2D.blackTexture, new Rect(0f, 0f, 1f, 1f), Vector2.zero);
 
                 RemoveCustomUIElements(this.rectTransform);
@@ -315,7 +318,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 img.rectTransform.sizeDelta = new Vector2(2.5f, 2.5f);
                 img.sprite = _crossSprite;
                 img.color = _crossColor;
-                img.material = Utilities.NoGlowMaterial;
+                img.material = UIUtilities.NoGlowMaterial;
 
                 _difficultyElements.Add(_difficultyStrings[i], new Tuple<TextMeshProUGUI, Image>(text, img));
             }

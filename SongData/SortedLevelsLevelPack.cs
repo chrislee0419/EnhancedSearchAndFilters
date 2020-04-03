@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using BS_Utils.Utilities;
-using UIUtilities = EnhancedSearchAndFilters.UI.Utilities;
+using UIUtilities = EnhancedSearchAndFilters.Utilities.UIUtilities;
 
 namespace EnhancedSearchAndFilters.SongData
 {

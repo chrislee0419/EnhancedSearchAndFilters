@@ -7,6 +7,7 @@ using TMPro;
 using SemVerVersion = SemVer.Version;
 using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.Notify;
+using EnhancedSearchAndFilters.Utilities;
 
 namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
 {
@@ -81,12 +82,12 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
 
         private void Start()
         {
-            Utilities.ParseBSML("EnhancedSearchAndFilters.UI.Views.ButtonPanelModules.MiscModuleView.bsml", this.gameObject, this);
+            UIUtilities.ParseBSML("EnhancedSearchAndFilters.UI.Views.ButtonPanelModules.MiscModuleView.bsml", this.gameObject, this);
 
-            Utilities.ScaleButton(_reportButton);
+            UIUtilities.ScaleButton(_reportButton);
 
 #if !BEATMODS_RELEASE
-            Utilities.ScaleButton(_updateButton);
+            UIUtilities.ScaleButton(_updateButton);
             OnEnable();
 #endif
         }

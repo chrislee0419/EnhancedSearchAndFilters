@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using BeatSaberMarkupLanguage.Attributes;
 using EnhancedSearchAndFilters.SongData;
+using EnhancedSearchAndFilters.Utilities;
 
 namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
 {
@@ -38,11 +39,11 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
 
         private void Start()
         {
-            Utilities.ParseBSML("EnhancedSearchAndFilters.UI.Views.ButtonPanelModules.SortModeModuleView.bsml", this.gameObject, this);
+            UIUtilities.ParseBSML("EnhancedSearchAndFilters.UI.Views.ButtonPanelModules.SortModeModuleView.bsml", this.gameObject, this);
 
-            Utilities.ScaleButton(_defaultSortButton);
-            Utilities.ScaleButton(_newestSortButton);
-            Utilities.ScaleButton(_playCountSortButton);
+            UIUtilities.ScaleButton(_defaultSortButton);
+            UIUtilities.ScaleButton(_newestSortButton);
+            UIUtilities.ScaleButton(_playCountSortButton);
 
             _defaultSortButtonStrokeImage = _defaultSortButton.GetComponentsInChildren<Image>().First(x => x.name == "Stroke");
             _newestSortButtonStrokeImage = _newestSortButton.GetComponentsInChildren<Image>().First(x => x.name == "Stroke");

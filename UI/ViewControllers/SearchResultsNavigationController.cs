@@ -9,6 +9,7 @@ using HMUI;
 using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.Attributes;
 using EnhancedSearchAndFilters.UI.Components;
+using EnhancedSearchAndFilters.Utilities;
 using BSMLUtilities = BeatSaberMarkupLanguage.Utilities;
 
 namespace EnhancedSearchAndFilters.UI.ViewControllers
@@ -62,7 +63,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 BSMLParser.instance.Parse(BSMLUtilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.SearchResultsNavigationView.bsml"), this.gameObject, this);
                 name = "SearchResultsNavigationController";
 
-                _loadingSpinner = Utilities.CreateLoadingSpinner(this.rectTransform);
+                _loadingSpinner = UIUtilities.CreateLoadingSpinner(this.rectTransform);
 
                 _resultsText.enableWordWrapping = true;
 

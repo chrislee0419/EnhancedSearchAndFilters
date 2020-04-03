@@ -13,8 +13,11 @@ using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.Notify;
 using BeatSaberMarkupLanguage.Parser;
 using EnhancedSearchAndFilters.UI.Components;
+using EnhancedSearchAndFilters.Utilities;
 using Random = System.Random;
 using Image = UnityEngine.UI.Image;
+using BSUtilsUtilities = BS_Utils.Utilities.UIUtilities;
+using UIUtilities = EnhancedSearchAndFilters.Utilities.UIUtilities;
 
 namespace EnhancedSearchAndFilters.UI
 {
@@ -110,7 +113,7 @@ namespace EnhancedSearchAndFilters.UI
 
         private void Start()
         {
-            _parserParams = Utilities.ParseBSML("EnhancedSearchAndFilters.UI.Views.SongListUIView.bsml", this.gameObject, this);
+            _parserParams = UIUtilities.ParseBSML("EnhancedSearchAndFilters.UI.Views.SongListUIView.bsml", this.gameObject, this);
 
             _levelCollectionViewController = this.gameObject.GetComponentInChildren<LevelCollectionViewController>();
             _scroller = _levelCollectionViewController.GetComponentInChildren<TableViewScroller>();
@@ -140,7 +143,7 @@ namespace EnhancedSearchAndFilters.UI
             }
 
             // replace fast page button icons
-            Texture2D tex = UIUtilities.LoadTextureFromResources("EnhancedSearchAndFilters.Assets.doublechevron.png");
+            Texture2D tex = BSUtilsUtilities.LoadTextureFromResources("EnhancedSearchAndFilters.Assets.doublechevron.png");
             Sprite doubleChevronSprite = Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height), new Vector2(0.5f, 0.5f));
 
             Image pageUpImage = _pageUpButton.GetComponentsInChildren<Image>().First(x => x.name == "Arrow");
@@ -152,7 +155,7 @@ namespace EnhancedSearchAndFilters.UI
             pageDownImage.rectTransform.sizeDelta = new Vector2(4f, 3f);
 
             // replace random button icon
-            tex = UIUtilities.LoadTextureFromResources("EnhancedSearchAndFilters.Assets.shuffle.png");
+            tex = BSUtilsUtilities.LoadTextureFromResources("EnhancedSearchAndFilters.Assets.shuffle.png");
             Sprite randomSprite = Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height), new Vector2(0.5f, 0.5f));
             Image randomImage = _randomButton.GetComponentsInChildren<Image>().First(x => x.name == "Arrow");
             randomImage.sprite = randomSprite;

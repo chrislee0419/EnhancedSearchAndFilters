@@ -9,6 +9,7 @@ using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.Notify;
 using EnhancedSearchAndFilters.Filters;
 using EnhancedSearchAndFilters.SongData;
+using EnhancedSearchAndFilters.Utilities;
 
 namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
 {
@@ -89,9 +90,9 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
 
         private void Start()
         {
-            Utilities.ParseBSML("EnhancedSearchAndFilters.UI.Views.ButtonPanelModules.QuickFilterModuleView.bsml", this.gameObject, this);
+            UIUtilities.ParseBSML("EnhancedSearchAndFilters.UI.Views.ButtonPanelModules.QuickFilterModuleView.bsml", this.gameObject, this);
 
-            Utilities.ScaleButton(_quickFilterButton, 0.5f);
+            UIUtilities.ScaleButton(_quickFilterButton, 0.5f);
 
             _quickFilterButton.interactable = false;
             _text = _quickFilterButton.GetComponentInChildren<TextMeshProUGUI>();
