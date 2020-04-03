@@ -40,41 +40,22 @@ namespace EnhancedSearchAndFilters.SongData
             }
         }
 
-        private CachedMediaAsyncLoader _cacheMediaLoader;
-        private CachedMediaAsyncLoader CachingThreadMediaLoader
+        private CachedMediaAsyncLoader _mediaLoader;
+        private CachedMediaAsyncLoader MediaLoader
         {
             get
             {
-                if (_cacheMediaLoader == null)
+                if (_mediaLoader == null)
                 {
                     var beatmapLevelsModel = Resources.FindObjectsOfTypeAll<StandardLevelDetailViewController>().First().GetPrivateField<BeatmapLevelsModel>("_beatmapLevelsModel");
                     var customLevelLoader = beatmapLevelsModel.GetPrivateField<CustomLevelLoader>("_customLevelLoader");
                     var cachedMediaAsyncLoader = customLevelLoader.GetPrivateField<CachedMediaAsyncLoader>("_cachedMediaAsyncLoaderSO");
 
-                    _cacheMediaLoader = Instantiate(cachedMediaAsyncLoader, this.transform);
-                    _cacheMediaLoader.name = "CachingThreadMediaLoader";
+                    _mediaLoader = Instantiate(cachedMediaAsyncLoader, this.transform);
+                    _mediaLoader.name = "ESAFMediaLoader";
                 }
 
-                return _cacheMediaLoader;
-            }
-        }
-
-        private CachedMediaAsyncLoader _loadMediaLoader;
-        private CachedMediaAsyncLoader LoadingThreadMediaLoader
-        {
-            get
-            {
-                if (_loadMediaLoader == null)
-                {
-                    var beatmapLevelsModel = Resources.FindObjectsOfTypeAll<StandardLevelDetailViewController>().First().GetPrivateField<BeatmapLevelsModel>("_beatmapLevelsModel");
-                    var customLevelLoader = beatmapLevelsModel.GetPrivateField<CustomLevelLoader>("_customLevelLoader");
-                    var cachedMediaAsyncLoader = customLevelLoader.GetPrivateField<CachedMediaAsyncLoader>("_cachedMediaAsyncLoaderSO");
-
-                    _loadMediaLoader = Instantiate(cachedMediaAsyncLoader, this.transform);
-                    _loadMediaLoader.name = "LoadingThreadMediaLoader";
-                }
-
-                return _loadMediaLoader;
+                return _mediaLoader;
             }
         }
 
@@ -93,7 +74,7 @@ namespace EnhancedSearchAndFilters.SongData
         private ConcurrentDictionary<string, BeatmapDetails> _cache = new ConcurrentDictionary<string, BeatmapDetails>();
 
         // load the details in batches (there is a noticable delay with queueing all async load tasks at once)
-        private const int WorkChunkSize = 5;
+        private const int WorkChunkSize = 10;
 
         // 5 second timeout for loading tasks
         private static readonly TimeSpan TimeoutDelay = new TimeSpan(0, 0, 5);
@@ -582,13 +563,11 @@ namespace EnhancedSearchAndFilters.SongData
         private async Task<CustomBeatmapLevel> LoadCustomBeatmapLevelAsync(CustomPreviewBeatmapLevel level, CancellationToken token)
         {
             CancellationTokenSource linkedTokenSource = CreateLinkedCancellationTokenSource(token, out var timedTokenSource, TimeoutDelay);
-            CustomBeatmapLevel customLevel = new CustomBeatmapLevel(CreateLevelCopyWithReplacedMediaLoader(level, LoadingThreadMediaLoader), null, null);
+            CustomBeatmapLevel customLevel = new CustomBeatmapLevel(CreateLevelCopyWithReplacedMediaLoader(level, MediaLoader), null, null);
 
             try
             {
-                Task<BeatmapLevelData> dataLoadTask = LevelLoader.LoadBeatmapLevelDataAsync(level.customLevelPath, customLevel, level.standardLevelInfoSaveData, linkedTokenSource.Token);
-
-                BeatmapLevelData beatmapData = await dataLoadTask;
+                BeatmapLevelData beatmapData = await LevelLoader.LoadBeatmapLevelDataAsync(level.customLevelPath, customLevel, level.standardLevelInfoSaveData, linkedTokenSource.Token);
                 if (beatmapData != null)
                 {
                     customLevel.SetBeatmapLevelData(beatmapData);
@@ -614,7 +593,7 @@ namespace EnhancedSearchAndFilters.SongData
 
             try
             {
-                BeatmapDetails beatmapDetails = await BeatmapDetails.CreateBeatmapDetailsFromFilesAsync(CreateLevelCopyWithReplacedMediaLoader(level, CachingThreadMediaLoader), linkedTokenSource.Token);
+                BeatmapDetails beatmapDetails = await BeatmapDetails.CreateBeatmapDetailsFromFilesAsync(level, linkedTokenSource.Token);
                 if (beatmapDetails != null)
                 {
                     _cache[GetSimplifiedLevelID(level)] = beatmapDetails;
@@ -629,6 +608,8 @@ namespace EnhancedSearchAndFilters.SongData
             {
                 if (timedTokenSource.IsCancellationRequested && !_cachingTokenSource.IsCancellationRequested)
                     Logger.log.Debug($"Unable to load beatmap details for '{level.songName}' (load task timed out)");
+                else
+                    throw;
             }
             catch (Exception e)
             {
@@ -645,7 +626,7 @@ namespace EnhancedSearchAndFilters.SongData
 
             try
             {
-                BeatmapDetails beatmapDetails = await BeatmapDetails.CreateBeatmapDetailsFromFilesAsync(CreateLevelCopyWithReplacedMediaLoader(level, LoadingThreadMediaLoader), linkedTokenSource.Token);
+                BeatmapDetails beatmapDetails = await BeatmapDetails.CreateBeatmapDetailsFromFilesAsync(level, linkedTokenSource.Token);
 
                 if (beatmapDetails != null)
                 {
@@ -657,6 +638,8 @@ namespace EnhancedSearchAndFilters.SongData
             {
                 if (timedTokenSource.IsCancellationRequested && !_loadingTokenSource.IsCancellationRequested)
                     Logger.log.Debug($"Unable to load beatmap details for '{level.songName}' (load task timed out)");
+                else
+                    throw;
             }
             catch (Exception e)
             {

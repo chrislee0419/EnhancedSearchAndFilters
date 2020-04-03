@@ -159,8 +159,10 @@ namespace EnhancedSearchAndFilters.SongData
                 return simplifiedDifficultySets;
             }, token);
 
+            token.ThrowIfCancellationRequested();
+
             // load audio for map length
-            AudioClip audioClip = await customLevel.GetPreviewAudioClipAsync(token);
+            AudioClip audioClip = await MediaAsyncLoader.LoadAudioClipAsync(Path.Combine(customLevel.customLevelPath, infoData.songFilename), token);
 
             // data validation
             if (audioClip == null || beatmapDetails.DifficultyBeatmapSets == null)
