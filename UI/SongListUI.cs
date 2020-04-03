@@ -552,19 +552,8 @@ namespace EnhancedSearchAndFilters.UI
             Logger.log.Debug($"Level selected from search: {level.songName} {level.songSubName} - {level.songAuthorName}");
             DismissSearchFlowCoordinator();
 
-            IPreviewBeatmapLevel[] levels = LevelSelectionNavigationController.GetPrivateField<IBeatmapLevelPack>("_levelPack").beatmapLevelCollection.beatmapLevels;
-
-            int row = Array.IndexOf(levels, level);
-            if (row >= 0)
-            {
-                if (_levelCollectionTableView.GetPrivateField<bool>("_showLevelPackHeader"))
-                    ++row;
-
-                _levelsTableView.ScrollToCellWithIdx(row, TableViewScroller.ScrollPositionType.Beginning, false);
-                _levelsTableView.SelectCellWithIdx(row);
-            }
-
-            LevelSelectionNavigationController.HandleLevelCollectionViewControllerDidSelectLevel(null, level);
+            var levelCollectionViewController = LevelSelectionNavigationController.GetPrivateField<LevelCollectionViewController>("_levelCollectionViewController", typeof(LevelSelectionNavigationController));
+            levelCollectionViewController.SelectLevel(level);
         }
 
         private void FilterFlowCoordinatorSetFilteredSongs(IPreviewBeatmapLevel[] levels)
