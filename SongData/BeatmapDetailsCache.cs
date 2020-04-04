@@ -28,6 +28,58 @@ namespace EnhancedSearchAndFilters.SongData
             Cache = cache.ToList();
         }
 
+        public static IEnumerator<List<BeatmapDetails>> GetBeatmapDetailsFromCacheCoroutine(string path)
+        {
+            if (!File.Exists(path))
+            {
+                Logger.log.Notice($"Cache file could not be found in the path: '{path}'");
+                yield break;
+            }
+
+            string fileContents = null;
+            IEnumerator<string> cacheLoader = UnityMediaLoader.LoadTextCoroutine(path);
+            while (cacheLoader.MoveNext())
+            {
+                fileContents = cacheLoader.Current;
+
+                if (fileContents == null)
+                    yield return null;
+            }
+
+            if (string.IsNullOrEmpty(fileContents))
+            {
+                Logger.log.Warn("Beatmap details cache is empty");
+                yield break;
+            }
+
+            BeatmapDetailsCache cache = null;
+            try
+            {
+                cache = JsonConvert.DeserializeObject<BeatmapDetailsCache>(fileContents);
+            }
+            catch (JsonSerializationException)
+            {
+                Logger.log.Warn("Unable to deserialize cache file. Could be an older bersion of the cache file (will be replaced after the in-memory cache is rebuilt)");
+                yield break;
+            }
+            catch (Exception e)
+            {
+                Logger.log.Warn("Unexpected exception occurred when trying to deserialize beatmap details cache");
+                Logger.log.Debug(e);
+                yield break;
+            }
+
+            if (cache.Version < CURRENT_CACHE_VERSION)
+            {
+                Logger.log.Warn("Beatmap details cache is outdated. Forcing the cache to be rebuilt");
+            }
+            else
+            {
+                Logger.log.Info("Successfully loaded details cache from storage");
+                yield return cache.Cache;
+            }
+        }
+
         public static async Task<List<BeatmapDetails>> GetBeatmapDetailsFromCacheAsync(string path)
         {
             Task<List<BeatmapDetails>> t = Task.Run(delegate ()
