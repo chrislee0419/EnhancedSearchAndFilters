@@ -80,39 +80,34 @@ namespace EnhancedSearchAndFilters.SongData
             }
         }
 
-        public static async Task<List<BeatmapDetails>> GetBeatmapDetailsFromCacheAsync(string path)
+        public static List<BeatmapDetails> GetBeatmapDetailsFromCache(string path)
         {
-            Task<List<BeatmapDetails>> t = Task.Run(delegate ()
+            try
             {
-                try
-                {
-                    var cache = JsonConvert.DeserializeObject<BeatmapDetailsCache>(File.ReadAllText(path));
+                var cache = JsonConvert.DeserializeObject<BeatmapDetailsCache>(File.ReadAllText(path));
 
-                    if (cache.Version < CURRENT_CACHE_VERSION)
-                    {
-                        Logger.log.Warn("EnhancedSearchAndFilters details cache is outdated. Forcing the cache to be rebuilt.");
-                        return new List<BeatmapDetails>();
-                    }
+                if (cache.Version < CURRENT_CACHE_VERSION)
+                {
+                    Logger.log.Warn("EnhancedSearchAndFilters details cache is outdated. Forcing the cache to be rebuilt.");
+                    return new List<BeatmapDetails>();
+                }
 
-                    Logger.log.Info("Successfully loaded details cache from storage");
-                    return cache.Cache;
-                }
-                catch (FileNotFoundException)
-                {
-                    Logger.log.Warn($"Cache file could not be found in the path: '{path}'");
-                }
-                catch (JsonSerializationException)
-                {
-                    Logger.log.Warn("Unable to deserialize cache file. Could be an older version of the cache file (will be replaced after the in-memory cache is rebuilt).");
-                }
-                catch (Exception e)
-                {
-                    Logger.log.Warn(e);
-                }
-                return new List<BeatmapDetails>();
-            });
-
-            return await t.ConfigureAwait(false);
+                Logger.log.Info("Successfully loaded details cache from storage");
+                return cache.Cache;
+            }
+            catch (FileNotFoundException)
+            {
+                Logger.log.Warn($"Cache file could not be found in the path: '{path}'");
+            }
+            catch (JsonSerializationException)
+            {
+                Logger.log.Warn("Unable to deserialize cache file. Could be an older version of the cache file (will be replaced after the in-memory cache is rebuilt).");
+            }
+            catch (Exception e)
+            {
+                Logger.log.Warn(e);
+            }
+            return new List<BeatmapDetails>();
         }
 
         public static void SaveBeatmapDetailsToCache(string path, List<BeatmapDetails> beatmapDetailsList)

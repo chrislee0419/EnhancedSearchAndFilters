@@ -87,92 +87,96 @@ namespace EnhancedSearchAndFilters.SongData
             DifficultyBeatmapSets = difficultyBeatmapSets;
         }
 
-        //public static async Task<BeatmapDetails> CreateBeatmapDetailsFromFilesAsync(CustomPreviewBeatmapLevel customLevel, CancellationToken token)
-        //{
-        //    StandardLevelInfoSaveData infoData = customLevel.standardLevelInfoSaveData;
-        //    BeatmapDetails beatmapDetails = new BeatmapDetails();
+        /// <summary>
+        /// Loads files associated with a custom beatmap and creates a BeatmapDetails object with the information contained in the files.
+        /// </summary>
+        /// <param name="customLevel">A custom level to create the BeatmapDetails object for.</param>
+        /// <returns>BeatmapDetails object on success, otherwise null.</returns>
+        public static BeatmapDetails CreateBeatmapDetailsFromFiles(CustomPreviewBeatmapLevel customLevel)
+        {
+            StandardLevelInfoSaveData infoData = customLevel.standardLevelInfoSaveData;
+            BeatmapDetails beatmapDetails = new BeatmapDetails();
 
-        //    beatmapDetails.LevelID = BeatmapDetailsLoader.GetSimplifiedLevelID(customLevel);
-        //    beatmapDetails.SongName = customLevel.songName;
-        //    beatmapDetails.BeatsPerMinute = infoData.beatsPerMinute;
+            beatmapDetails.LevelID = BeatmapDetailsLoader.GetSimplifiedLevelID(customLevel);
+            beatmapDetails.SongName = customLevel.songName;
+            beatmapDetails.BeatsPerMinute = infoData.beatsPerMinute;
 
-        //    // load difficulties for note info
-        //    beatmapDetails.DifficultyBeatmapSets = await Task.Run(async delegate ()
-        //    {
-        //        SimplifiedDifficultyBeatmapSet[] simplifiedDifficultySets = new SimplifiedDifficultyBeatmapSet[infoData.difficultyBeatmapSets.Length];
-        //        for (int i = 0; i < infoData.difficultyBeatmapSets.Length; ++i)
-        //        {
-        //            token.ThrowIfCancellationRequested();
+            // load difficulties for note info
+            beatmapDetails.DifficultyBeatmapSets = new SimplifiedDifficultyBeatmapSet[infoData.difficultyBeatmapSets.Length];
+            for (int i = 0; i < infoData.difficultyBeatmapSets.Length; ++i)
+            {
+                var currentSimplifiedSet = new SimplifiedDifficultyBeatmapSet();
+                beatmapDetails.DifficultyBeatmapSets[i] = currentSimplifiedSet;
+                var currentSet = infoData.difficultyBeatmapSets[i];
 
-        //            var currentSimplifiedSet = new SimplifiedDifficultyBeatmapSet();
-        //            simplifiedDifficultySets[i] = currentSimplifiedSet;
-        //            var currentSet = infoData.difficultyBeatmapSets[i];
+                currentSimplifiedSet.CharacteristicName = currentSet.beatmapCharacteristicName;
+                currentSimplifiedSet.DifficultyBeatmaps = new SimplifiedDifficultyBeatmap[currentSet.difficultyBeatmaps.Length];
 
-        //            currentSimplifiedSet.CharacteristicName = currentSet.beatmapCharacteristicName;
-        //            currentSimplifiedSet.DifficultyBeatmaps = new SimplifiedDifficultyBeatmap[currentSet.difficultyBeatmaps.Length];
+                for (int j = 0; j < currentSet.difficultyBeatmaps.Length; ++j)
+                {
+                    var currentSimplifiedDiff = new SimplifiedDifficultyBeatmap();
+                    currentSimplifiedSet.DifficultyBeatmaps[j] = currentSimplifiedDiff;
+                    var currentDiff = currentSet.difficultyBeatmaps[j];
 
-        //            for (int j = 0; j < currentSet.difficultyBeatmaps.Length; ++j)
-        //            {
-        //                var currentSimplifiedDiff = new SimplifiedDifficultyBeatmap();
-        //                currentSimplifiedSet.DifficultyBeatmaps[j] = currentSimplifiedDiff;
-        //                var currentDiff = currentSet.difficultyBeatmaps[j];
+                    currentDiff.difficulty.BeatmapDifficultyFromSerializedName(out currentSimplifiedDiff.Difficulty);
+                    currentSimplifiedDiff.NoteJumpMovementSpeed = currentDiff.noteJumpMovementSpeed;
 
-        //                currentDiff.difficulty.BeatmapDifficultyFromSerializedName(out currentSimplifiedDiff.Difficulty);
-        //                currentSimplifiedDiff.NoteJumpMovementSpeed = currentDiff.noteJumpMovementSpeed;
+                    string diffFilePath = Path.Combine(customLevel.customLevelPath, currentDiff.beatmapFilename);
+                    if (!File.Exists(diffFilePath))
+                        return null;
 
-        //                BeatmapSaveData beatmapSaveData = await Task.Run(delegate ()
-        //                {
-        //                    string filePath = Path.Combine(customLevel.customLevelPath, currentDiff.beatmapFilename);
-        //                    if (File.Exists(filePath))
-        //                        return BeatmapSaveData.DeserializeFromJSONString(File.ReadAllText(filePath));
-        //                    else
-        //                        return null;
-        //                }, token);
-        //                token.ThrowIfCancellationRequested();
+                    BeatmapSaveData beatmapSaveData = null;
+                    try
+                    {
+                        beatmapSaveData = BeatmapSaveData.DeserializeFromJSONString(File.ReadAllText(diffFilePath));
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.log.Debug("Unable to create BeatmapDetails object from files (unexpected exception occurred trying to load BeatmapSaveData from file)");
+                        Logger.log.Debug(e);
+                        return null;
+                    }
 
-        //                // missing difficulty files
-        //                if (beatmapSaveData == null)
-        //                    return null;
+                    if (beatmapSaveData == null)
+                    {
+                        Logger.log.Debug("Unable to create BeatmapDetails object from files (could not load BeatmapSaveData from file)");
+                        return null;
+                    }
 
-        //                // count notes and bombs
-        //                currentSimplifiedDiff.NotesCount = 0;
-        //                currentSimplifiedDiff.BombsCount = 0;
-        //                foreach (var note in beatmapSaveData.notes)
-        //                {
-        //                    if (note.type.IsBasicNote())
-        //                        ++currentSimplifiedDiff.NotesCount;
-        //                    else if (note.type == NoteType.Bomb)
-        //                        ++currentSimplifiedDiff.BombsCount;
-        //                }
+                    // count notes and bombs
+                    currentSimplifiedDiff.NotesCount = 0;
+                    currentSimplifiedDiff.BombsCount = 0;
+                    foreach (var note in beatmapSaveData.notes)
+                    {
+                        if (note.type.IsBasicNote())
+                            ++currentSimplifiedDiff.NotesCount;
+                        else if (note.type == NoteType.Bomb)
+                            ++currentSimplifiedDiff.BombsCount;
+                    }
 
-        //                // count rotation events
-        //                currentSimplifiedDiff.SpawnRotationEventsCount = 0;
-        //                foreach (var mapEvent in beatmapSaveData.events)
-        //                {
-        //                    if (mapEvent.type.IsRotationEvent())
-        //                        ++currentSimplifiedDiff.SpawnRotationEventsCount;
-        //                }
+                    // count rotation events
+                    currentSimplifiedDiff.SpawnRotationEventsCount = 0;
+                    foreach (var mapEvent in beatmapSaveData.events)
+                    {
+                        if (mapEvent.type.IsRotationEvent())
+                            ++currentSimplifiedDiff.SpawnRotationEventsCount;
+                    }
 
-        //                currentSimplifiedDiff.ObstaclesCount = beatmapSaveData.obstacles.Count;
-        //            }
-        //        }
+                    currentSimplifiedDiff.ObstaclesCount = beatmapSaveData.obstacles.Count;
+                }
+            }
 
-        //        return simplifiedDifficultySets;
-        //    }, token);
+            // load audio for map length
+            string audioFilePath = Path.Combine(customLevel.customLevelPath, infoData.songFilename);
+            AudioClip audioClip = UnityMediaLoader.LoadAudioClip(audioFilePath);
 
-        //    token.ThrowIfCancellationRequested();
+            if (audioClip == null)
+                return null;
 
-        //    // load audio for map length
-        //    AudioClip audioClip = await MediaAsyncLoader.LoadAudioClipAsync(Path.Combine(customLevel.customLevelPath, infoData.songFilename), token);
+            beatmapDetails.SongDuration = audioClip.length;
 
-        //    // data validation
-        //    if (audioClip == null || beatmapDetails.DifficultyBeatmapSets == null)
-        //        return null;
-
-        //    beatmapDetails.SongDuration = audioClip.length;
-
-        //    return beatmapDetails;
-        //}
+            return beatmapDetails;
+        }
 
         public static IEnumerator<BeatmapDetails> CreateBeatmapDetailsFromFilesCoroutine(CustomPreviewBeatmapLevel customLevel)
         {

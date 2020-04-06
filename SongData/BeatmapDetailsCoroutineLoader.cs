@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
-using SongCore;
 using EnhancedSearchAndFilters.Tweaks;
 
 namespace EnhancedSearchAndFilters.SongData
@@ -17,7 +16,7 @@ namespace EnhancedSearchAndFilters.SongData
             public event Action CachingStarted;
             public event Action CachingFinished;
 
-            public bool IsCaching { get => _cachingCoroutine != null; }
+            public bool IsCaching => _cachingCoroutine != null;
 
             private IEnumerator _cachingCoroutine = null;
             private bool _cachingPaused = false;
@@ -30,10 +29,7 @@ namespace EnhancedSearchAndFilters.SongData
                     CachingFinished -= (Action)d;
 
                 if (IsCaching)
-                {
-                    StopCoroutine(_cachingCoroutine);
-                    _cachingCoroutine = null;
-                }
+                    StopCaching();
 
                 Destroy(this.gameObject);
             }
@@ -68,7 +64,7 @@ namespace EnhancedSearchAndFilters.SongData
 
             private IEnumerator PopulateCacheFromFileCoroutine()
             {
-                var coroutine = BeatmapDetailsCache.GetBeatmapDetailsFromCacheCoroutine(CachedBeatmapDetailsFilePath);
+                var coroutine = BeatmapDetailsCache.GetBeatmapDetailsFromCacheCoroutine(BeatmapDetailsLoader.CachedBeatmapDetailsFilePath);
 
                 List<BeatmapDetails> loadedCache = null;
                 while (coroutine.MoveNext())
@@ -104,12 +100,7 @@ namespace EnhancedSearchAndFilters.SongData
                     yield return loadCache.Current;
 
                 // we don't have to cache OST levels, since they can be immediately cast into IBeatmapLevel objects
-                List<IPreviewBeatmapLevel> allCustomLevels = Loader.CustomLevelsCollection.beatmapLevels.ToList();
-                foreach (var folder in Loader.SeperateSongFolders)
-                {
-                    if (!folder.SongFolderEntry.WIP)
-                        allCustomLevels.AddRange(folder.Levels.Values);
-                }
+                List<IPreviewBeatmapLevel> allCustomLevels = BeatmapDetailsLoader.GetAllCustomLevels();
 
                 // record errors from SongDataCore for logging
                 List<SongDataCoreDataStatus> sdcErrorStatusList = new List<SongDataCoreDataStatus>(allCustomLevels.Count);
@@ -122,8 +113,8 @@ namespace EnhancedSearchAndFilters.SongData
                 {
                     if (sw.ElapsedMilliseconds > 30000 + elapsed)
                     {
+                        elapsed = sw.ElapsedMilliseconds;
                         Logger.log.Debug($"Caching coroutine has finished caching {index} beatmaps out of {allCustomLevels.Count} ({elapsed} ms elapsed)");
-                        elapsed += sw.ElapsedMilliseconds;
                     }
 
                     while (_cachingPaused)
@@ -202,8 +193,12 @@ namespace EnhancedSearchAndFilters.SongData
                         yield return null;
                 }
 
+                // check for pause before writing to disk
+                while (_cachingPaused)
+                    yield return null;
+
                 sw.Stop();
-                Logger.log.Info($"Finished caching the details of {allCustomLevels.Count} beatmaps (took {sw.ElapsedMilliseconds / 1000f} seconds).");
+                Logger.log.Info($"Finished caching the details of {allCustomLevels.Count} beatmaps (took {sw.ElapsedMilliseconds / 1000f} seconds)");
 
                 if (errorCount > 0)
                     Logger.log.Warn($"Unable to cache the beatmap details for {errorCount} songs");
@@ -219,10 +214,6 @@ namespace EnhancedSearchAndFilters.SongData
                         $"InvalidDifficultyString = {sdcErrorStatusList.Count(x => x == SongDataCoreDataStatus.InvalidDifficultyString)}, " +
                         $"ExceptionThrown = {sdcErrorStatusList.Count(x => x == SongDataCoreDataStatus.ExceptionThrown)})");
                 }
-
-                // check for pause before writing to disk
-                while (_cachingPaused)
-                    yield return null;
 
                 BeatmapDetailsLoader.instance.SaveCacheToFile();
 
@@ -242,15 +233,12 @@ namespace EnhancedSearchAndFilters.SongData
             public void Dispose()
             {
                 if (IsLoading)
-                {
-                    StopCoroutine(_loadingCoroutine);
-                    _loadingCoroutine = null;
-                }
+                    StopLoading();
 
                 Destroy(this.gameObject);
             }
 
-            public void StartLoading(IPreviewBeatmapLevel[] levels, Action<int> updateCallback = null, Action<BeatmapDetails[]> onFinish = null)
+            public void StartLoading(IPreviewBeatmapLevel[] levels, Action<int> updateCallback, Action<BeatmapDetails[]> onFinish)
             {
                 _loadingCoroutine = LoadBeatmapsCoroutine(levels, updateCallback, onFinish);
                 StartCoroutine(_loadingCoroutine);
@@ -292,9 +280,9 @@ namespace EnhancedSearchAndFilters.SongData
                         {
                             loadedLevelsUnsorted.Add(new Tuple<int, BeatmapDetails>(index, new BeatmapDetails(beatmapLevel)));
                         }
-                        else if (_cache.ContainsKey(levelID))
+                        else if (BeatmapDetailsLoader._cache.ContainsKey(levelID))
                         {
-                            loadedLevelsUnsorted.Add(new Tuple<int, BeatmapDetails>(index, _cache[levelID]));
+                            loadedLevelsUnsorted.Add(new Tuple<int, BeatmapDetails>(index, BeatmapDetailsLoader._cache[levelID]));
                         }
                         else if (level is CustomPreviewBeatmapLevel customLevel)
                         {
@@ -312,6 +300,7 @@ namespace EnhancedSearchAndFilters.SongData
                                 else
                                 {
                                     loadedLevelsUnsorted.Add(new Tuple<int, BeatmapDetails>(index, beatmapDetails));
+                                    BeatmapDetailsLoader._cache[levelID] = beatmapDetails;
                                 }
                             }
                             else

@@ -60,6 +60,8 @@ namespace EnhancedSearchAndFilters.SongData
 
         // maintain our own cache because we don't need the cover image for each level or process notes/events
         // and the game's HMCache is limited to 30 songs
+        // not using ConcurrentDictionary, since caching/loading/using this dictionary can only occur at one thread at a time anyways
+        // (loading operation pauses caching operation)
         private static Dictionary<string, BeatmapDetails> _cache = new Dictionary<string, BeatmapDetails>();
 
         // load the details in batches (there is a noticable delay with queueing all async load tasks at once)
@@ -74,8 +76,8 @@ namespace EnhancedSearchAndFilters.SongData
 
         public void Awake()
         {
-            SelectCacher(CacherType.Coroutine);
-            SelectLoader(LoaderType.Coroutine);
+            SelectCacher(CacherType.SeparateThread);
+            SelectLoader(LoaderType.SeparateThread);
         }
 
         internal void SelectCacher(CacherType type)
@@ -89,7 +91,7 @@ namespace EnhancedSearchAndFilters.SongData
             switch (type)
             {
                 case CacherType.Coroutine:
-                    var go = new GameObject("ESAFCoroutineCacher");
+                    GameObject go = new GameObject("ESAFCoroutineCacher");
                     go.transform.SetParent(this.transform);
                     _cacher = go.AddComponent<CoroutineCacher>();
 
@@ -97,6 +99,8 @@ namespace EnhancedSearchAndFilters.SongData
                     break;
 
                 case CacherType.SeparateThread:
+                    _cacher = new ThreadedCacher();
+
                     Logger.log.Debug("Using separate thread to cache BeatmapDetails objects");
                     break;
 
@@ -120,7 +124,7 @@ namespace EnhancedSearchAndFilters.SongData
             switch (type)
             {
                 case LoaderType.Coroutine:
-                    var go = new GameObject("ESAFCoroutineLoader");
+                    GameObject go = new GameObject("ESAFCoroutineLoader");
                     go.transform.SetParent(this.transform);
                     _loader = go.AddComponent<CoroutineLoader>();
 
@@ -128,6 +132,10 @@ namespace EnhancedSearchAndFilters.SongData
                     break;
 
                 case LoaderType.SeparateThread:
+                    go = new GameObject("ESAFThreadedLoader");
+                    go.transform.SetParent(this.transform);
+                    _loader = go.AddComponent<ThreadedLoader>();
+
                     Logger.log.Debug("Using separate thread to load BeatmapDetails objects");
                     break;
             }
@@ -330,6 +338,18 @@ namespace EnhancedSearchAndFilters.SongData
         }
 
         #region Static Utilities
+        private static List<IPreviewBeatmapLevel> GetAllCustomLevels()
+        {
+            List<IPreviewBeatmapLevel> allCustomLevels = Loader.CustomLevelsCollection.beatmapLevels.ToList();
+            foreach (var folder in Loader.SeperateSongFolders)
+            {
+                if (!folder.SongFolderEntry.WIP)
+                    allCustomLevels.AddRange(folder.Levels.Values);
+            }
+
+            return allCustomLevels;
+        }
+
         private static CustomPreviewBeatmapLevel CreateLevelCopyWithReplacedMediaLoader(CustomPreviewBeatmapLevel level, CachedMediaAsyncLoader mediaLoader)
         {
             // recreate the CustomPreviewBeatmapLevel, but replace the original CachedMediaAsyncLoader with our own copy
