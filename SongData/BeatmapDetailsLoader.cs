@@ -142,7 +142,7 @@ namespace EnhancedSearchAndFilters.SongData
         }
 
         /// <summary>
-        /// Should be run whenever in the menu, to start/resume populating the cache for filter/search.
+        /// Should be run whenever in the menu, to start/resume populating the beatmap details cache for filters.
         /// </summary>
         public void StartCaching(bool force = false)
         {
@@ -150,9 +150,16 @@ namespace EnhancedSearchAndFilters.SongData
                 return;
 
             if (!IsCaching)
+            {
                 SongsAreCached = false;
-
-            _cacher.StartCaching();
+                Logger.log.Info("Starting beatmap details caching operation");
+                _cacher.StartCaching();
+            }
+            else
+            {
+                Logger.log.Info("Resuming beatmap details caching operation");
+                _cacher.ResumeCaching();
+            }
         }
 
         /// <summary>
@@ -163,6 +170,7 @@ namespace EnhancedSearchAndFilters.SongData
             if (!IsCaching || _cacher == null)
                 return;
 
+            Logger.log.Info("Pausing beatmap details caching operation");
             _cacher.PauseCaching();
         }
 
@@ -174,6 +182,7 @@ namespace EnhancedSearchAndFilters.SongData
             if (!IsCaching || _cacher == null)
                 return;
 
+            Logger.log.Info("Cancelling ongoing beatmap details caching operation");
             _cacher.StopCaching();
         }
 
@@ -199,9 +208,7 @@ namespace EnhancedSearchAndFilters.SongData
 
             Action<BeatmapDetails[]> loadingFinishedCallback = delegate (BeatmapDetails[] beatmapDetailsArray)
             {
-                if (IsCaching || !SongsAreCached)
-                    StartCaching();
-
+                StartCaching();
                 onFinish.Invoke(beatmapDetailsArray);
             };
             _loader.StartLoading(levels, updateCallback, loadingFinishedCallback);
@@ -443,8 +450,9 @@ namespace EnhancedSearchAndFilters.SongData
             bool IsCaching { get; }
 
             void StartCaching();
-            void PauseCaching();
             void StopCaching();
+            void ResumeCaching();
+            void PauseCaching();
         }
 
         private interface ILoader : IDisposable

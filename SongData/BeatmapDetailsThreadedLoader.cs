@@ -40,15 +40,6 @@ namespace EnhancedSearchAndFilters.SongData
                     _thread.Start();
                     CachingStarted?.Invoke();
                 }
-                else
-                {
-                    _manualResetEvent.Set();
-                }
-            }
-
-            public void PauseCaching()
-            {
-                _manualResetEvent.Reset();
             }
 
             public void StopCaching()
@@ -56,9 +47,22 @@ namespace EnhancedSearchAndFilters.SongData
                 _isOperationCancelled = true;
                 _manualResetEvent.Set();
                 _thread.Join();
+
                 _thread = null;
+                _manualResetEvent.Dispose();
+                _manualResetEvent = null;
 
                 Logger.log.Debug("Threaded caching operation successfully cancelled");
+            }
+
+            public void ResumeCaching()
+            {
+                _manualResetEvent.Set();
+            }
+
+            public void PauseCaching()
+            {
+                _manualResetEvent.Reset();
             }
 
             private void CachingThread()
@@ -185,8 +189,14 @@ namespace EnhancedSearchAndFilters.SongData
 
                     BeatmapDetailsLoader.instance.SaveCacheToFile();
 
-                    _thread = null;
-                    HMMainThreadDispatcher.instance.Enqueue(() => CachingFinished?.Invoke());
+                    HMMainThreadDispatcher.instance.Enqueue(delegate ()
+                    {
+                        _thread = null;
+                        _manualResetEvent.Dispose();
+                        _manualResetEvent = null;
+
+                        CachingFinished?.Invoke();
+                    });
                 }
                 catch (Exception e)
                 {
@@ -359,8 +369,11 @@ namespace EnhancedSearchAndFilters.SongData
                             $"ExceptionThrown = {sdcErrorStatusList.Count(x => x == SongDataCoreDataStatus.ExceptionThrown)})");
                     }
 
-                    _thread = null;
-                    HMMainThreadDispatcher.instance.Enqueue(() => onFinish.Invoke(loadedLevelsUnsorted.Select(x => x.Details).ToArray()));
+                    HMMainThreadDispatcher.instance.Enqueue(delegate ()
+                    {
+                        _thread = null;
+                        onFinish.Invoke(loadedLevelsUnsorted.Select(x => x.Details).ToArray());
+                    });
                 }
                 catch (Exception e)
                 {

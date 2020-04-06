@@ -36,23 +36,12 @@ namespace EnhancedSearchAndFilters.SongData
 
             public void StartCaching()
             {
-                _cachingPaused = false;
-
                 if (!IsCaching)
                 {
+                    _cachingPaused = false;
                     _cachingCoroutine = CacheAllBeatmapDetailsCoroutine();
                     StartCoroutine(_cachingCoroutine);
                 }
-                else
-                {
-                    // resume old populate cache job
-                    Logger.log.Info("Resuming beatmap details caching thread");
-                }
-            }
-
-            public void PauseCaching()
-            {
-                _cachingPaused = true;
             }
 
             public void StopCaching()
@@ -60,6 +49,16 @@ namespace EnhancedSearchAndFilters.SongData
                 StopCoroutine(_cachingCoroutine);
                 _cachingCoroutine = null;
                 _cachingPaused = false;
+            }
+
+            public void ResumeCaching()
+            {
+                _cachingPaused = false;
+            }
+
+            public void PauseCaching()
+            {
+                _cachingPaused = true;
             }
 
             private IEnumerator PopulateCacheFromFileCoroutine()
