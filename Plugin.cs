@@ -46,8 +46,8 @@ namespace EnhancedSearchAndFilters
         {
             WordPredictionEngine.instance.CancelTasks();
 
-            BeatmapDetailsLoader.instance.CancelLoading();
-            BeatmapDetailsLoader.instance.CancelPopulatingCache();
+            BeatmapDetailsLoader.instance.StopLoading();
+            BeatmapDetailsLoader.instance.StopCaching();
             BeatmapDetailsLoader.instance.SaveCacheToFile();
         }
 
@@ -58,7 +58,7 @@ namespace EnhancedSearchAndFilters
                 WordPredictionEngine.instance.ResumeTasks();
 
                 if (BeatmapDetailsLoader.instance.IsCaching)
-                    BeatmapDetailsLoader.instance.StartPopulatingCache();
+                    BeatmapDetailsLoader.instance.StartCaching();
             }
 
             if (prevScene.name == "MenuCore" || nextScene.name == "GameCore")
@@ -66,7 +66,7 @@ namespace EnhancedSearchAndFilters
                 WordPredictionEngine.instance.PauseTasks();
 
                 if (BeatmapDetailsLoader.instance.IsCaching)
-                    BeatmapDetailsLoader.instance.PausePopulatingCache();
+                    BeatmapDetailsLoader.instance.PauseCaching();
             }
         }
 
@@ -91,14 +91,14 @@ namespace EnhancedSearchAndFilters
         private void SongCoreLoaderDeletingSong()
         {
             WordPredictionEngine.instance.CancelTasks();
-            BeatmapDetailsLoader.instance.CancelPopulatingCache();
+            BeatmapDetailsLoader.instance.StopCaching();
             Loader.OnLevelPacksRefreshed += SongCoreLoaderOnLevelPacksRefreshed;
         }
 
         private void SongCoreLoaderOnLevelPacksRefreshed()
         {
             Loader.OnLevelPacksRefreshed -= SongCoreLoaderOnLevelPacksRefreshed;
-            BeatmapDetailsLoader.instance.StartPopulatingCache();
+            BeatmapDetailsLoader.instance.StartCaching();
 
             WordPredictionEngine.instance.ClearCache();
         }
@@ -106,13 +106,13 @@ namespace EnhancedSearchAndFilters
         private void SongCoreLoaderLoadingStarted(Loader loader)
         {
             WordPredictionEngine.instance.CancelTasks();
-            BeatmapDetailsLoader.instance.CancelPopulatingCache();
+            BeatmapDetailsLoader.instance.StopCaching();
         }
 
         private void SongCoreLoaderFinishedLoading(Loader loader, Dictionary<string, CustomPreviewBeatmapLevel> beatmaps)
         {
             // force load, since there might be new songs that can be cached
-            BeatmapDetailsLoader.instance.StartPopulatingCache(true);
+            BeatmapDetailsLoader.instance.StartCaching(true);
 
             WordPredictionEngine.instance.ClearCache();
         }

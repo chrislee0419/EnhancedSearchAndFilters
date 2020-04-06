@@ -180,7 +180,7 @@
     <Compile Include="Logger.cs" />
     <Compile Include="PluginConfig.cs" />
     <Compile Include="Search\SearchBehaviour.cs" />
-    <Compile Include="SongData\BeatmapDetailsLoaderCoroutines.cs" />
+    <Compile Include="SongData\BeatmapDetailsCoroutineLoader.cs" />
     <Compile Include="Utilities\LocalLeaderboardDataHelper.cs" />
     <Compile Include="Utilities\PlayerDataHelper.cs" />
     <Compile Include="SongData\SongSortModule.cs" />

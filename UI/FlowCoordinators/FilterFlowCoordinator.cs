@@ -51,7 +51,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 
         protected override void BackButtonWasPressed(ViewController topViewController)
         {
-            BeatmapDetailsLoader.instance.CancelLoading();
+            BeatmapDetailsLoader.instance.StopLoading();
 
             // filter will be re-selected during the LoadBeatmaps on finish handler, which will re-install this delegate
             if (_currentFilter != null)
@@ -109,7 +109,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 
             _filterMainViewController.ShowLoadingView();
 
-            BeatmapDetailsLoader.instance.LoadBeatmaps(levelsToLoad,
+            BeatmapDetailsLoader.instance.StartLoading(levelsToLoad,
                 delegate (int loaded)
                 {
                     // on update, show updated progress text
