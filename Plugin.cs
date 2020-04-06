@@ -60,8 +60,7 @@ namespace EnhancedSearchAndFilters
                 if (BeatmapDetailsLoader.instance.IsCaching)
                     BeatmapDetailsLoader.instance.StartCaching();
             }
-
-            if (prevScene.name == "MenuCore" || nextScene.name == "GameCore")
+            else if (nextScene.name == "GameCore")
             {
                 WordPredictionEngine.instance.PauseTasks();
 
