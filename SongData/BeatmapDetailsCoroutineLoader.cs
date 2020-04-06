@@ -252,8 +252,8 @@ namespace EnhancedSearchAndFilters.SongData
 
             private IEnumerator LoadBeatmapsCoroutine(IPreviewBeatmapLevel[] levels, Action<int> updateCallback, Action<BeatmapDetails[]> onFinish)
             {
-                List<IEnumerator<Tuple<int, BeatmapDetails>>> taskList = new List<IEnumerator<Tuple<int, BeatmapDetails>>>(WorkChunkSize);
-                List<Tuple<int, BeatmapDetails>> loadedLevelsUnsorted = new List<Tuple<int, BeatmapDetails>>(levels.Length);
+                List<IEnumerator<OrderedBeatmapDetails>> taskList = new List<IEnumerator<OrderedBeatmapDetails>>(WorkChunkSize);
+                List<OrderedBeatmapDetails> loadedLevelsUnsorted = new List<OrderedBeatmapDetails>(levels.Length);
 
                 // reocrd errors from SongDataCore for logging
                 List<SongDataCoreDataStatus> sdcErrorStatusList = new List<SongDataCoreDataStatus>(levels.Length);
@@ -278,11 +278,11 @@ namespace EnhancedSearchAndFilters.SongData
 
                         if (level is IBeatmapLevel beatmapLevel)
                         {
-                            loadedLevelsUnsorted.Add(new Tuple<int, BeatmapDetails>(index, new BeatmapDetails(beatmapLevel)));
+                            loadedLevelsUnsorted.Add(new OrderedBeatmapDetails(index, new BeatmapDetails(beatmapLevel)));
                         }
                         else if (BeatmapDetailsLoader._cache.ContainsKey(levelID))
                         {
-                            loadedLevelsUnsorted.Add(new Tuple<int, BeatmapDetails>(index, BeatmapDetailsLoader._cache[levelID]));
+                            loadedLevelsUnsorted.Add(new OrderedBeatmapDetails(index, BeatmapDetailsLoader._cache[levelID]));
                         }
                         else if (level is CustomPreviewBeatmapLevel customLevel)
                         {
@@ -294,12 +294,12 @@ namespace EnhancedSearchAndFilters.SongData
                                 {
                                     Logger.log.Debug($"BeatmapDetails object generated for '{beatmapDetails.SongName}' from BeatSaver data has some incomplete fields. " +
                                         "Discarding and generating BeatmapDetails object from locally stored information instead");
-                                    taskList.Add(GetCustomBeatmapDetailsCoroutine(customLevel, index));
+                                    taskList.Add(GetOrderedCustomBeatmapDetailsCoroutine(customLevel, index));
                                     ++i;
                                 }
                                 else
                                 {
-                                    loadedLevelsUnsorted.Add(new Tuple<int, BeatmapDetails>(index, beatmapDetails));
+                                    loadedLevelsUnsorted.Add(new OrderedBeatmapDetails(index, beatmapDetails));
                                     BeatmapDetailsLoader._cache[levelID] = beatmapDetails;
                                 }
                             }
@@ -308,14 +308,14 @@ namespace EnhancedSearchAndFilters.SongData
                                 if (SongDataCoreTweaks.IsModAvailable)
                                     sdcErrorStatusList.Add(status);
 
-                                taskList.Add(GetCustomBeatmapDetailsCoroutine(customLevel, index));
+                                taskList.Add(GetOrderedCustomBeatmapDetailsCoroutine(customLevel, index));
                                 ++i;
                             }
                         }
                         else
                         {
                             // add null details object if not convertable (possibly unbought DLC?)
-                            loadedLevelsUnsorted.Add(new Tuple<int, BeatmapDetails>(index, null));
+                            loadedLevelsUnsorted.Add(new OrderedBeatmapDetails(index, null));
                         }
                     }
 
@@ -326,14 +326,14 @@ namespace EnhancedSearchAndFilters.SongData
                     {
                         for (int i = 0; i < taskList.Count; ++i)
                         {
-                            IEnumerator<Tuple<int, BeatmapDetails>> loadCoroutine = taskList[i];
+                            IEnumerator<OrderedBeatmapDetails> loadCoroutine = taskList[i];
 
                             if (loadCoroutine.MoveNext())
                             {
-                                Tuple<int, BeatmapDetails> tuple = loadCoroutine.Current;
-                                if (tuple != null)
+                                OrderedBeatmapDetails obd = loadCoroutine.Current;
+                                if (obd != null)
                                 {
-                                    loadedLevelsUnsorted.Add(tuple);
+                                    loadedLevelsUnsorted.Add(obd);
                                     taskList.Remove(loadCoroutine);
                                     --i;
                                 }
@@ -356,7 +356,7 @@ namespace EnhancedSearchAndFilters.SongData
                 sw.Stop();
                 Logger.log.Debug($"Finished loading the details of {loadedLevelsUnsorted.Count} beatmaps (took {sw.ElapsedMilliseconds / 1000f} seconds)");
 
-                int notLoadedCount = loadedLevelsUnsorted.Count(x => x.Item2 == null);
+                int notLoadedCount = loadedLevelsUnsorted.Count(x => x.Details == null);
                 if (notLoadedCount > 0)
                     Logger.log.Warn($"Unable to load the beatmap details for {notLoadedCount} songs");
 
@@ -373,33 +373,11 @@ namespace EnhancedSearchAndFilters.SongData
                 }
 
                 // all beatmaps are loaded, sort to maintain order
-                loadedLevelsUnsorted.Sort((x, y) => x.Item1 - y.Item1);
+                loadedLevelsUnsorted.Sort((x, y) => x.Position - y.Position);
 
                 _loadingCoroutine = null;
 
-                onFinish.Invoke(loadedLevelsUnsorted.Select((tuple) => tuple.Item2).ToArray());
-            }
-
-            private IEnumerator<Tuple<int, BeatmapDetails>> GetCustomBeatmapDetailsCoroutine(CustomPreviewBeatmapLevel level, int index)
-            {
-                IEnumerator<BeatmapDetails> loadingCoroutine = BeatmapDetails.CreateBeatmapDetailsFromFilesCoroutine(level);
-
-                while (loadingCoroutine.MoveNext())
-                {
-                    BeatmapDetails beatmapDetails = loadingCoroutine.Current;
-                    if (beatmapDetails != null)
-                    {
-                        _cache[beatmapDetails.LevelID] = beatmapDetails;
-                        yield return new Tuple<int, BeatmapDetails>(index, beatmapDetails);
-                        yield break;
-                    }
-                    else
-                    {
-                        yield return null;
-                    }
-                }
-
-                yield return new Tuple<int, BeatmapDetails>(index, null);
+                onFinish.Invoke(loadedLevelsUnsorted.Select(x => x.Details).ToArray());
             }
         }
         #endregion // Loading Beatmap Details

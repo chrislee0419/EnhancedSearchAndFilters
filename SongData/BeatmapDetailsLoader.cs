@@ -65,7 +65,7 @@ namespace EnhancedSearchAndFilters.SongData
         private static Dictionary<string, BeatmapDetails> _cache = new Dictionary<string, BeatmapDetails>();
 
         // load the details in batches (there is a noticable delay with queueing all async load tasks at once)
-        private const int WorkChunkSize = 5;
+        private const int WorkChunkSize = 20;
 
         private const int WorkQueryChunkSize = 50;
 
@@ -350,6 +350,28 @@ namespace EnhancedSearchAndFilters.SongData
             return allCustomLevels;
         }
 
+        private static IEnumerator<OrderedBeatmapDetails> GetOrderedCustomBeatmapDetailsCoroutine(CustomPreviewBeatmapLevel level, int index)
+        {
+            IEnumerator<BeatmapDetails> loadingCoroutine = BeatmapDetails.CreateBeatmapDetailsFromFilesCoroutine(level);
+
+            while (loadingCoroutine.MoveNext())
+            {
+                BeatmapDetails beatmapDetails = loadingCoroutine.Current;
+                if (beatmapDetails != null)
+                {
+                    _cache[beatmapDetails.LevelID] = beatmapDetails;
+                    yield return new OrderedBeatmapDetails(index, beatmapDetails);
+                    yield break;
+                }
+                else
+                {
+                    yield return null;
+                }
+            }
+
+            yield return new OrderedBeatmapDetails(index, null);
+        }
+
         private static CustomPreviewBeatmapLevel CreateLevelCopyWithReplacedMediaLoader(CustomPreviewBeatmapLevel level, CachedMediaAsyncLoader mediaLoader)
         {
             // recreate the CustomPreviewBeatmapLevel, but replace the original CachedMediaAsyncLoader with our own copy
@@ -400,7 +422,19 @@ namespace EnhancedSearchAndFilters.SongData
         }
         #endregion // Static Utilities
 
-        #region Interfaces
+        #region Private classes and interfaces
+        private class OrderedBeatmapDetails
+        {
+            public int Position { get; set; }
+            public BeatmapDetails Details { get; set; }
+            public string LevelID => Details?.LevelID;
+
+            public OrderedBeatmapDetails(int position, BeatmapDetails beatmapDetails)
+            {
+                this.Position = position;
+                this.Details = beatmapDetails;
+            }
+        }
         private interface ICacher : IDisposable
         {
             event Action CachingStarted;
@@ -433,6 +467,6 @@ namespace EnhancedSearchAndFilters.SongData
             Coroutine,
             SeparateThread
         }
-        #endregion // Interfaces
+        #endregion // Private classes and interfaces
     }
 }

@@ -81,11 +81,13 @@ namespace EnhancedSearchAndFilters.SongData
                         }
                     }
 
+                    List<IEnumerator<BeatmapDetails>> taskList = new List<IEnumerator<BeatmapDetails>>(WorkChunkSize);
                     List<IPreviewBeatmapLevel> allCustomLevels = BeatmapDetailsLoader.GetAllCustomLevels();
                     List<SongDataCoreDataStatus> sdcErrorStatusList = new List<SongDataCoreDataStatus>(allCustomLevels.Count);
+                    int index = 0;
                     int errorCount = 0;
                     long elapsed = 0;
-                    for (int index = 0; index < allCustomLevels.Count; ++index)
+                    while (index < allCustomLevels.Count)
                     {
                         if (sw.ElapsedMilliseconds > 30000 + elapsed)
                         {
@@ -97,42 +99,70 @@ namespace EnhancedSearchAndFilters.SongData
                         if (_isOperationCancelled)
                             return;
 
-                        IPreviewBeatmapLevel level = allCustomLevels[index];
-                        string levelID = GetSimplifiedLevelID(level);
-                        BeatmapDetails beatmapDetails;
-
-                        if (BeatmapDetailsLoader._cache.ContainsKey(levelID) && BeatmapDetailsLoader._cache[levelID].SongDuration > 0.01f)
-                            continue;
-
-                        SongDataCoreDataStatus status = SongDataCoreTweaks.GetBeatmapDetails(level as CustomPreviewBeatmapLevel, out beatmapDetails);
-
-                        if (status == SongDataCoreDataStatus.Success)
+                        for (int i = 0; i < WorkChunkSize && index < allCustomLevels.Count; ++index)
                         {
-                            if (beatmapDetails.DifficultyBeatmapSets.Any(set => set.DifficultyBeatmaps.Any(diff => diff.NoteJumpMovementSpeed == 0)))
+                            IPreviewBeatmapLevel level = allCustomLevels[index];
+                            string levelID = GetSimplifiedLevelID(level);
+                            BeatmapDetails beatmapDetails;
+
+                            if (BeatmapDetailsLoader._cache.ContainsKey(levelID) && BeatmapDetailsLoader._cache[levelID].SongDuration > 0.01f)
+                                continue;
+
+                            SongDataCoreDataStatus status = SongDataCoreTweaks.GetBeatmapDetails(level as CustomPreviewBeatmapLevel, out beatmapDetails);
+
+                            if (status == SongDataCoreDataStatus.Success)
                             {
-                                Logger.log.Debug($"BeatmapDetails object generated for '{beatmapDetails.SongName}' from BeatSaver data has some incomplete fields. " +
-                                    "Discarding and generating BeatmapDetails object from locally stored information instead");
+                                if (beatmapDetails.DifficultyBeatmapSets.Any(set => set.DifficultyBeatmaps.Any(diff => diff.NoteJumpMovementSpeed == 0)))
+                                {
+                                    Logger.log.Debug($"BeatmapDetails object generated for '{beatmapDetails.SongName}' from BeatSaver data has some incomplete fields. " +
+                                        "Discarding and generating BeatmapDetails object from locally stored information instead");
+
+                                    taskList.Add(BeatmapDetails.CreateBeatmapDetailsFromFilesCoroutine(level as CustomPreviewBeatmapLevel));
+                                    ++i;
+                                }
+                                else
+                                {
+                                    BeatmapDetailsLoader._cache[levelID] = beatmapDetails;
+                                }
                             }
                             else
                             {
-                                BeatmapDetailsLoader._cache[levelID] = beatmapDetails;
-                                continue;
+                                if (SongDataCoreTweaks.IsModAvailable)
+                                    sdcErrorStatusList.Add(status);
+
+                                taskList.Add(BeatmapDetails.CreateBeatmapDetailsFromFilesCoroutine(level as CustomPreviewBeatmapLevel));
+                                ++i;
                             }
                         }
-                        else if (SongDataCoreTweaks.IsModAvailable)
+
+                        while (taskList.Any())
                         {
-                            sdcErrorStatusList.Add(status);
+                            _manualResetEvent.WaitOne();
+                            if (_isOperationCancelled)
+                                return;
+
+                            for (int i = 0; i < taskList.Count; ++i)
+                            {
+                                IEnumerator<BeatmapDetails> loadCoroutine = taskList[i];
+
+                                if (loadCoroutine.MoveNext())
+                                {
+                                    BeatmapDetails beatmapDetails = loadCoroutine.Current;
+                                    if (beatmapDetails != null)
+                                    {
+                                        BeatmapDetailsLoader._cache[beatmapDetails.LevelID] = beatmapDetails;
+                                        taskList.Remove(loadCoroutine);
+                                        --i;
+                                    }
+                                }
+                                else
+                                {
+                                    ++errorCount;
+                                    taskList.Remove(loadCoroutine);
+                                    --i;
+                                }
+                            }
                         }
-
-                        _manualResetEvent.WaitOne();
-                        if (_isOperationCancelled)
-                            return;
-
-                        beatmapDetails = BeatmapDetails.CreateBeatmapDetailsFromFiles(level as CustomPreviewBeatmapLevel);
-                        if (beatmapDetails != null)
-                            BeatmapDetailsLoader._cache[beatmapDetails.LevelID] = beatmapDetails;
-                        else
-                            ++errorCount;
                     }
 
                     sw.Stop();
@@ -218,72 +248,102 @@ namespace EnhancedSearchAndFilters.SongData
                 {
                     IPreviewBeatmapLevel[] levels = ((Tuple<IPreviewBeatmapLevel[], Action<BeatmapDetails[]>>)obj).Item1;
                     Action<BeatmapDetails[]> onFinish = ((Tuple<IPreviewBeatmapLevel[], Action<BeatmapDetails[]>>)obj).Item2;
-                    List<BeatmapDetails> loadedLevels = new List<BeatmapDetails>(levels.Length);
+                    List<OrderedBeatmapDetails> loadedLevelsUnsorted = new List<OrderedBeatmapDetails>(levels.Length);
                     List<SongDataCoreDataStatus> sdcErrorStatusList = new List<SongDataCoreDataStatus>(levels.Length);
 
                     var sw = Stopwatch.StartNew();
 
-                    for (int index = 0; index < levels.Length; ++index)
+                    List<IEnumerator<OrderedBeatmapDetails>> taskList = new List<IEnumerator<OrderedBeatmapDetails>>(WorkChunkSize);
+                    int index = 0;
+                    while (index < levels.Length)
                     {
                         if (_isOperationCancelled)
                             return;
 
-                        _levelsLoadedCount = index;
+                        for (int i = 0; i < WorkChunkSize && index < levels.Length; ++index)
+                        {
+                            _levelsLoadedCount = loadedLevelsUnsorted.Count;
 
-                        IPreviewBeatmapLevel level = levels[index];
-                        string levelID = GetSimplifiedLevelID(level);
+                            IPreviewBeatmapLevel level = levels[index];
+                            string levelID = GetSimplifiedLevelID(level);
 
-                        if (level is IBeatmapLevel beatmapLevel)
-                        {
-                            loadedLevels.Add(new BeatmapDetails(beatmapLevel));
-                        }
-                        else if (BeatmapDetailsLoader._cache.ContainsKey(levelID))
-                        {
-                            loadedLevels.Add(BeatmapDetailsLoader._cache[levelID]);
-                        }
-                        else if (level is CustomPreviewBeatmapLevel customLevel)
-                        {
-                            SongDataCoreDataStatus status = SongDataCoreTweaks.GetBeatmapDetails(customLevel, out var beatmapDetails);
-                            if (status == SongDataCoreDataStatus.Success)
+                            if (level is IBeatmapLevel beatmapLevel)
                             {
-                                // load the beatmap details manually if some data from BeatSaver is incomplete
-                                if (beatmapDetails.DifficultyBeatmapSets.Any(set => set.DifficultyBeatmaps.Any(diff => diff.NoteJumpMovementSpeed == 0)))
+                                loadedLevelsUnsorted.Add(new OrderedBeatmapDetails(index, new BeatmapDetails(beatmapLevel)));
+                            }
+                            else if (BeatmapDetailsLoader._cache.ContainsKey(levelID))
+                            {
+                                loadedLevelsUnsorted.Add(new OrderedBeatmapDetails(index, BeatmapDetailsLoader._cache[levelID]));
+                            }
+                            else if (level is CustomPreviewBeatmapLevel customLevel)
+                            {
+                                SongDataCoreDataStatus status = SongDataCoreTweaks.GetBeatmapDetails(customLevel, out var beatmapDetails);
+                                if (status == SongDataCoreDataStatus.Success)
                                 {
-                                    Logger.log.Debug($"BeatmapDetails object generated for '{beatmapDetails.SongName}' from BeatSaver data has some incomplete fields. " +
-                                        "Discarding and generating BeatmapDetails object from locally stored information instead");
+                                    // load the beatmap details manually if some data from BeatSaver is incomplete
+                                    if (beatmapDetails.DifficultyBeatmapSets.Any(set => set.DifficultyBeatmaps.Any(diff => diff.NoteJumpMovementSpeed == 0)))
+                                    {
+                                        Logger.log.Debug($"BeatmapDetails object generated for '{beatmapDetails.SongName}' from BeatSaver data has some incomplete fields. " +
+                                            "Discarding and generating BeatmapDetails object from locally stored information instead");
 
-                                    beatmapDetails = BeatmapDetails.CreateBeatmapDetailsFromFiles(customLevel);
-                                    loadedLevels.Add(beatmapDetails);
-                                    BeatmapDetailsLoader._cache[levelID] = beatmapDetails;
+                                        taskList.Add(GetOrderedCustomBeatmapDetailsCoroutine(customLevel, index));
+                                        ++i;
+                                    }
+                                    else
+                                    {
+                                        loadedLevelsUnsorted.Add(new OrderedBeatmapDetails(index, beatmapDetails));
+                                        BeatmapDetailsLoader._cache[levelID] = beatmapDetails;
+                                    }
                                 }
                                 else
                                 {
-                                    loadedLevels.Add(beatmapDetails);
-                                    BeatmapDetailsLoader._cache[levelID] = beatmapDetails;
+                                    if (SongDataCoreTweaks.IsModAvailable)
+                                        sdcErrorStatusList.Add(status);
+
+                                    taskList.Add(GetOrderedCustomBeatmapDetailsCoroutine(customLevel, index));
+                                    ++i;
                                 }
                             }
                             else
                             {
-                                if (SongDataCoreTweaks.IsModAvailable)
-                                    sdcErrorStatusList.Add(status);
-
-                                beatmapDetails = BeatmapDetails.CreateBeatmapDetailsFromFiles(customLevel);
-                                loadedLevels.Add(beatmapDetails);
-                                BeatmapDetailsLoader._cache[levelID] = beatmapDetails;
+                                // not convertable (possible unbought DLC)
+                                loadedLevelsUnsorted.Add(new OrderedBeatmapDetails(index, null));
                             }
                         }
-                        else
+
+                        while (taskList.Any())
                         {
-                            // not convertable (possible unbought DLC)
-                            loadedLevels.Add(null);
+                            if (_isOperationCancelled)
+                                return;
+
+                            for (int i = 0; i < taskList.Count; ++i)
+                            {
+                                IEnumerator<OrderedBeatmapDetails> loadCoroutine = taskList[i];
+
+                                if (loadCoroutine.MoveNext())
+                                {
+                                    OrderedBeatmapDetails obd = loadCoroutine.Current;
+                                    if (obd != null)
+                                    {
+                                        loadedLevelsUnsorted.Add(obd);
+                                        _levelsLoadedCount = loadedLevelsUnsorted.Count;
+                                        taskList.Remove(loadCoroutine);
+                                        --i;
+                                    }
+                                }
+                                else
+                                {
+                                    taskList.Remove(loadCoroutine);
+                                    --i;
+                                }
+                            }
                         }
                     }
 
-                    _levelsLoadedCount = loadedLevels.Count;
                     sw.Stop();
-                    Logger.log.Debug($"Finished loading the details of {loadedLevels.Count} beatmaps (took {sw.ElapsedMilliseconds / 1000f} seconds)");
+                    Logger.log.Debug($"Finished loading the details of {loadedLevelsUnsorted.Count} beatmaps (took {sw.ElapsedMilliseconds / 1000f} seconds)");
 
-                    int notLoadedCount = loadedLevels.Count(x => x == null);
+                    int notLoadedCount = loadedLevelsUnsorted.Count(x => x.Details == null);
                     if (notLoadedCount > 0)
                         Logger.log.Warn($"Unable to load the beatmap details for {notLoadedCount} songs");
 
@@ -300,7 +360,7 @@ namespace EnhancedSearchAndFilters.SongData
                     }
 
                     _thread = null;
-                    HMMainThreadDispatcher.instance.Enqueue(() => onFinish.Invoke(loadedLevels.ToArray()));
+                    HMMainThreadDispatcher.instance.Enqueue(() => onFinish.Invoke(loadedLevelsUnsorted.Select(x => x.Details).ToArray()));
                 }
                 catch (Exception e)
                 {
