@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
@@ -94,6 +96,26 @@ namespace EnhancedSearchAndFilters.Utilities
             {
                 rt.sizeDelta *= inverseScale;
             }
+        }
+
+        private static WaitForEndOfFrame _wait = new WaitForEndOfFrame();
+        /// <summary>
+        /// Invoke an action after a short wait.
+        /// </summary>
+        /// <param name="action">Action to invoke after the wait.</param>
+        /// <param name="waitForEndOfFrame">True to wait for the end of the frame. False to wait for the next frame</param>
+        /// <returns>An IEnumerator to be used by <see cref="MonoBehaviour.StartCoroutine(IEnumerator)"/>.</returns>
+        public static IEnumerator DelayedAction(Action action, bool waitForEndOfFrame = true)
+        {
+            if (action == null)
+                yield break;
+
+            if (waitForEndOfFrame)
+                yield return _wait;
+            else
+                yield return null;
+
+            action.Invoke();
         }
     }
 }
