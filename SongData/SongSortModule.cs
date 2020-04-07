@@ -10,7 +10,7 @@ namespace EnhancedSearchAndFilters.SongData
     {
         public static bool Reversed { get; private set; } = false;
 
-        private static SortMode _currentSortMode;
+        private static SortMode _currentSortMode = SortMode.Default;
         public static SortMode CurrentSortMode
         {
             get => _currentSortMode;

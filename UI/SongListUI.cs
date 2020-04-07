@@ -5,7 +5,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using HMUI;
 using TableView = HMUI.TableView;
-using TableViewScroller = HMUI.TableViewScroller;
 using BS_Utils.Utilities;
 using SongCore;
 using BeatSaberMarkupLanguage;
@@ -13,6 +12,7 @@ using EnhancedSearchAndFilters.Filters;
 using EnhancedSearchAndFilters.Tweaks;
 using EnhancedSearchAndFilters.UI.FlowCoordinators;
 using EnhancedSearchAndFilters.SongData;
+using UIUtilities = EnhancedSearchAndFilters.Utilities.UIUtilities;
 
 namespace EnhancedSearchAndFilters.UI
 {
@@ -489,13 +489,29 @@ namespace EnhancedSearchAndFilters.UI
             {
                 _lastPack = levelPack;
 
-                SongSortModule.ResetSortMode();
-                ButtonPanel.instance.UpdateSortButtons();
-
                 if (levelPack is IBeatmapLevelPack beatmapLevelPack)
                     Logger.log.Debug($"Storing '{beatmapLevelPack.packName}' (id = '{beatmapLevelPack.packID}') level pack as last pack");
                 else
                     Logger.log.Debug($"Storing '{levelPack.collectionName}' level collection as last pack");
+
+                // reapply sort mode
+                if (!SongSortModule.IsDefaultSort)
+                {
+                    if (levelPack is IBeatmapLevelPack beatmapLevelPack2)
+                        _sortedLevelsLevelPack.SetupFromLevelPack(beatmapLevelPack2);
+                    else
+                        _sortedLevelsLevelPack.SetupFromLevels(levelPack.beatmapLevelCollection.beatmapLevels);
+
+                    // since the level selection navigation controller shows a level pack using the same event that calls this function
+                    // and it technically isn't a guarantee that this function will run after it is set,
+                    // delay setting our level pack
+                    StartCoroutine(UIUtilities.DelayedAction(() =>
+                        LevelSelectionNavigationController.SetData(
+                            _sortedLevelsLevelPack,
+                            true,
+                            LevelSelectionNavigationController.GetPrivateField<bool>("_showPlayerStatsInDetailView"),
+                            LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView"))));
+                }
             }
 
             if (!SongBrowserTweaks.ModLoaded || !SongBrowserTweaks.Initialized)
