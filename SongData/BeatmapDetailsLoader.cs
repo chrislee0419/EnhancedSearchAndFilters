@@ -55,6 +55,9 @@ namespace EnhancedSearchAndFilters.SongData
             }
         }
 
+        // load the beatmap details in batches
+        private static int WorkChunkSize { get; set; } = PluginConfig.LoaderWorkChunkSizeDefaultValue;
+
         private ICacher _cacher;
         private ILoader _loader;
 
@@ -63,9 +66,6 @@ namespace EnhancedSearchAndFilters.SongData
         // not using ConcurrentDictionary, since caching/loading/using this dictionary can only occur at one thread at a time anyways
         // (loading operation pauses caching operation)
         private static Dictionary<string, BeatmapDetails> _cache = new Dictionary<string, BeatmapDetails>();
-
-        // load the details in batches (there is a noticable delay with queueing all async load tasks at once)
-        private const int WorkChunkSize = 20;
 
         private const int WorkQueryChunkSize = 50;
 
@@ -76,6 +76,8 @@ namespace EnhancedSearchAndFilters.SongData
 
         public void Awake()
         {
+            WorkChunkSize = PluginConfig.LoaderWorkChunkSize;
+
             SelectCacher(CacherType.SeparateThread);
             SelectLoader(LoaderType.SeparateThread);
         }

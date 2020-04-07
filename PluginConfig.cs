@@ -80,29 +80,54 @@ namespace EnhancedSearchAndFilters
             get => config.GetInt(MainSection, "MaxSongsToSearchInOneFrame", 100, true);
         }
 
+        /// <summary>
+        /// Show the explanatory loading screen on the filters page.
+        /// </summary>
         public static bool ShowFirstTimeLoadingText
         {
             get => config.GetBool(MainSection, "ShowFirstTimeLoadingText", true, true);
             set => config.SetBool(MainSection, "ShowFirstTimeLoadingText", value);
         }
 
+        /// <summary>
+        /// Remove this mod's search feature. 
+        /// Intended for users who want to use another mod's (only SongBrowser at the moment) search feature instead.
+        /// </summary>
         public static bool DisableSearch
         {
             get => config.GetBool(MainSection, "DisableSearch", false, true);
             set => config.SetBool(MainSection, "DisableSearch", value);
         }
 
+        /// <summary>
+        /// Remove this mod's filter feature. Intended for those who don't use filters. 
+        /// Removes access to details cache, which takes up a relatively large amount of memory.
+        /// </summary>
         public static bool DisableFilters
         {
             get => config.GetBool(MainSection, "DisableFilter", false, true);
             set => config.SetBool(MainSection, "DisableFilter", value);
         }
 
+        /// <summary>
+        /// Scroll speed of the fast page up and down buttons. This setting is currently not exposed in the UI.
+        /// </summary>
         public static float FastScrollSpeed
         {
             get => config.GetFloat(MainSection, "FastScrollSpeed", 5f, true);
             set => config.SetFloat(MainSection, "FastScrollSpeed", value);
         }
+
+        /// <summary>
+        /// The number of songs to load in one unit of work done by the beatmap details loader/cacher. 
+        /// This setting is currently not exposed in the UI.
+        /// </summary>
+        public static int LoaderWorkChunkSize
+        {
+            get => config.GetInt(MainSection, "LoaderWorkChunkSize", LoaderWorkChunkSizeDefaultValue, true);
+            set => config.SetInt(MainSection, "LoaderWorkChunkSize", value);
+        }
+        public const int LoaderWorkChunkSizeDefaultValue = 20;
 
         public static string GetQuickFilterData(int slot) => config.GetString(QuickFiltersSection, $"{QuickFilterPrefix}{slot}", "", true);
 
