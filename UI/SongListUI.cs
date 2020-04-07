@@ -89,14 +89,14 @@ namespace EnhancedSearchAndFilters.UI
                 _freePlayFlowCoordinator = FindObjectOfType<SoloFreePlayFlowCoordinator>();
                 (_freePlayFlowCoordinator as SoloFreePlayFlowCoordinator).didFinishEvent += OnFreePlayFlowCoordinatorFinished;
 
-                StartCoroutine(PrepareLevelPackSelectedEvent());
+                PrepareLevelPackSelectedEvent();
             }
             else if (mode == FreePlayMode.Party)
             {
                 _freePlayFlowCoordinator = FindObjectOfType<PartyFreePlayFlowCoordinator>();
                 (_freePlayFlowCoordinator as PartyFreePlayFlowCoordinator).didFinishEvent += OnFreePlayFlowCoordinatorFinished;
 
-                StartCoroutine(PrepareLevelPackSelectedEvent());
+                PrepareLevelPackSelectedEvent();
             }
             else if (mode == FreePlayMode.Campaign)
             {
@@ -107,25 +107,11 @@ namespace EnhancedSearchAndFilters.UI
             SongBrowserTweaks.OnModeSelection();
         }
 
-        private IEnumerator PrepareLevelPackSelectedEvent()
+        private void PrepareLevelPackSelectedEvent()
         {
-            yield return null;
-
-            for (int tries = 10; tries > 0; --tries)
-            {
-                try
-                {
-                    var levelFilteringNavigationController = FindObjectsOfType<LevelFilteringNavigationController>().First();
-                    levelFilteringNavigationController.didSelectAnnotatedBeatmapLevelCollectionEvent -= LevelPackSelected;
-                    levelFilteringNavigationController.didSelectAnnotatedBeatmapLevelCollectionEvent += LevelPackSelected;
-                    yield break;
-                }
-                catch { }
-
-                yield return new WaitForSeconds(0.5f);
-            }
-
-            Logger.log.Warn("Unable to get LevelFilteringNavigationController. Filters may not work as intended");
+            var levelFilteringNavigationController = _freePlayFlowCoordinator.GetPrivateField<LevelFilteringNavigationController>("_levelFilteringNavigationController", typeof(LevelSelectionFlowCoordinator));
+            levelFilteringNavigationController.didSelectAnnotatedBeatmapLevelCollectionEvent -= LevelPackSelected;
+            levelFilteringNavigationController.didSelectAnnotatedBeatmapLevelCollectionEvent += LevelPackSelected;
         }
 
         private IEnumerator GetSongBrowserButtons()

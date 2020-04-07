@@ -267,6 +267,12 @@ namespace EnhancedSearchAndFilters.UI
 
         public void RefreshPageButtons()
         {
+            // the first time this is called in SongListUI:LevelPackSelected, the scroller can be null
+            // but on subsequent calls, it isn't null even though there's not reassignment on the scroller?
+            // i don't get how this works (GetComponentInChildren somehow binds a reference to your variable?)
+            if (_scroller == null)
+                return;
+
             PageDownButtonInteractable = _scroller.targetPosition < _scroller.scrollableSize - 0.01f;
             PageUpButtonInteractable = _scroller.targetPosition > 0.01f;
         }
