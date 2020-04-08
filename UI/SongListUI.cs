@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using HMUI;
-using TableView = HMUI.TableView;
 using BS_Utils.Utilities;
 using SongCore;
 using BeatSaberMarkupLanguage;
@@ -32,7 +30,6 @@ namespace EnhancedSearchAndFilters.UI
         private SongListUIAdditions _uiAdditions;
 
         private LevelCollectionTableView _levelCollectionTableView;
-        private TableView _levelsTableView;
 
         private IAnnotatedBeatmapLevelCollection _lastPack;
         private IAnnotatedBeatmapLevelCollection _levelsToApply;
@@ -49,7 +46,6 @@ namespace EnhancedSearchAndFilters.UI
             RectTransform viewControllersContainer = FindObjectsOfType<RectTransform>().First(x => x.name == "ViewControllers");
 
             _levelCollectionTableView = viewControllersContainer.GetComponentInChildren<LevelCollectionTableView>(true);
-            _levelsTableView = _levelCollectionTableView.GetPrivateField<TableView>("_tableView");
             LevelSelectionNavigationController = viewControllersContainer.GetComponentInChildren<LevelSelectionNavigationController>(true);
 
             Button soloFreePlayButton = Resources.FindObjectsOfTypeAll<Button>().First(x => x.name == "SoloFreePlayButton");
