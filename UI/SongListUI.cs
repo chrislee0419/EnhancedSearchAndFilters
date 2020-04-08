@@ -160,6 +160,32 @@ namespace EnhancedSearchAndFilters.UI
 
             // this should trigger the LevelPackSelected() delegate and sort the level pack as well
             LevelFilteringNavigationController.SelectAnnotatedBeatmapLevelCollection(levelPack);
+
+            // try to select last level as well
+            string[] lastLevelData = PluginConfig.LastLevelID.Split(new string[]{ PluginConfig.LastLevelIDSeparator }, StringSplitOptions.None);
+            if (lastLevelData.Length != 3)
+                return;
+
+            string levelID = lastLevelData[0];
+
+            IPreviewBeatmapLevel level = levelPack.beatmapLevelCollection.beatmapLevels.FirstOrDefault(x => x.levelID == levelID);
+            if (level != null)
+            {
+                LevelSelectionNavigationController.SelectLevel(level);
+            }
+            else
+            {
+                // could not find level with levelID
+                // either song was deleted or is a WIP level and was changed
+                // try using song name and level author as fallback
+                string songName = lastLevelData[1];
+                string levelAuthor = lastLevelData[2];
+
+                level = levelPack.beatmapLevelCollection.beatmapLevels.FirstOrDefault(x => x.songName == songName && x.levelAuthorName == levelAuthor);
+                if (level != null)
+                    LevelSelectionNavigationController.SelectLevel(level);
+            }
+
             return;
 
         OnError:

@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
+using System.Text;
 using IPA;
 using IPA.Loader;
 using UnityEngine.SceneManagement;
@@ -34,6 +35,7 @@ namespace EnhancedSearchAndFilters
             SceneManager.activeSceneChanged += OnActiveSceneChanged;
 
             BSEvents.menuSceneLoadedFresh += OnMenuSceneLoadedFresh;
+            BSEvents.levelSelected += OnLevelSelected;
             Loader.DeletingSong += SongCoreLoaderDeletingSong;
             Loader.LoadingStartedEvent += SongCoreLoaderLoadingStarted;
             Loader.SongsLoadedEvent += SongCoreLoaderFinishedLoading;
@@ -87,6 +89,19 @@ namespace EnhancedSearchAndFilters
 
             SongListUI.instance.OnMenuSceneLoadedFresh();
         }
+
+        private void OnLevelSelected(LevelCollectionViewController _, IPreviewBeatmapLevel level)
+        {
+            int capacity = level.levelID.Length + PluginConfig.LastLevelIDSeparator.Length * 2 + level.songName.Length + level.levelAuthorName.Length;
+            StringBuilder sb = new StringBuilder(level.levelID, capacity);
+            sb.Append(PluginConfig.LastLevelIDSeparator);
+            sb.Append(level.songName);
+            sb.Append(PluginConfig.LastLevelIDSeparator);
+            sb.Append(level.levelAuthorName);
+
+            PluginConfig.LastLevelID = sb.ToString();
+        }
+
         private void SongCoreLoaderDeletingSong()
         {
             WordPredictionEngine.instance.CancelTasks();

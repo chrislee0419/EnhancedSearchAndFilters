@@ -139,6 +139,13 @@ namespace EnhancedSearchAndFilters
         }
         public const string LastLevelPackIDSeparator = "|||";
 
+        public static string LastLevelID
+        {
+            get => config.GetString(MainSection, "LastLevelID", "", true);
+            set => config.SetString(MainSection, "LastLevelID", value);
+        }
+        public const string LastLevelIDSeparator = "|||;;;";
+
         public static string GetQuickFilterData(int slot) => config.GetString(QuickFiltersSection, $"{QuickFilterPrefix}{slot}", "", true);
 
         public static void SetQuickFilterData(int slot, string serializedData) => config.SetString(QuickFiltersSection, $"{QuickFilterPrefix}{slot}", serializedData);
