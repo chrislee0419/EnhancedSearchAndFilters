@@ -460,6 +460,11 @@ namespace EnhancedSearchAndFilters.UI
 
         private void LevelPackSelected(LevelFilteringNavigationController navController, IAnnotatedBeatmapLevelCollection levelPack, GameObject noDataInfoPrefab, BeatmapCharacteristicSO preferredCharacteristic)
         {
+            // we don't need this event if using SongBrowser, since it passes the songs it needs filtered
+            // directly to us (so we don't need to store last pack at all)
+            if (SongBrowserTweaks.Initialized)
+                return;
+
             // in ConfirmDeleteButtonClicked, the call to SongCore.Loader.Instance.DeleteSong will reload the level packs
             // which causes the custom level pack to be re-selected. but, if filters are applied or level pack is sorted,
             // we want to reshow our own filtered/sorted level pack and not reset our UI, so we don't have to handle this event
@@ -496,17 +501,14 @@ namespace EnhancedSearchAndFilters.UI
                 }
             }
 
-            if (!SongBrowserTweaks.ModLoaded || !SongBrowserTweaks.Initialized)
-            {
-                // SongBrowser can now apply filters to OST levels and switch between different level packs
-                // so our old behaviour of cancelling the filters is no longer needed
-                // that being said, without SongBrowser, we are still going to cancel filters upon switching level packs
-                // because i'd rather the player have to go into the FilterViewController,
-                // so that it can check if all the beatmap details have been loaded
-                if (FilterList.AnyApplied)
-                    Logger.log.Debug("Another level pack has been selected, unapplying filters");
-                UnapplyFilters();
-            }
+            // SongBrowser can now apply filters to OST levels and switch between different level packs
+            // so our old behaviour of cancelling the filters is no longer needed
+            // that being said, without SongBrowser, we are still going to cancel filters upon switching level packs
+            // because i'd rather the player have to go into the FilterViewController,
+            // so that it can check if all the beatmap details have been loaded
+            if (FilterList.AnyApplied)
+                Logger.log.Debug("Another level pack has been selected, unapplying filters");
+            UnapplyFilters();
 
             if (_uiAdditions != null)
                 _uiAdditions.RefreshPageButtons();
