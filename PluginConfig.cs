@@ -129,6 +129,16 @@ namespace EnhancedSearchAndFilters
         }
         public const int LoaderWorkChunkSizeDefaultValue = 20;
 
+        /// <summary>
+        /// The last selected level pack (of type <see cref="IAnnotatedBeatmapLevelCollection"/>)
+        /// </summary>
+        public static string LastLevelPackID
+        {
+            get => config.GetString(MainSection, "LastLevelPackID", "", true);
+            set => config.SetString(MainSection, "LastLevelPackID", value);
+        }
+        public const string LastLevelPackIDSeparator = "|||";
+
         public static string GetQuickFilterData(int slot) => config.GetString(QuickFiltersSection, $"{QuickFilterPrefix}{slot}", "", true);
 
         public static void SetQuickFilterData(int slot, string serializedData) => config.SetString(QuickFiltersSection, $"{QuickFilterPrefix}{slot}", serializedData);

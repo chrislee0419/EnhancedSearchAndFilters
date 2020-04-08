@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
@@ -36,9 +37,11 @@ namespace EnhancedSearchAndFilters.UI
         private FilteredLevelsLevelPack _filteredLevelPack = new FilteredLevelsLevelPack();
         private SortedLevelsLevelPack _sortedLevelsLevelPack = new SortedLevelsLevelPack();
 
+        private bool _isSelectingInitialLevelPack = false;
         private bool _isDeletingSongInModOwnedLevelPack = false;
 
         public LevelSelectionNavigationController LevelSelectionNavigationController { get; private set; } = null;
+        public LevelFilteringNavigationController LevelFilteringNavigationController { get; private set; } = null;
 
         public void OnMenuSceneLoadedFresh()
         {
@@ -77,22 +80,35 @@ namespace EnhancedSearchAndFilters.UI
 
         private void OnModeSelection(FreePlayMode mode)
         {
-            if (SongBrowserTweaks.ModLoaded && !SongBrowserTweaks.Initialized && mode != FreePlayMode.Campaign)
-                StartCoroutine(GetSongBrowserButtons());
-
             if (mode == FreePlayMode.Solo)
             {
                 _freePlayFlowCoordinator = FindObjectOfType<SoloFreePlayFlowCoordinator>();
                 (_freePlayFlowCoordinator as SoloFreePlayFlowCoordinator).didFinishEvent += OnFreePlayFlowCoordinatorFinished;
 
-                PrepareLevelPackSelectedEvent();
+                if (!SongBrowserTweaks.ModLoaded)
+                {
+                    PrepareLevelPackSelectedEvent();
+                    StartCoroutine(UIUtilities.DelayedAction(SelectSavedLevelPack));
+                }
+                else if (!SongBrowserTweaks.Initialized)
+                {
+                    StartCoroutine(GetSongBrowserButtons());
+                }
             }
             else if (mode == FreePlayMode.Party)
             {
                 _freePlayFlowCoordinator = FindObjectOfType<PartyFreePlayFlowCoordinator>();
                 (_freePlayFlowCoordinator as PartyFreePlayFlowCoordinator).didFinishEvent += OnFreePlayFlowCoordinatorFinished;
 
-                PrepareLevelPackSelectedEvent();
+                if (!SongBrowserTweaks.ModLoaded)
+                {
+                    PrepareLevelPackSelectedEvent();
+                    StartCoroutine(UIUtilities.DelayedAction(SelectSavedLevelPack));
+                }
+                else if (!SongBrowserTweaks.Initialized)
+                {
+                    StartCoroutine(GetSongBrowserButtons());
+                }
             }
             else if (mode == FreePlayMode.Campaign)
             {
@@ -105,9 +121,50 @@ namespace EnhancedSearchAndFilters.UI
 
         private void PrepareLevelPackSelectedEvent()
         {
-            var levelFilteringNavigationController = _freePlayFlowCoordinator.GetPrivateField<LevelFilteringNavigationController>("_levelFilteringNavigationController", typeof(LevelSelectionFlowCoordinator));
-            levelFilteringNavigationController.didSelectAnnotatedBeatmapLevelCollectionEvent -= LevelPackSelected;
-            levelFilteringNavigationController.didSelectAnnotatedBeatmapLevelCollectionEvent += LevelPackSelected;
+            // we don't need the LevelPackSelected event if using SongBrowser, since it passes the songs it needs filtered
+            // directly to us (so we don't need to store last pack at all)
+            _isSelectingInitialLevelPack = true;
+            LevelFilteringNavigationController = _freePlayFlowCoordinator.GetPrivateField<LevelFilteringNavigationController>("_levelFilteringNavigationController", typeof(LevelSelectionFlowCoordinator));
+            LevelFilteringNavigationController.didSelectAnnotatedBeatmapLevelCollectionEvent -= LevelPackSelected;
+            LevelFilteringNavigationController.didSelectAnnotatedBeatmapLevelCollectionEvent += LevelPackSelected;
+        }
+
+        private void SelectSavedLevelPack()
+        {
+            string lastLevelPackString = PluginConfig.LastLevelPackID;
+            int separatorPos = lastLevelPackString.IndexOf(PluginConfig.LastLevelPackIDSeparator);
+            if (separatorPos < 0 || separatorPos + PluginConfig.LastLevelPackIDSeparator.Length >= lastLevelPackString.Length)
+                goto OnError;
+
+            string lastLevelPackCollectionTitle = lastLevelPackString.Substring(0, separatorPos);
+            string lastLevelPackID = lastLevelPackString.Substring(separatorPos + PluginConfig.LastLevelPackIDSeparator.Length);
+
+            TabBarViewController tabBarVC = LevelFilteringNavigationController.GetPrivateField<TabBarViewController>("_tabBarViewController");
+            TabBarViewController.TabBarItem[] tabBarItems = tabBarVC.GetPrivateField<TabBarViewController.TabBarItem[]>("_items");
+            var item = tabBarItems.FirstOrDefault(x => x.title == lastLevelPackCollectionTitle);
+            if (item == null)
+                goto OnError;
+
+            int itemIndex = Array.IndexOf(tabBarItems, item);
+            if (itemIndex < 0)
+                goto OnError;
+
+            var tabBarDatas = LevelFilteringNavigationController.GetPrivateField<object[]>("_tabBarDatas");
+            if (itemIndex >= tabBarDatas.Length)
+                goto OnError;
+
+            var levelPacks = tabBarDatas[itemIndex].GetField<IAnnotatedBeatmapLevelCollection[]>("annotatedBeatmapLevelCollections");
+            IAnnotatedBeatmapLevelCollection levelPack = levelPacks.FirstOrDefault(x => x.collectionName == lastLevelPackID || (x is IBeatmapLevelPack && ((IBeatmapLevelPack)x).packID == lastLevelPackID));
+            if (levelPack == null)
+                goto OnError;
+
+            // this should trigger the LevelPackSelected() delegate and sort the level pack as well
+            LevelFilteringNavigationController.SelectAnnotatedBeatmapLevelCollection(levelPack);
+            return;
+
+        OnError:
+            SongSortModule.ResetSortMode();
+            ButtonPanel.instance.UpdateSortButtons();
         }
 
         private IEnumerator GetSongBrowserButtons()
@@ -460,10 +517,15 @@ namespace EnhancedSearchAndFilters.UI
 
         private void LevelPackSelected(LevelFilteringNavigationController navController, IAnnotatedBeatmapLevelCollection levelPack, GameObject noDataInfoPrefab, BeatmapCharacteristicSO preferredCharacteristic)
         {
-            // we don't need this event if using SongBrowser, since it passes the songs it needs filtered
-            // directly to us (so we don't need to store last pack at all)
-            if (SongBrowserTweaks.Initialized)
+            // ignore the first select event that's fired immediately after the user select the free play mode
+            // this is done so we can select the saved last pack later
+            // when the saved pack is selected, it will then call this function again for sorting/storing
+            if (_isSelectingInitialLevelPack)
+            {
+                _lastPack = levelPack;
+                _isSelectingInitialLevelPack = false;
                 return;
+            }
 
             // in ConfirmDeleteButtonClicked, the call to SongCore.Loader.Instance.DeleteSong will reload the level packs
             // which causes the custom level pack to be re-selected. but, if filters are applied or level pack is sorted,
@@ -476,10 +538,22 @@ namespace EnhancedSearchAndFilters.UI
             {
                 _lastPack = levelPack;
 
+                // store level pack to PluginConfig
+                var tabBarVC = LevelFilteringNavigationController.GetPrivateField<TabBarViewController>("_tabBarViewController");
+                var tabBarItems = tabBarVC.GetPrivateField<TabBarViewController.TabBarItem[]>("_items");
+
+                string lastLevelPackString = tabBarItems[tabBarVC.selectedCellNumber].title + PluginConfig.LastLevelPackIDSeparator;
                 if (levelPack is IBeatmapLevelPack beatmapLevelPack)
+                {
+                    lastLevelPackString += beatmapLevelPack.packID;
                     Logger.log.Debug($"Storing '{beatmapLevelPack.packName}' (id = '{beatmapLevelPack.packID}') level pack as last pack");
+                }
                 else
+                {
+                    lastLevelPackString += levelPack.collectionName;
                     Logger.log.Debug($"Storing '{levelPack.collectionName}' level collection as last pack");
+                }
+                PluginConfig.LastLevelPackID = lastLevelPackString;
 
                 // reapply sort mode
                 if (!SongSortModule.IsDefaultSort)
