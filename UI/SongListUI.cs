@@ -171,7 +171,7 @@ namespace EnhancedSearchAndFilters.UI
             IPreviewBeatmapLevel level = levelPack.beatmapLevelCollection.beatmapLevels.FirstOrDefault(x => x.levelID == levelID);
             if (level != null)
             {
-                LevelSelectionNavigationController.SelectLevel(level);
+                SelectLevel(level);
             }
             else
             {
@@ -183,7 +183,7 @@ namespace EnhancedSearchAndFilters.UI
 
                 level = levelPack.beatmapLevelCollection.beatmapLevels.FirstOrDefault(x => x.songName == songName && x.levelAuthorName == levelAuthor);
                 if (level != null)
-                    LevelSelectionNavigationController.SelectLevel(level);
+                    SelectLevel(level);
             }
 
             return;
@@ -191,6 +191,14 @@ namespace EnhancedSearchAndFilters.UI
         OnError:
             SongSortModule.ResetSortMode();
             ButtonPanel.instance.UpdateSortButtons();
+        }
+
+        private void SelectLevel(IPreviewBeatmapLevel level)
+        {
+            LevelSelectionNavigationController.SelectLevel(level);
+
+            if (_uiAdditions != null)
+                _uiAdditions.RefreshPageButtons();
         }
 
         private IEnumerator GetSongBrowserButtons()
@@ -651,9 +659,7 @@ namespace EnhancedSearchAndFilters.UI
         {
             Logger.log.Debug($"Level selected from search: {level.songName} {level.songSubName} - {level.songAuthorName}");
             DismissSearchFlowCoordinator();
-
-            var levelCollectionViewController = LevelSelectionNavigationController.GetPrivateField<LevelCollectionViewController>("_levelCollectionViewController", typeof(LevelSelectionNavigationController));
-            levelCollectionViewController.SelectLevel(level);
+            SelectLevel(level);
         }
 
         private void FilterFlowCoordinatorSetFilteredSongs(IPreviewBeatmapLevel[] levels)
