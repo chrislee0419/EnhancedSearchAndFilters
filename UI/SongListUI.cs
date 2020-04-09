@@ -619,7 +619,7 @@ namespace EnhancedSearchAndFilters.UI
             UnapplyFilters();
 
             if (_uiAdditions != null)
-                _uiAdditions.RefreshPageButtons();
+                StartCoroutine(UIUtilities.DelayedAction(_uiAdditions.RefreshPageButtons));
         }
 
         private void DismissSearchFlowCoordinator()
