@@ -161,6 +161,7 @@
     <Compile Include="Filters\FilterList.cs" />
     <Compile Include="Filters\PlayerStatsFilter.cs" />
     <Compile Include="Filters\QuickFiltersManager.cs" />
+    <Compile Include="Filters\VotedFilter.cs" />
     <Compile Include="Search\BKTree.cs" />
     <Compile Include="Search\FuzzyStringMatching.cs" />
     <Compile Include="Search\Trie.cs" />
@@ -182,6 +183,7 @@
     <Compile Include="Search\SearchBehaviour.cs" />
     <Compile Include="SongData\BeatmapDetailsCoroutineLoader.cs" />
     <Compile Include="SongData\BeatmapDetailsThreadedLoader.cs" />
+    <Compile Include="Tweaks\BeatSaverVotingTweaks.cs" />
     <Compile Include="Utilities\LocalLeaderboardDataHelper.cs" />
     <Compile Include="Utilities\PlayerDataHelper.cs" />
     <Compile Include="SongData\SongSortModule.cs" />
@@ -285,6 +287,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Assets\shuffle.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UI\Views\Filters\VotedFilterView.bsml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

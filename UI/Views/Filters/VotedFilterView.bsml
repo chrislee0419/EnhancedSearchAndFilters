@@ -1,0 +1,34 @@
+﻿<vertical id="root"
+          child-expand-width="true"
+          anchor-min-x="0" anchor-min-y="0"
+          anchor-max-x="1" anchor-max-y="1"
+          size-delta-y="-2"
+          anchor-pos-y="-1"
+          xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
+  <macro.if value='is-available'>
+    <text text='Keep Songs Depending On How You Have Voted Them'
+          font-size='5.5' />
+    <checkbox-setting text='Upvoted Songs'
+                      font-size='5.5'
+                      value='upvoted-checkbox-value'
+                      get-event='refresh-values'
+                      apply-on-change='true'
+                      preferred-height='10' />
+    <checkbox-setting text='Songs With No Vote'
+                      font-size='5.5'
+                      value='no-vote-checkbox-value'
+                      get-event='refresh-values'
+                      apply-on-change='true'
+                      preferred-height='10' />
+    <checkbox-setting text='Downvoted Songs'
+                      font-size='5.5'
+                      value='downvoted-checkbox-value'
+                      get-event='refresh-values'
+                      apply-on-change='true'
+                      preferred-height='10' />
+  </macro.if>
+  <macro.if value='!is-available'>
+    <text text='~missing-requirements-text' font-align='Center' font-size='5.5' />
+  </macro.if>
+</vertical>

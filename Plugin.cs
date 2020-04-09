@@ -77,12 +77,15 @@ namespace EnhancedSearchAndFilters
             SongBrowserTweaks.ModLoaded = IPAPluginManager.GetPluginFromId("SongBrowser") != null || IPAPluginManager.GetPlugin("Song Browser") != null || IPAPluginManager.Plugins.Any(x => x.Name == "Song Browser");
             SongDataCoreTweaks.ModLoaded = IPAPluginManager.GetPluginFromId("SongDataCore") != null;
             SongDataCoreTweaks.ModVersion = IPAPluginManager.GetPluginFromId("SongDataCore")?.Version;
+            BeatSaverVotingTweaks.ModLoaded = IPAPluginManager.GetPluginFromId("BeatSaverVoting") != null;
 #pragma warning restore CS0618
 
             if (SongBrowserTweaks.ModLoaded)
                 Logger.log.Debug("SongBrowser detected");
             if (SongDataCoreTweaks.ModLoaded)
                 Logger.log.Debug($"SongDataCore detected (Is correct version = {SongDataCoreTweaks.IsModAvailable})");
+            if (BeatSaverVotingTweaks.ModLoaded)
+                Logger.log.Debug("BeatSaverVoting detected");
 
             // reset initialization status if settings were applied
             SongBrowserTweaks.Initialized = false;

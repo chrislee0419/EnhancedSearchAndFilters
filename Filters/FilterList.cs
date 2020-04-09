@@ -44,6 +44,7 @@ namespace EnhancedSearchAndFilters.Filters
             new NJSFilter(),
             new PPFilter(),
             new StarDifficultyFilter(),
+            new VotedFilter(),
             new PlayerStatsFilter(),
             new OtherFilter()
         };

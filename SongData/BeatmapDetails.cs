@@ -269,6 +269,14 @@ namespace EnhancedSearchAndFilters.SongData
 
             yield return beatmapDetails;
         }
+
+        public string GetLevelHash()
+        {
+            if (IsOST)
+                return "";
+            else
+                return LevelID.Substring(CustomLevelLoader.kCustomLevelPrefixId.Length, 40);
+        }
     }
 
     [Serializable]
