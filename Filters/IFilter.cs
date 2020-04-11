@@ -2,6 +2,10 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using BeatSaberMarkupLanguage.Attributes;
+using BeatSaberMarkupLanguage.Parser;
+using EnhancedSearchAndFilters.SongData;
+using EnhancedSearchAndFilters.Utilities;
 
 namespace EnhancedSearchAndFilters.Filters
 {
@@ -64,6 +68,75 @@ namespace EnhancedSearchAndFilters.Filters
         NotAppliedAndChanged,
         Applied,
         AppliedAndChanged
+    }
+
+    public abstract class FilterBase : IFilter
+    {
+        public event Action SettingChanged;
+
+        public abstract string Name { get; }
+        public virtual bool IsAvailable => true;
+        public virtual FilterStatus Status
+        {
+            get
+            {
+                if (HasChanges)
+                    return IsFilterApplied ? FilterStatus.AppliedAndChanged : FilterStatus.NotAppliedAndChanged;
+                else
+                    return IsFilterApplied ? FilterStatus.Applied : FilterStatus.NotApplied;
+            }
+        }
+        public abstract bool IsFilterApplied { get; }
+        public abstract bool HasChanges { get; }
+        public abstract bool IsStagingDefaultValues { get; }
+
+        protected abstract string ViewResource { get; }
+        protected abstract string ContainerGameObjectName { get; }
+
+#pragma warning disable CS0649
+        [UIObject("root")]
+        protected GameObject _viewGameObject;
+#pragma warning restore CS0649
+
+        protected BSMLParserParams _parserParams;
+
+        protected const string RefreshValuesEvent = "refresh-values";
+
+        public virtual void Init(GameObject viewContainer)
+        {
+            if (_viewGameObject != null)
+                return;
+
+            _parserParams = UIUtilities.ParseBSML(ViewResource, viewContainer, this);
+            _viewGameObject.name = ContainerGameObjectName;
+        }
+
+        public virtual void Cleanup()
+        {
+            if (_viewGameObject != null)
+            {
+                UnityEngine.Object.Destroy(_viewGameObject);
+                _viewGameObject = null;
+            }
+        }
+
+        public virtual GameObject GetView() => _viewGameObject;
+
+        public abstract void SetDefaultValuesToStaging();
+        public abstract void SetAppliedValuesToStaging();
+        public abstract void ApplyStagingValues();
+        public abstract void ApplyDefaultValues();
+        public abstract void FilterSongList(ref List<BeatmapDetails> detailsList);
+        public abstract List<FilterSettingsKeyValuePair> GetAppliedValuesAsPairs();
+        public abstract void SetStagingValuesFromPairs(List<FilterSettingsKeyValuePair> settingsList);
+
+        protected virtual void RefreshValues()
+        {
+            if (_viewGameObject != null)
+                _parserParams.EmitEvent(RefreshValuesEvent);
+        }
+
+        protected void InvokeSettingChanged() => SettingChanged?.Invoke();
     }
 
     public class FilterSettingsKeyValuePair

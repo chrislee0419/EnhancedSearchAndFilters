@@ -1,61 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using UnityEngine;
-using BeatSaberMarkupLanguage;
-using BeatSaberMarkupLanguage.Parser;
 using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.Components.Settings;
 using EnhancedSearchAndFilters.SongData;
-using BSMLUtilities = BeatSaberMarkupLanguage.Utilities;
 
 namespace EnhancedSearchAndFilters.Filters
 {
-    class PPFilter : IFilter
+    internal class PPFilter : FilterBase
     {
-        public event Action SettingChanged;
-
-        public string Name { get { return "Ranked Songs (PP)"; } }
+        public override string Name => "Ranked Songs (PP)";
         [UIValue("is-available")]
-        public bool IsAvailable { get { return Tweaks.SongDataCoreTweaks.IsModAvailable; } }
-        public FilterStatus Status
-        {
-            get
-            {
-                if (IsFilterApplied)
-                {
-                    if (HasChanges)
-                        return FilterStatus.AppliedAndChanged;
-                    else
-                        return FilterStatus.Applied;
-                }
-                else if (_rankedStagingValue != RankFilterOption.Off)
-                {
-                    return FilterStatus.NotAppliedAndChanged;
-                }
-                else
-                {
-                    return FilterStatus.NotApplied;
-                }
-            }
-        }
-        public bool IsFilterApplied => _rankedAppliedValue != RankFilterOption.Off;
-        public bool HasChanges => _rankedAppliedValue != _rankedStagingValue ||
+        public override bool IsAvailable => Tweaks.SongDataCoreTweaks.IsModAvailable;
+        public override bool IsFilterApplied => _rankedAppliedValue != RankFilterOption.Off;
+        public override bool HasChanges => _rankedAppliedValue != _rankedStagingValue ||
             _minEnabledAppliedValue != _minEnabledStagingValue ||
             _maxEnabledAppliedValue != _maxEnabledStagingValue ||
             _minAppliedValue != _minStagingValue ||
             _maxAppliedValue != _maxStagingValue;
-        public bool IsStagingDefaultValues => _rankedStagingValue == RankFilterOption.Off &&
+        public override bool IsStagingDefaultValues => _rankedStagingValue == RankFilterOption.Off &&
             _minEnabledStagingValue == false &&
             _maxEnabledStagingValue == false &&
             _minStagingValue == DefaultMinValue &&
             _maxStagingValue == DefaultMaxValue;
 
-#pragma warning disable CS0649
-        [UIObject("root")]
-        private GameObject _viewGameObject;
+        protected override string ViewResource => "EnhancedSearchAndFilters.UI.Views.Filters.PPFilterView.bsml";
+        protected override string ContainerGameObjectName => "PPFilterViewContainer";
 
+#pragma warning disable CS0649
         [UIComponent("min-checkbox")]
         private CheckboxSetting _minCheckbox;
         [UIComponent("min-increment")]
@@ -85,7 +58,7 @@ namespace EnhancedSearchAndFilters.Filters
                     _maxIncrement.gameObject.SetActive(isRankedOption && _maxEnabledStagingValue);
                 }
 
-                SettingChanged?.Invoke();
+                InvokeSettingChanged();
             }
         }
         private bool _minEnabledStagingValue = false;
@@ -97,7 +70,7 @@ namespace EnhancedSearchAndFilters.Filters
             {
                 _minEnabledStagingValue = value;
                 ValidateMinValue();
-                SettingChanged?.Invoke();
+                InvokeSettingChanged();
             }
         }
         private bool _maxEnabledStagingValue = false;
@@ -109,7 +82,7 @@ namespace EnhancedSearchAndFilters.Filters
             {
                 _maxEnabledStagingValue = value;
                 ValidateMaxValue();
-                SettingChanged?.Invoke();
+                InvokeSettingChanged();
             }
         }
         private int _minStagingValue = DefaultMinValue;
@@ -121,7 +94,7 @@ namespace EnhancedSearchAndFilters.Filters
             {
                 _minStagingValue = value;
                 ValidateMinValue();
-                SettingChanged?.Invoke();
+                InvokeSettingChanged();
             }
         }
         private int _maxStagingValue = DefaultMaxValue;
@@ -133,7 +106,7 @@ namespace EnhancedSearchAndFilters.Filters
             {
                 _maxStagingValue = value;
                 ValidateMaxValue();
-                SettingChanged?.Invoke();
+                InvokeSettingChanged();
             }
         }
 
@@ -142,8 +115,6 @@ namespace EnhancedSearchAndFilters.Filters
         private bool _maxEnabledAppliedValue = false;
         private int _minAppliedValue = DefaultMinValue;
         private int _maxAppliedValue = DefaultMaxValue;
-
-        private BSMLParserParams _parserParams;
 
         private const int DefaultMinValue = 200;
         private const int DefaultMaxValue = 300;
@@ -158,13 +129,9 @@ namespace EnhancedSearchAndFilters.Filters
         [UIValue("rank-options")]
         private static readonly List<object> RankFilterOptions = Enum.GetValues(typeof(RankFilterOption)).Cast<RankFilterOption>().Select(x => (object)x).ToList();
 
-        public void Init(GameObject viewContainer)
+        public override void Init(GameObject viewContainer)
         {
-            if (_viewGameObject != null)
-                return;
-
-            _parserParams = BSMLParser.instance.Parse(BSMLUtilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.Filters.PPFilterView.bsml"), viewContainer, this);
-            _viewGameObject.name = "PPFilterViewContainer";
+            base.Init(viewContainer);
 
             if (!IsAvailable)
                 return;
@@ -177,18 +144,7 @@ namespace EnhancedSearchAndFilters.Filters
             _maxIncrement.gameObject.SetActive(isRankedOption && _maxEnabledStagingValue);
         }
 
-        public void Cleanup()
-        {
-            if (_viewGameObject != null)
-            {
-                UnityEngine.Object.Destroy(_viewGameObject);
-                _viewGameObject = null;
-            }
-        }
-
-        public GameObject GetView() => _viewGameObject;
-
-        public void SetDefaultValuesToStaging()
+        public override void SetDefaultValuesToStaging()
         {
             if (!IsAvailable)
                 return;
@@ -206,11 +162,11 @@ namespace EnhancedSearchAndFilters.Filters
                 _maxCheckbox.gameObject.SetActive(false);
                 _maxIncrement.gameObject.SetActive(false);
 
-                _parserParams.EmitEvent("refresh-values");
+                _parserParams.EmitEvent(RefreshValuesEvent);
             }
         }
 
-        public void SetAppliedValuesToStaging()
+        public override void SetAppliedValuesToStaging()
         {
             if (!IsAvailable)
                 return;
@@ -229,11 +185,11 @@ namespace EnhancedSearchAndFilters.Filters
                 _maxCheckbox.gameObject.SetActive(isRankedOption);
                 _maxIncrement.gameObject.SetActive(isRankedOption && _maxEnabledStagingValue);
 
-                _parserParams.EmitEvent("refresh-values");
+                _parserParams.EmitEvent(RefreshValuesEvent);
             }
         }
 
-        public void ApplyStagingValues()
+        public override void ApplyStagingValues()
         {
             if (!IsAvailable)
                 return;
@@ -245,7 +201,7 @@ namespace EnhancedSearchAndFilters.Filters
             _maxAppliedValue = _maxStagingValue;
         }
 
-        public void ApplyDefaultValues()
+        public override void ApplyDefaultValues()
         {
             if (!IsAvailable)
                 return;
@@ -257,7 +213,7 @@ namespace EnhancedSearchAndFilters.Filters
             _maxAppliedValue = DefaultMaxValue;
         }
 
-        public void FilterSongList(ref List<BeatmapDetails> detailsList)
+        public override void FilterSongList(ref List<BeatmapDetails> detailsList)
         {
             if (!IsAvailable || !IsFilterApplied)
                 return;
@@ -292,7 +248,7 @@ namespace EnhancedSearchAndFilters.Filters
             }
         }
 
-        public List<FilterSettingsKeyValuePair> GetAppliedValuesAsPairs()
+        public override List<FilterSettingsKeyValuePair> GetAppliedValuesAsPairs()
         {
             return FilterSettingsKeyValuePair.CreateFilterSettingsList(
                 "rank", _rankedAppliedValue,
@@ -302,7 +258,7 @@ namespace EnhancedSearchAndFilters.Filters
                 "maxValue", _maxAppliedValue);
         }
 
-        public void SetStagingValuesFromPairs(List<FilterSettingsKeyValuePair> settingsList)
+        public override void SetStagingValuesFromPairs(List<FilterSettingsKeyValuePair> settingsList)
         {
             if (!IsAvailable)
                 return;
@@ -338,7 +294,7 @@ namespace EnhancedSearchAndFilters.Filters
                 _minCheckbox.gameObject.SetActive(_rankedStagingValue == RankFilterOption.Ranked);
                 _maxCheckbox.gameObject.SetActive(_rankedStagingValue == RankFilterOption.Ranked);
 
-                _parserParams.EmitEvent("refresh-values");
+                _parserParams.EmitEvent(RefreshValuesEvent);
             }
         }
 
@@ -358,7 +314,7 @@ namespace EnhancedSearchAndFilters.Filters
                     if (_minStagingValue > _maxStagingValue)
                     {
                         _minStagingValue = _maxStagingValue;
-                        _parserParams.EmitEvent("refresh-values");
+                        _parserParams.EmitEvent(RefreshValuesEvent);
                     }
 
                     _minIncrement.maxValue = _maxStagingValue;
@@ -396,7 +352,7 @@ namespace EnhancedSearchAndFilters.Filters
                     if (_maxStagingValue < _minStagingValue)
                     {
                         _maxStagingValue = _minStagingValue;
-                        _parserParams.EmitEvent("refresh-values");
+                        _parserParams.EmitEvent(RefreshValuesEvent);
                     }
 
                     _maxIncrement.minValue = _minStagingValue;

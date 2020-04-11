@@ -1,47 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 using SongCore;
 using SongCore.Utilities;
 using SongCore.Data;
 using BeatSaberMarkupLanguage.Attributes;
-using BeatSaberMarkupLanguage.Parser;
 using EnhancedSearchAndFilters.SongData;
-using EnhancedSearchAndFilters.Utilities;
 
 namespace EnhancedSearchAndFilters.Filters
 {
-    internal class ModRequirementsFilter : IFilter
+    internal class ModRequirementsFilter : FilterBase
     {
-        public event Action SettingChanged;
-
-        public string Name => "Mod Requirements";
-        public bool IsAvailable => true;
-        public FilterStatus Status
-        {
-            get
-            {
-                if (HasChanges)
-                    return IsFilterApplied ? FilterStatus.AppliedAndChanged : FilterStatus.NotAppliedAndChanged;
-                else
-                    return IsFilterApplied ? FilterStatus.Applied : FilterStatus.NotApplied;
-            }
-        }
-        public bool IsFilterApplied => _mappingExtensionsAppliedValue != ModRequirementFilterOption.Off ||
+        public override string Name => "Mod Requirements";
+        public override bool IsFilterApplied => _mappingExtensionsAppliedValue != ModRequirementFilterOption.Off ||
             _noodleExtensionsAppliedValue != ModRequirementFilterOption.Off ||
             _chromaAppliedValue != ModRequirementFilterOption.Off;
-        public bool HasChanges => _mappingExtensionsStagingValue != _mappingExtensionsAppliedValue ||
+        public override bool HasChanges => _mappingExtensionsStagingValue != _mappingExtensionsAppliedValue ||
             _noodleExtensionsStagingValue != _noodleExtensionsAppliedValue ||
             _chromaStagingValue != _chromaAppliedValue;
-        public bool IsStagingDefaultValues => _mappingExtensionsStagingValue == ModRequirementFilterOption.Off &&
+        public override bool IsStagingDefaultValues => _mappingExtensionsStagingValue == ModRequirementFilterOption.Off &&
             _noodleExtensionsStagingValue == ModRequirementFilterOption.Off &&
             _chromaStagingValue == ModRequirementFilterOption.Off;
 
-#pragma warning disable CS0649
-        [UIObject("root")]
-        private GameObject _viewGameObject;
-#pragma warning restore CS0649
+        protected override string ViewResource => "EnhancedSearchAndFilters.UI.Views.Filters.ModRequirementsFilterView.bsml";
+        protected override string ContainerGameObjectName => "ModRequirementsViewContainer";
 
         private ModRequirementFilterOption _mappingExtensionsStagingValue = ModRequirementFilterOption.Off;
         [UIValue("mapping-extensions-value")]
@@ -51,7 +33,7 @@ namespace EnhancedSearchAndFilters.Filters
             set
             {
                 _mappingExtensionsStagingValue = value;
-                SettingChanged?.Invoke();
+                InvokeSettingChanged();
             }
         }
         private ModRequirementFilterOption _noodleExtensionsStagingValue = ModRequirementFilterOption.Off;
@@ -62,7 +44,7 @@ namespace EnhancedSearchAndFilters.Filters
             set
             {
                 _noodleExtensionsStagingValue = value;
-                SettingChanged?.Invoke();
+                InvokeSettingChanged();
             }
         }
         private ModRequirementFilterOption _chromaStagingValue = ModRequirementFilterOption.Off;
@@ -73,7 +55,7 @@ namespace EnhancedSearchAndFilters.Filters
             set
             {
                 _chromaStagingValue = value;
-                SettingChanged?.Invoke();
+                InvokeSettingChanged();
             }
         }
 
@@ -81,66 +63,42 @@ namespace EnhancedSearchAndFilters.Filters
         private ModRequirementFilterOption _noodleExtensionsAppliedValue = ModRequirementFilterOption.Off;
         private ModRequirementFilterOption _chromaAppliedValue = ModRequirementFilterOption.Off;
 
-        private BSMLParserParams _parserParams;
-
         [UIValue("mod-requirements-options")]
         private static readonly List<object> ModRequirementsOptions = Enum.GetValues(typeof(ModRequirementFilterOption)).Cast<ModRequirementFilterOption>().Select(x => (object)x).ToList();
 
-        public void Init(GameObject viewContainer)
-        {
-            if (_viewGameObject != null)
-                return;
-
-            _parserParams = UIUtilities.ParseBSML("EnhancedSearchAndFilters.UI.Views.Filters.ModRequirementsFilterView.bsml", viewContainer, this);
-            _viewGameObject.name = "ModRequirementsViewContainer";
-        }
-
-        public void Cleanup()
-        {
-            if (_viewGameObject != null)
-            {
-                UnityEngine.Object.Destroy(_viewGameObject);
-                _viewGameObject = null;
-            }
-        }
-
-        public GameObject GetView() => _viewGameObject;
-
-        public void SetDefaultValuesToStaging()
+        public override void SetDefaultValuesToStaging()
         {
             _mappingExtensionsStagingValue = ModRequirementFilterOption.Off;
             _noodleExtensionsStagingValue = ModRequirementFilterOption.Off;
             _chromaStagingValue = ModRequirementFilterOption.Off;
 
-            if (_viewGameObject != null)
-                _parserParams.EmitEvent("refresh-values");
+            RefreshValues();
         }
 
-        public void SetAppliedValuesToStaging()
+        public override void SetAppliedValuesToStaging()
         {
             _mappingExtensionsStagingValue = _mappingExtensionsAppliedValue;
             _noodleExtensionsStagingValue = _noodleExtensionsAppliedValue;
             _chromaStagingValue = _chromaAppliedValue;
 
-            if (_viewGameObject != null)
-                _parserParams.EmitEvent("refresh-values");
+            RefreshValues();
         }
 
-        public void ApplyStagingValues()
+        public override void ApplyStagingValues()
         {
             _mappingExtensionsAppliedValue = _mappingExtensionsStagingValue;
             _noodleExtensionsAppliedValue = _noodleExtensionsStagingValue;
             _chromaAppliedValue = _chromaStagingValue;
         }
 
-        public void ApplyDefaultValues()
+        public override void ApplyDefaultValues()
         {
             _mappingExtensionsAppliedValue = ModRequirementFilterOption.Off;
             _noodleExtensionsAppliedValue = ModRequirementFilterOption.Off;
             _chromaAppliedValue = ModRequirementFilterOption.Off;
         }
 
-        public void FilterSongList(ref List<BeatmapDetails> detailsList)
+        public override void FilterSongList(ref List<BeatmapDetails> detailsList)
         {
             if (!IsFilterApplied)
                 return;
@@ -197,7 +155,7 @@ namespace EnhancedSearchAndFilters.Filters
                 detailsList.Remove(level);
         }
 
-        public List<FilterSettingsKeyValuePair> GetAppliedValuesAsPairs()
+        public override List<FilterSettingsKeyValuePair> GetAppliedValuesAsPairs()
         {
             return FilterSettingsKeyValuePair.CreateFilterSettingsList(
                 "mappingExtensions", _mappingExtensionsAppliedValue,
@@ -205,7 +163,7 @@ namespace EnhancedSearchAndFilters.Filters
                 "chroma", _chromaAppliedValue);
         }
 
-        public void SetStagingValuesFromPairs(List<FilterSettingsKeyValuePair> settingsList)
+        public override void SetStagingValuesFromPairs(List<FilterSettingsKeyValuePair> settingsList)
         {
             SetDefaultValuesToStaging();
 
@@ -228,8 +186,7 @@ namespace EnhancedSearchAndFilters.Filters
                 }
             }
 
-            if (_viewGameObject != null)
-                _parserParams.EmitEvent("refresh-values");
+            RefreshValues();
         }
 
         [UIAction("mod-requirements-formatter")]

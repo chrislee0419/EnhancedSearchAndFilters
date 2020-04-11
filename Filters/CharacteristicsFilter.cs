@@ -1,63 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using UnityEngine;
-using BeatSaberMarkupLanguage;
-using BeatSaberMarkupLanguage.Parser;
 using BeatSaberMarkupLanguage.Attributes;
 using EnhancedSearchAndFilters.SongData;
-using BSMLUtilities = BeatSaberMarkupLanguage.Utilities;
 
 namespace EnhancedSearchAndFilters.Filters
 {
-    internal class CharacteristicsFilter : IFilter
+    internal class CharacteristicsFilter : FilterBase
     {
-        public event Action SettingChanged;
-
-        public string Name { get { return "Beatmap Characteristics"; } }
-        public bool IsAvailable { get { return true; } }
-        public FilterStatus Status
-        {
-            get
-            {
-                if (IsFilterApplied)
-                {
-                    if (HasChanges)
-                        return FilterStatus.AppliedAndChanged;
-                    else
-                        return FilterStatus.Applied;
-                }
-                else if (!IsStagingDefaultValues)
-                {
-                    return FilterStatus.NotAppliedAndChanged;
-                }
-                else
-                {
-                    return FilterStatus.NotApplied;
-                }
-            }
-        }
-        public bool IsFilterApplied => _oneSaberAppliedValue ||
+        public override string Name => "Beatmap Characteristics";
+        public override bool IsFilterApplied => _oneSaberAppliedValue ||
             _noArrowsAppliedValue ||
             _90AppliedValue ||
             _360AppliedValue ||
             _lightshowAppliedValue;
-        public bool HasChanges => _oneSaberAppliedValue != _oneSaberStagingValue ||
+        public override bool HasChanges => _oneSaberAppliedValue != _oneSaberStagingValue ||
             _noArrowsAppliedValue != _noArrowsStagingValue ||
             _90AppliedValue != _90StagingValue ||
             _360AppliedValue != _360StagingValue ||
             _lightshowAppliedValue != _lightshowStagingValue;
-        public bool IsStagingDefaultValues => _oneSaberStagingValue == false &&
+        public override bool IsStagingDefaultValues => _oneSaberStagingValue == false &&
             _noArrowsStagingValue == false &&
             _90StagingValue == false &&
             _360StagingValue == false &&
             _lightshowStagingValue == false;
 
-#pragma warning disable CS0649
-        [UIObject("root")]
-        private GameObject _viewGameObject;
-#pragma warning restore CS0649
+        protected override string ViewResource => "EnhancedSearchAndFilters.UI.Views.Filters.CharacteristicsFilterView.bsml";
+        protected override string ContainerGameObjectName => "CharacteristicsFilterViewContainer";
 
         private bool _oneSaberStagingValue = false;
         [UIValue("one-saber-value")]
@@ -67,7 +35,7 @@ namespace EnhancedSearchAndFilters.Filters
             set
             {
                 _oneSaberStagingValue = value;
-                SettingChanged?.Invoke();
+                InvokeSettingChanged();
             }
         }
         private bool _noArrowsStagingValue = false;
@@ -78,7 +46,7 @@ namespace EnhancedSearchAndFilters.Filters
             set
             {
                 _noArrowsStagingValue = value;
-                SettingChanged?.Invoke();
+                InvokeSettingChanged();
             }
         }
         private bool _90StagingValue = false;
@@ -89,7 +57,7 @@ namespace EnhancedSearchAndFilters.Filters
             set
             {
                 _90StagingValue = value;
-                SettingChanged?.Invoke();
+                InvokeSettingChanged();
             }
         }
         private bool _360StagingValue = false;
@@ -100,7 +68,7 @@ namespace EnhancedSearchAndFilters.Filters
             set
             {
                 _360StagingValue = value;
-                SettingChanged?.Invoke();
+                InvokeSettingChanged();
             }
         }
         private bool _lightshowStagingValue = false;
@@ -111,7 +79,7 @@ namespace EnhancedSearchAndFilters.Filters
             set
             {
                 _lightshowStagingValue = value;
-                SettingChanged?.Invoke();
+                InvokeSettingChanged();
             }
         }
 
@@ -121,29 +89,7 @@ namespace EnhancedSearchAndFilters.Filters
         private bool _360AppliedValue = false;
         private bool _lightshowAppliedValue = false;
 
-        private BSMLParserParams _parserParams;
-
-        public void Init(GameObject viewContainer)
-        {
-            if (_viewGameObject != null)
-                return;
-
-            _parserParams = BSMLParser.instance.Parse(BSMLUtilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.Filters.CharacteristicsFilterView.bsml"), viewContainer, this);
-            _viewGameObject.name = "CharacteristicsFilterViewContainer";
-        }
-
-        public void Cleanup()
-        {
-            if (_viewGameObject != null)
-            {
-                UnityEngine.Object.Destroy(_viewGameObject);
-                _viewGameObject = null;
-            }
-        }
-
-        public GameObject GetView() => _viewGameObject;
-
-        public void SetDefaultValuesToStaging()
+        public override void SetDefaultValuesToStaging()
         {
             _oneSaberStagingValue = false;
             _noArrowsStagingValue = false;
@@ -151,11 +97,10 @@ namespace EnhancedSearchAndFilters.Filters
             _360StagingValue = false;
             _lightshowStagingValue = false;
 
-            if (_viewGameObject != null)
-                _parserParams.EmitEvent("refresh-values");
+            RefreshValues();
         }
 
-        public void SetAppliedValuesToStaging()
+        public override void SetAppliedValuesToStaging()
         {
             _oneSaberStagingValue = _oneSaberAppliedValue;
             _noArrowsStagingValue = _noArrowsAppliedValue;
@@ -163,11 +108,10 @@ namespace EnhancedSearchAndFilters.Filters
             _360StagingValue = _360AppliedValue;
             _lightshowStagingValue = _lightshowAppliedValue;
 
-            if (_viewGameObject != null)
-                _parserParams.EmitEvent("refresh-values");
+            RefreshValues();
         }
 
-        public void ApplyStagingValues()
+        public override void ApplyStagingValues()
         {
             _oneSaberAppliedValue = _oneSaberStagingValue;
             _noArrowsAppliedValue = _noArrowsStagingValue;
@@ -176,7 +120,7 @@ namespace EnhancedSearchAndFilters.Filters
             _lightshowAppliedValue = _lightshowStagingValue;
         }
 
-        public void ApplyDefaultValues()
+        public override void ApplyDefaultValues()
         {
             _oneSaberAppliedValue = false;
             _noArrowsAppliedValue = false;
@@ -185,7 +129,7 @@ namespace EnhancedSearchAndFilters.Filters
             _lightshowAppliedValue = false;
         }
 
-        public void FilterSongList(ref List<BeatmapDetails> detailsList)
+        public override void FilterSongList(ref List<BeatmapDetails> detailsList)
         {
             if (!IsFilterApplied)
                 return;
@@ -222,7 +166,7 @@ namespace EnhancedSearchAndFilters.Filters
             }
         }
 
-        public List<FilterSettingsKeyValuePair> GetAppliedValuesAsPairs()
+        public override List<FilterSettingsKeyValuePair> GetAppliedValuesAsPairs()
         {
             return FilterSettingsKeyValuePair.CreateFilterSettingsList(
                 "oneSaber", _oneSaberAppliedValue,
@@ -232,7 +176,7 @@ namespace EnhancedSearchAndFilters.Filters
                 "lightshow", _lightshowAppliedValue);
         }
 
-        public void SetStagingValuesFromPairs(List<FilterSettingsKeyValuePair> settingsList)
+        public override void SetStagingValuesFromPairs(List<FilterSettingsKeyValuePair> settingsList)
         {
             SetDefaultValuesToStaging();
 
@@ -261,8 +205,7 @@ namespace EnhancedSearchAndFilters.Filters
                 }
             }
 
-            if (_viewGameObject != null)
-                _parserParams.EmitEvent("refresh-values");
+            RefreshValues();
         }
     }
 }

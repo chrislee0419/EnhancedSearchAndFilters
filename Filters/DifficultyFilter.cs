@@ -1,47 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using UnityEngine;
-using BeatSaberMarkupLanguage;
-using BeatSaberMarkupLanguage.Parser;
 using BeatSaberMarkupLanguage.Attributes;
 using EnhancedSearchAndFilters.SongData;
-using BSMLUtilities = BeatSaberMarkupLanguage.Utilities;
 
 namespace EnhancedSearchAndFilters.Filters
 {
-    internal class DifficultyFilter : IFilter
+    internal class DifficultyFilter : FilterBase
     {
-        public event Action SettingChanged;
-
-        public string Name { get { return "Difficulty"; } }
-        public bool IsAvailable { get { return true; } }
-        public FilterStatus Status {
-            get
-            {
-                if (HasChanges)
-                    return IsFilterApplied ? FilterStatus.AppliedAndChanged : FilterStatus.NotAppliedAndChanged;
-                else
-                    return IsFilterApplied ? FilterStatus.Applied : FilterStatus.NotApplied;
-            }
-        }
-        public bool IsFilterApplied => _easyAppliedValue || _normalAppliedValue || _hardAppliedValue || _expertAppliedValue || _expertPlusAppliedValue;
-        public bool HasChanges => _easyStagingValue != _easyAppliedValue ||
+        public override string Name => "Difficulty";
+        public override bool IsFilterApplied => _easyAppliedValue || _normalAppliedValue || _hardAppliedValue || _expertAppliedValue || _expertPlusAppliedValue;
+        public override bool HasChanges => _easyStagingValue != _easyAppliedValue ||
             _normalStagingValue != _normalAppliedValue ||
             _hardStagingValue != _hardAppliedValue ||
             _expertStagingValue != _expertAppliedValue ||
             _expertPlusStagingValue != _expertPlusAppliedValue;
-        public bool IsStagingDefaultValues => _easyStagingValue == false &&
+        public override bool IsStagingDefaultValues => _easyStagingValue == false &&
             _normalStagingValue == false &&
             _hardStagingValue == false &&
             _expertStagingValue == false &&
             _expertPlusStagingValue == false;
 
-#pragma warning disable CS0649
-        [UIObject("root")]
-        private GameObject _viewGameObject;
-#pragma warning restore CS0649
+        protected override string ViewResource => "EnhancedSearchAndFilters.UI.Views.Filters.DifficultyFilterView.bsml";
+        protected override string ContainerGameObjectName => "DifficultyFilterViewContainer";
 
         private bool _easyStagingValue = false;
         [UIValue("easy-checkbox-value")]
@@ -51,7 +31,7 @@ namespace EnhancedSearchAndFilters.Filters
             set
             {
                 _easyStagingValue = value;
-                SettingChanged?.Invoke();
+                InvokeSettingChanged();
             }
         }
         private bool _normalStagingValue = false;
@@ -62,7 +42,7 @@ namespace EnhancedSearchAndFilters.Filters
             set
             {
                 _normalStagingValue = value;
-                SettingChanged?.Invoke();
+                InvokeSettingChanged();
             }
         }
         private bool _hardStagingValue = false;
@@ -73,7 +53,7 @@ namespace EnhancedSearchAndFilters.Filters
             set
             {
                 _hardStagingValue = value;
-                SettingChanged?.Invoke();
+                InvokeSettingChanged();
             }
         }
         private bool _expertStagingValue = false;
@@ -84,7 +64,7 @@ namespace EnhancedSearchAndFilters.Filters
             set
             {
                 _expertStagingValue = value;
-                SettingChanged?.Invoke();
+                InvokeSettingChanged();
             }
         }
         private bool _expertPlusStagingValue = false;
@@ -95,7 +75,7 @@ namespace EnhancedSearchAndFilters.Filters
             set
             {
                 _expertPlusStagingValue = value;
-                SettingChanged?.Invoke();
+                InvokeSettingChanged();
             }
         }
 
@@ -105,29 +85,7 @@ namespace EnhancedSearchAndFilters.Filters
         private bool _expertAppliedValue = false;
         private bool _expertPlusAppliedValue = false;
 
-        private BSMLParserParams _parserParams;
-
-        public void Init(GameObject viewContainer)
-        {
-            if (_viewGameObject != null)
-                return;
-
-            _parserParams = BSMLParser.instance.Parse(BSMLUtilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.Filters.DifficultyFilterView.bsml"), viewContainer, this);
-            _viewGameObject.name = "DifficultyFilterViewContainer";
-        }
-
-        public void Cleanup()
-        {
-            if (_viewGameObject != null)
-            {
-                UnityEngine.Object.Destroy(_viewGameObject);
-                _viewGameObject = null;
-            }
-        }
-
-        public GameObject GetView() => _viewGameObject;
-
-        public void SetDefaultValuesToStaging()
+        public override void SetDefaultValuesToStaging()
         {
             _easyStagingValue = false;
             _normalStagingValue = false;
@@ -135,11 +93,10 @@ namespace EnhancedSearchAndFilters.Filters
             _expertStagingValue = false;
             _expertPlusStagingValue = false;
 
-            if (_viewGameObject != null)
-                _parserParams.EmitEvent("refresh-values");
+            RefreshValues();
         }
 
-        public void SetAppliedValuesToStaging()
+        public override void SetAppliedValuesToStaging()
         {
             _easyStagingValue = _easyAppliedValue;
             _normalStagingValue = _normalAppliedValue;
@@ -147,11 +104,10 @@ namespace EnhancedSearchAndFilters.Filters
             _expertStagingValue = _expertAppliedValue;
             _expertPlusStagingValue = _expertPlusAppliedValue;
 
-            if (_viewGameObject != null)
-                _parserParams.EmitEvent("refresh-values");
+            RefreshValues();
         }
 
-        public void ApplyStagingValues()
+        public override void ApplyStagingValues()
         {
             _easyAppliedValue = _easyStagingValue;
             _normalAppliedValue = _normalStagingValue;
@@ -160,7 +116,7 @@ namespace EnhancedSearchAndFilters.Filters
             _expertPlusAppliedValue = _expertPlusStagingValue;
         }
 
-        public void ApplyDefaultValues()
+        public override void ApplyDefaultValues()
         {
             _easyAppliedValue = false;
             _normalAppliedValue = false;
@@ -169,7 +125,7 @@ namespace EnhancedSearchAndFilters.Filters
             _expertPlusAppliedValue = false;
         }
 
-        public void FilterSongList(ref List<BeatmapDetails> detailsList)
+        public override void FilterSongList(ref List<BeatmapDetails> detailsList)
         {
             if (!IsFilterApplied)
                 return;
@@ -199,7 +155,7 @@ namespace EnhancedSearchAndFilters.Filters
             }
         }
 
-        public List<FilterSettingsKeyValuePair> GetAppliedValuesAsPairs()
+        public override List<FilterSettingsKeyValuePair> GetAppliedValuesAsPairs()
         {
             return FilterSettingsKeyValuePair.CreateFilterSettingsList(
                 "easy", _easyAppliedValue,
@@ -209,7 +165,7 @@ namespace EnhancedSearchAndFilters.Filters
                 "expertPlus", _expertPlusAppliedValue);
         }
 
-        public void SetStagingValuesFromPairs(List<FilterSettingsKeyValuePair> settingsList)
+        public override void SetStagingValuesFromPairs(List<FilterSettingsKeyValuePair> settingsList)
         {
             SetDefaultValuesToStaging();
 
@@ -238,8 +194,7 @@ namespace EnhancedSearchAndFilters.Filters
                 }
             }
 
-            if (_viewGameObject != null)
-                _parserParams.EmitEvent("refresh-values");
+            RefreshValues();
         }
     }
 }

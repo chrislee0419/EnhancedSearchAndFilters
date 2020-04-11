@@ -1,43 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections.Generic;
 using BeatSaberMarkupLanguage.Attributes;
-using BeatSaberMarkupLanguage.Parser;
 using EnhancedSearchAndFilters.SongData;
 using EnhancedSearchAndFilters.Tweaks;
-using EnhancedSearchAndFilters.Utilities;
 
 namespace EnhancedSearchAndFilters.Filters
 {
-    internal class VotedFilter : IFilter
+    internal class VotedFilter : FilterBase
     {
-        public event Action SettingChanged;
-
-        public string Name => "Voted Songs";
+        public override string Name => "Voted Songs";
         [UIValue("is-available")]
-        public bool IsAvailable => BeatSaverVotingTweaks.ModLoaded;
-        public FilterStatus Status
-        {
-            get
-            {
-                if (HasChanges)
-                    return IsFilterApplied ? FilterStatus.AppliedAndChanged : FilterStatus.NotAppliedAndChanged;
-                else
-                    return IsFilterApplied ? FilterStatus.Applied : FilterStatus.NotApplied;
-            }
-        }
-        public bool IsFilterApplied => _upvotedAppliedValue || _noVoteAppliedValue || _downvotedAppliedValue;
-        public bool HasChanges => _upvotedStagingValue != _upvotedAppliedValue ||
+        public override bool IsAvailable => BeatSaverVotingTweaks.ModLoaded;
+        public override bool IsFilterApplied => _upvotedAppliedValue || _noVoteAppliedValue || _downvotedAppliedValue;
+        public override bool HasChanges => _upvotedStagingValue != _upvotedAppliedValue ||
             _noVoteStagingValue != _noVoteAppliedValue ||
             _downvotedStagingValue != _downvotedAppliedValue;
-        public bool IsStagingDefaultValues => _upvotedStagingValue == false ||
+        public override bool IsStagingDefaultValues => _upvotedStagingValue == false ||
             _noVoteStagingValue == false ||
             _downvotedStagingValue == false;
 
-#pragma warning disable CS0649
-        [UIObject("root")]
-        private GameObject _viewGameObject;
-#pragma warning restore CS0649
+        protected override string ViewResource => "EnhancedSearchAndFilters.UI.Views.Filters.VotedFilterView.bsml";
+        protected override string ContainerGameObjectName => "VotedFilterViewContainer";
 
         private bool _upvotedStagingValue = false;
         [UIValue("upvoted-checkbox-value")]
@@ -47,7 +29,7 @@ namespace EnhancedSearchAndFilters.Filters
             set
             {
                 _upvotedStagingValue = value;
-                SettingChanged?.Invoke();
+                InvokeSettingChanged();
             }
         }
 
@@ -59,7 +41,7 @@ namespace EnhancedSearchAndFilters.Filters
             set
             {
                 _noVoteStagingValue = value;
-                SettingChanged?.Invoke();
+                InvokeSettingChanged();
             }
         }
 
@@ -71,7 +53,7 @@ namespace EnhancedSearchAndFilters.Filters
             set
             {
                 _downvotedStagingValue = value;
-                SettingChanged?.Invoke();
+                InvokeSettingChanged();
             }
         }
 
@@ -79,66 +61,42 @@ namespace EnhancedSearchAndFilters.Filters
         private bool _noVoteAppliedValue = false;
         private bool _downvotedAppliedValue = false;
 
-        private BSMLParserParams _parserParams;
-
         [UIValue("missing-requirements-text")]
         private const string MissingRequirementsText = "<color=#FFAAAA>Sorry!\n\n<size=80%>This filter requires the BeatSaverVoting mod to be\n installed.</size></color>";
 
-        public void Init(GameObject viewContainer)
-        {
-            if (_viewGameObject != null)
-                return;
-
-            _parserParams = UIUtilities.ParseBSML("EnhancedSearchAndFilters.UI.Views.Filters.VotedFilterView.bsml", viewContainer, this);
-            _viewGameObject.name = "VotedFilterViewContainer";
-        }
-
-        public void Cleanup()
-        {
-            if (_viewGameObject != null)
-            {
-                UnityEngine.Object.Destroy(_viewGameObject);
-                _viewGameObject = null;
-            }
-        }
-
-        public GameObject GetView() => _viewGameObject;
-
-        public void SetDefaultValuesToStaging()
+        public override void SetDefaultValuesToStaging()
         {
             _upvotedStagingValue = false;
             _noVoteStagingValue = false;
             _downvotedStagingValue = false;
 
-            if (_viewGameObject != null)
-                _parserParams.EmitEvent("refresh-values");
+            RefreshValues();
         }
 
-        public void SetAppliedValuesToStaging()
+        public override void SetAppliedValuesToStaging()
         {
             _upvotedStagingValue = _upvotedAppliedValue;
             _noVoteStagingValue = _noVoteAppliedValue;
             _downvotedStagingValue = _downvotedAppliedValue;
 
-            if (_viewGameObject != null)
-                _parserParams.EmitEvent("refresh-values");
+            RefreshValues();
         }
 
-        public void ApplyStagingValues()
+        public override void ApplyStagingValues()
         {
             _upvotedAppliedValue = _upvotedStagingValue;
             _noVoteAppliedValue = _noVoteStagingValue;
             _downvotedAppliedValue = _downvotedStagingValue;
         }
 
-        public void ApplyDefaultValues()
+        public override void ApplyDefaultValues()
         {
             _upvotedAppliedValue = false;
             _noVoteAppliedValue = false;
             _downvotedAppliedValue = false;
         }
 
-        public void FilterSongList(ref List<BeatmapDetails> detailsList)
+        public override void FilterSongList(ref List<BeatmapDetails> detailsList)
         {
             if (!IsFilterApplied)
                 return;
@@ -157,7 +115,7 @@ namespace EnhancedSearchAndFilters.Filters
             BeatSaverVotingTweaks.Cleanup();
         }
 
-        public List<FilterSettingsKeyValuePair> GetAppliedValuesAsPairs()
+        public override List<FilterSettingsKeyValuePair> GetAppliedValuesAsPairs()
         {
             return FilterSettingsKeyValuePair.CreateFilterSettingsList(
                 "upvoted", _upvotedAppliedValue,
@@ -165,7 +123,7 @@ namespace EnhancedSearchAndFilters.Filters
                 "downvoted", _downvotedAppliedValue);
         }
 
-        public void SetStagingValuesFromPairs(List<FilterSettingsKeyValuePair> settingsList)
+        public override void SetStagingValuesFromPairs(List<FilterSettingsKeyValuePair> settingsList)
         {
             SetDefaultValuesToStaging();
 
@@ -188,8 +146,7 @@ namespace EnhancedSearchAndFilters.Filters
                 }
             }
 
-            if (_viewGameObject != null)
-                _parserParams.EmitEvent("refresh-values");
+            RefreshValues();
         }
     }
 }

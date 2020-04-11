@@ -1,54 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using UnityEngine;
-using BeatSaberMarkupLanguage;
-using BeatSaberMarkupLanguage.Parser;
 using BeatSaberMarkupLanguage.Attributes;
 using EnhancedSearchAndFilters.SongData;
 using EnhancedSearchAndFilters.Utilities;
-using BSMLUtilities = BeatSaberMarkupLanguage.Utilities;
 
 namespace EnhancedSearchAndFilters.Filters
 {
-    class PlayerStatsFilter : IFilter
+    internal class PlayerStatsFilter : FilterBase
     {
-        public event Action SettingChanged;
-
-        public string Name { get { return "Player Stats"; } }
-        public bool IsAvailable { get { return true; } }
-        public FilterStatus Status
-        {
-            get
-            {
-                if (IsFilterApplied)
-                {
-                    if (HasChanges)
-                        return FilterStatus.AppliedAndChanged;
-                    else
-                        return FilterStatus.Applied;
-                }
-                else if (_hasCompletedStagingValue != SongCompletedFilterOption.Off ||
-                    _hasFullComboStagingValue != SongFullComboFilterOption.Off)
-                {
-                    return FilterStatus.NotAppliedAndChanged;
-                }
-                else
-                {
-                    return FilterStatus.NotApplied;
-                }
-            }
-        }
-        public bool IsFilterApplied => _hasCompletedAppliedValue != SongCompletedFilterOption.Off || _hasFullComboAppliedValue != SongFullComboFilterOption.Off;
-        public bool HasChanges => _hasCompletedStagingValue != _hasCompletedAppliedValue ||
+        public override string Name => "Player Stats";
+        public override bool IsFilterApplied => _hasCompletedAppliedValue != SongCompletedFilterOption.Off || _hasFullComboAppliedValue != SongFullComboFilterOption.Off;
+        public override bool HasChanges => _hasCompletedStagingValue != _hasCompletedAppliedValue ||
             _hasFullComboStagingValue != _hasFullComboAppliedValue ||
             _easyStagingValue != _easyAppliedValue ||
             _normalStagingValue != _normalAppliedValue ||
             _hardStagingValue != _hardAppliedValue ||
             _expertStagingValue != _expertAppliedValue ||
             _expertPlusStagingValue != _expertPlusAppliedValue;
-        public bool IsStagingDefaultValues => _hasCompletedStagingValue == SongCompletedFilterOption.Off &&
+        public override bool IsStagingDefaultValues => _hasCompletedStagingValue == SongCompletedFilterOption.Off &&
             _hasFullComboStagingValue == SongFullComboFilterOption.Off &&
             _easyStagingValue == false &&
             _normalStagingValue == false &&
@@ -56,10 +26,8 @@ namespace EnhancedSearchAndFilters.Filters
             _expertStagingValue == false &&
             _expertPlusStagingValue == false;
 
-#pragma warning disable CS0649
-        [UIObject("root")]
-        private GameObject _viewGameObject;
-#pragma warning restore CS0649
+        protected override string ViewResource => "EnhancedSearchAndFilters.UI.Views.Filters.PlayerStatsFilterView.bsml";
+        protected override string ContainerGameObjectName => "PlayerStatsFilterViewContainer";
 
         private SongCompletedFilterOption _hasCompletedStagingValue = SongCompletedFilterOption.Off;
         [UIValue("completed-value")]
@@ -69,7 +37,7 @@ namespace EnhancedSearchAndFilters.Filters
             set
             {
                 _hasCompletedStagingValue = value;
-                SettingChanged?.Invoke();
+                InvokeSettingChanged();
             }
         }
         private SongFullComboFilterOption _hasFullComboStagingValue = SongFullComboFilterOption.Off;
@@ -80,7 +48,7 @@ namespace EnhancedSearchAndFilters.Filters
             set
             {
                 _hasFullComboStagingValue = value;
-                SettingChanged?.Invoke();
+                InvokeSettingChanged();
             }
         }
         private bool _easyStagingValue = false;
@@ -91,7 +59,7 @@ namespace EnhancedSearchAndFilters.Filters
             set
             {
                 _easyStagingValue = value;
-                SettingChanged?.Invoke();
+                InvokeSettingChanged();
             }
         }
         private bool _normalStagingValue = false;
@@ -102,7 +70,7 @@ namespace EnhancedSearchAndFilters.Filters
             set
             {
                 _normalStagingValue = value;
-                SettingChanged?.Invoke();
+                InvokeSettingChanged();
             }
         }
         private bool _hardStagingValue = false;
@@ -113,7 +81,7 @@ namespace EnhancedSearchAndFilters.Filters
             set
             {
                 _hardStagingValue = value;
-                SettingChanged?.Invoke();
+                InvokeSettingChanged();
             }
         }
         private bool _expertStagingValue = false;
@@ -124,7 +92,7 @@ namespace EnhancedSearchAndFilters.Filters
             set
             {
                 _expertStagingValue = value;
-                SettingChanged?.Invoke();
+                InvokeSettingChanged();
             }
         }
         private bool _expertPlusStagingValue = false;
@@ -135,7 +103,7 @@ namespace EnhancedSearchAndFilters.Filters
             set
             {
                 _expertPlusStagingValue = value;
-                SettingChanged?.Invoke();
+                InvokeSettingChanged();
             }
         }
 
@@ -147,34 +115,12 @@ namespace EnhancedSearchAndFilters.Filters
         private bool _expertAppliedValue = false;
         private bool _expertPlusAppliedValue = false;
 
-        private BSMLParserParams _parserParams;
-
         [UIValue("completed-options")]
         private static readonly List<object> SongCompletedOptions = Enum.GetValues(typeof(SongCompletedFilterOption)).Cast<SongCompletedFilterOption>().Select(x => (object)x).ToList();
         [UIValue("full-combo-options")]
         private static readonly List<object> FullComboOptions = Enum.GetValues(typeof(SongFullComboFilterOption)).Cast<SongFullComboFilterOption>().Select(x => (object)x).ToList();
 
-        public void Init(GameObject viewContainer)
-        {
-            if (_viewGameObject != null)
-                return;
-
-            _parserParams = BSMLParser.instance.Parse(BSMLUtilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.Filters.PlayerStatsFilterView.bsml"), viewContainer, this);
-            _viewGameObject.name = "PlayerStatsFilterViewContainer";
-        }
-
-        public void Cleanup()
-        {
-            if (_viewGameObject != null)
-            {
-                UnityEngine.Object.Destroy(_viewGameObject);
-                _viewGameObject = null;
-            }
-        }
-
-        public GameObject GetView() => _viewGameObject;
-
-        public void SetDefaultValuesToStaging()
+        public override void SetDefaultValuesToStaging()
         {
             _hasCompletedStagingValue = SongCompletedFilterOption.Off;
             _hasFullComboStagingValue = SongFullComboFilterOption.Off;
@@ -184,11 +130,10 @@ namespace EnhancedSearchAndFilters.Filters
             _expertStagingValue = false;
             _expertPlusStagingValue = false;
 
-            if (_viewGameObject != null)
-                _parserParams.EmitEvent("refresh-values");
+            RefreshValues();
         }
 
-        public void SetAppliedValuesToStaging()
+        public override void SetAppliedValuesToStaging()
         {
             _hasCompletedStagingValue = _hasCompletedAppliedValue;
             _hasFullComboStagingValue = _hasFullComboAppliedValue;
@@ -198,11 +143,10 @@ namespace EnhancedSearchAndFilters.Filters
             _expertStagingValue = _expertAppliedValue;
             _expertPlusStagingValue = _expertPlusAppliedValue;
 
-            if (_viewGameObject != null)
-                _parserParams.EmitEvent("refresh-values");
+            RefreshValues();
         }
 
-        public void ApplyStagingValues()
+        public override void ApplyStagingValues()
         {
             _hasCompletedAppliedValue = _hasCompletedStagingValue;
             _hasFullComboAppliedValue = _hasFullComboStagingValue;
@@ -213,7 +157,7 @@ namespace EnhancedSearchAndFilters.Filters
             _expertPlusAppliedValue = _expertPlusStagingValue;
         }
 
-        public void ApplyDefaultValues()
+        public override void ApplyDefaultValues()
         {
             _hasCompletedAppliedValue = SongCompletedFilterOption.Off;
             _hasFullComboAppliedValue = SongFullComboFilterOption.Off;
@@ -224,7 +168,7 @@ namespace EnhancedSearchAndFilters.Filters
             _expertPlusAppliedValue = false;
         }
 
-        public void FilterSongList(ref List<BeatmapDetails> detailsList)
+        public override void FilterSongList(ref List<BeatmapDetails> detailsList)
         {
             if (!IsFilterApplied)
                 return;
@@ -283,7 +227,7 @@ namespace EnhancedSearchAndFilters.Filters
                 detailsList.Remove(level);
         }
 
-        public List<FilterSettingsKeyValuePair> GetAppliedValuesAsPairs()
+        public override List<FilterSettingsKeyValuePair> GetAppliedValuesAsPairs()
         {
             return FilterSettingsKeyValuePair.CreateFilterSettingsList(
                 "completed", _hasCompletedAppliedValue,
@@ -295,7 +239,7 @@ namespace EnhancedSearchAndFilters.Filters
                 "expertPlus", _expertPlusAppliedValue);
         }
 
-        public void SetStagingValuesFromPairs(List<FilterSettingsKeyValuePair> settingsList)
+        public override void SetStagingValuesFromPairs(List<FilterSettingsKeyValuePair> settingsList)
         {
             SetDefaultValuesToStaging();
 
@@ -332,8 +276,7 @@ namespace EnhancedSearchAndFilters.Filters
                 }
             }
 
-            if (_viewGameObject != null)
-                _parserParams.EmitEvent("refresh-values");
+            RefreshValues();
         }
 
         [UIAction("completed-formatter")]
