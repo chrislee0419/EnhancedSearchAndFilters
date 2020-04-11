@@ -41,6 +41,7 @@ namespace EnhancedSearchAndFilters.Filters
         {
             new DifficultyFilter(),
             new DurationFilter(),
+            new NoteDensityFilter(),
             new NJSFilter(),
             new PPFilter(),
             new StarDifficultyFilter(),

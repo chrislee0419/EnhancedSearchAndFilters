@@ -1,0 +1,57 @@
+﻿<bg id="root"
+    anchor-min-x="0" anchor-min-y="0"
+    anchor-max-x="1" anchor-max-y="1"
+    size-delta-y="-2"
+    anchor-pos-y="-1"
+    xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
+  <text text='Limit Note Density'
+        font-size='5.5'
+        anchor-min-x='0.5' anchor-min-y='1'
+        anchor-max-x='0.5' anchor-max-y='1'
+        size-delta-x='100' size-delta-y='12'
+        anchor-pos-x='0' anchor-pos-y='-6' />
+  <checkbox text="Enable Minimum Note Density Filter"
+            value="min-checkbox-value"
+            apply-on-change="true"
+            get-event="refresh-values"
+            anchor-min-x="0.5" anchor-min-y="1"
+            anchor-max-x="0.5" anchor-max-y="1"
+            size-delta-x="100" size-delta-y="12"
+            anchor-pos-x="0" anchor-pos-y="-18" />
+  <increment-setting id="min-increment-setting"
+                     active="false"
+                     text="        Minimum Note Density"
+                     hover-hint="Filters out songs that have a lower note density than this value"
+                     value="min-increment-value"
+                     min="~min-value"
+                     max="~max-value"
+                     increment="~inc-value"
+                     apply-on-change="true"
+                     get-event="refresh-values"
+                     anchor-min-x="0.5" anchor-min-y="1"
+                     anchor-max-x="0.5" anchor-max-y="1"
+                     size-delta-x="100" size-delta-y="12"
+                     anchor-pos-x="0" anchor-pos-y="-24" />
+  <checkbox text="Enable Maximum Note Density Filter"
+            value="max-checkbox-value"
+            apply-on-change="true"
+            get-event="refresh-values"
+            anchor-min-x="0.5" anchor-min-y="1"
+            anchor-max-x="0.5" anchor-max-y="1"
+            size-delta-x="100" size-delta-y="12"
+            anchor-pos-x="0" anchor-pos-y="-42" />
+  <increment-setting id="max-increment-setting"
+                     active="false"
+                     text="        Maximum Note Density"
+                     hover-hint="Filters out songs that have a higher note density than this value"
+                     value="max-increment-value"
+                     min="~min-value"
+                     max="~max-value"
+                     increment="~inc-value"
+                     apply-on-change="true"
+                     get-event="refresh-values"
+                     anchor-min-x="0.5" anchor-min-y="1"
+                     anchor-max-x="0.5" anchor-max-y="1"
+                     size-delta-x="100" size-delta-y="12"
+                     anchor-pos-x="0" anchor-pos-y="-48" />
+</bg>

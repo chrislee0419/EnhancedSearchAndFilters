@@ -160,6 +160,7 @@
     <Compile Include="Filters\FilteredLevelsLevelPack.cs" />
     <Compile Include="Filters\FilterList.cs" />
     <Compile Include="Filters\ModRequirementsFilter.cs" />
+    <Compile Include="Filters\NoteDensityFilter.cs" />
     <Compile Include="Filters\PlayerStatsFilter.cs" />
     <Compile Include="Filters\QuickFiltersManager.cs" />
     <Compile Include="Filters\VotedFilter.cs" />
@@ -294,6 +295,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="UI\Views\Filters\ModRequirementsFilterView.bsml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UI\Views\Filters\NoteDensityFilterView.bsml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
