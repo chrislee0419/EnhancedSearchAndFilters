@@ -285,6 +285,12 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 AssociatedFilter = filter;
             }
 
+            [UIAction("refresh-visuals")]
+            private void RefreshVisuals(bool selected, bool highlighted)
+            {
+                RefreshCellContent();
+            }
+
             public void RefreshCellContent()
             {
                 if (AssociatedFilter == null || _statusImg == null)

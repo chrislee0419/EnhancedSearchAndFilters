@@ -1,4 +1,7 @@
-﻿<bg anchor-min-x="0" anchor-min-y="0" anchor-max-x="1" anchor-max-y="1">
+﻿<bg anchor-min-x="0" anchor-min-y="0"
+    anchor-max-x="1" anchor-max-y="1"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd">
   <!-- filter list -->
   <horizontal bg="round-rect-panel"
               child-expand-width="true"
@@ -14,15 +17,15 @@
   <custom-list id="filter-list"
                contents="filter-cell-list"
                list-direction="Vertical"
-               list-width="60"
+               list-width="48"
                cell-size="8"
                clickable-cells="true"
                active="~filter-list-active"
                select-cell="filter-cell-selected"
                anchor-min-x="1" anchor-min-y="0"
                anchor-max-x="1" anchor-max-y="1"
-               size-delta-x="60" size-delta-y="-20"
-               anchor-pos-x="-38" anchor-pos-y="-2">
+               size-delta-x="48" size-delta-y="-24"
+               anchor-pos-x="-42" anchor-pos-y="0">
     <raw-image id='hovered-image'
             tags='hovered'
             anchor-min-x='0' anchor-min-y='0'
@@ -47,6 +50,18 @@
           size-delta-x='-5' size-delta-y='0'
           anchored-pos-x='1' anchored-pos-y='0' />
   </custom-list>
+  <page-button direction='Up'
+               preferred-width='6' preferred-height="6"
+               anchor-min-x="1" anchor-min-y="1"
+               anchor-max-x="1" anchor-max-y="1"
+               anchor-pos-x="-13" anchor-pos-y="-14"
+               click-event="filter-list#PageUp"/>
+  <page-button direction='Down'
+               preferred-width='6' preferred-height="6"
+               anchor-min-x="1" anchor-min-y="0"
+               anchor-max-x="1" anchor-max-y="0"
+               anchor-pos-x="-13" anchor-pos-y="16"
+               click-event="filter-list#PageDown"/>
   <!-- tutorial modal -->
   <button text="Filters Tutorial"
           font-size="3.5"
