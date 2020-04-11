@@ -293,11 +293,9 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
             public void RefreshCellContent()
             {
-                if (AssociatedFilter == null || _statusImg == null)
-                {
-                    Logger.log.Warn("Unable to refresh filter TableView cell content");
+                // check if the associated cell is currently being displayed
+                if (AssociatedFilter == null || _statusImg == null || _hoveredImg == null || _selectedImg == null || _text == null)
                     return;
-                }
 
                 // raw image setup (will probably need to update this in the future, since the bsml image tag
                 // is likely to change in the future)
