@@ -46,7 +46,8 @@ namespace EnhancedSearchAndFilters.Filters
             new StarDifficultyFilter(),
             new VotedFilter(),
             new PlayerStatsFilter(),
-            new OtherFilter()
+            new CharacteristicsFilter(),
+            new ModRequirementsFilter()
         };
 
         /// <summary>

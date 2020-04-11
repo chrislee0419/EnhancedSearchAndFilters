@@ -249,7 +249,7 @@ namespace EnhancedSearchAndFilters.Filters
                 return;
             }
 
-            var levelsToRemove = detailsList.AsParallel().AsOrdered().Where(delegate (BeatmapDetails details)
+            var levelsToRemove = detailsList.AsParallel().Where(delegate (BeatmapDetails details)
             {
                 bool remove = false;
 

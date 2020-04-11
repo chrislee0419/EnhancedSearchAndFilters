@@ -159,6 +159,7 @@
   <ItemGroup>
     <Compile Include="Filters\FilteredLevelsLevelPack.cs" />
     <Compile Include="Filters\FilterList.cs" />
+    <Compile Include="Filters\ModRequirementsFilter.cs" />
     <Compile Include="Filters\PlayerStatsFilter.cs" />
     <Compile Include="Filters\QuickFiltersManager.cs" />
     <Compile Include="Filters\VotedFilter.cs" />
@@ -174,7 +175,7 @@
     <Compile Include="Filters\DurationFilter.cs" />
     <Compile Include="Filters\IFilter.cs" />
     <Compile Include="Filters\NJSFilter.cs" />
-    <Compile Include="Filters\OtherFilter.cs" />
+    <Compile Include="Filters\CharacteristicsFilter.cs" />
     <Compile Include="Filters\PPFilter.cs" />
     <Compile Include="Filters\StarDifficultyFilter.cs" />
     <Compile Include="Plugin.cs" />
@@ -222,7 +223,7 @@
     <EmbeddedResource Include="UI\Views\Filters\DifficultyFilterView.bsml" />
     <EmbeddedResource Include="UI\Views\Filters\DurationFilterView.bsml" />
     <EmbeddedResource Include="UI\Views\Filters\NJSFilterView.bsml" />
-    <EmbeddedResource Include="UI\Views\Filters\OtherFilterView.bsml" />
+    <EmbeddedResource Include="UI\Views\Filters\CharacteristicsFilterView.bsml" />
     <EmbeddedResource Include="UI\Views\Filters\PlayerStatsFilterView.bsml" />
     <EmbeddedResource Include="UI\Views\Filters\PPFilterView.bsml" />
     <EmbeddedResource Include="UI\Views\Filters\StarDifficultyFilterView.bsml" />
@@ -290,6 +291,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="UI\Views\Filters\VotedFilterView.bsml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UI\Views\Filters\ModRequirementsFilterView.bsml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

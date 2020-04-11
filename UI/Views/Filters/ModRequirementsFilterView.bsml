@@ -1,0 +1,29 @@
+﻿<vertical id="root"
+          child-expand-width="true"
+          anchor-min-x="0" anchor-min-y="0"
+          anchor-max-x="1" anchor-max-y="1"
+          size-delta-x="0" size-delta-y="-2"
+          anchor-pos-x="0" anchor-pos-y="-1"
+          top-pad="2"
+          xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
+  <text text='Keeps Songs That Require Mods' font-size='5.5' />
+  <list-setting text='Mapping Extensions'
+                value='mapping-extensions-value'
+                options='mod-requirements-options'
+                get-event='refresh-values'
+                apply-on-change='true'
+                formatter='mod-requirements-formatter' />
+  <list-setting text='Noodle Extensions'
+                value='noodle-extensions-value'
+                options='mod-requirements-options'
+                get-event='refresh-values'
+                apply-on-change='true'
+                formatter='mod-requirements-formatter' />
+  <list-setting text='Chroma'
+                value='chroma-value'
+                options='mod-requirements-options'
+                get-event='refresh-values'
+                apply-on-change='true'
+                formatter='mod-requirements-formatter' />
+</vertical>

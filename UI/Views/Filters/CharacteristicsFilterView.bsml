@@ -1,5 +1,5 @@
 ﻿<vertical id="root" child-expand-width="true" anchor-min-x="0" anchor-min-y="0" anchor-max-x="1" anchor-max-y="1" size-delta-x="0" size-delta-y="-2" anchor-pos-y="-1" top-pad="2">
-  <text text="Other Filters" font-size="5.5" />
+  <text text="Keep Songs That Contain Certain Gamemodes" font-size="5.5" />
   <bool-setting text="Has One Saber Mode"
                 value="one-saber-value"
                 get-event="refresh-values"
@@ -20,10 +20,4 @@
                 value="lightshow-value"
                 get-event="refresh-values"
                 apply-on-change="true" />
-  <list-setting text="Requires Mapping Extensions"
-                value="mapping-extensions-value"
-                options="mapping-extensions-options"
-                get-event="refresh-values"
-                apply-on-change="true"
-                formatter="mapping-extensions-formatter" />
 </vertical>

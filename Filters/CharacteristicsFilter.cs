@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using SongCore;
-using SongCore.Data;
-using SongCore.Utilities;
 using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.Parser;
 using BeatSaberMarkupLanguage.Attributes;
@@ -14,11 +11,11 @@ using BSMLUtilities = BeatSaberMarkupLanguage.Utilities;
 
 namespace EnhancedSearchAndFilters.Filters
 {
-    class OtherFilter : IFilter
+    internal class CharacteristicsFilter : IFilter
     {
         public event Action SettingChanged;
 
-        public string Name { get { return "Other"; } }
+        public string Name { get { return "Beatmap Characteristics"; } }
         public bool IsAvailable { get { return true; } }
         public FilterStatus Status
         {
@@ -41,20 +38,21 @@ namespace EnhancedSearchAndFilters.Filters
                 }
             }
         }
-        public bool IsFilterApplied => _oneSaberAppliedValue ||_noArrowsAppliedValue || _90AppliedValue || _360AppliedValue ||
-            _lightshowAppliedValue || _mappingExtensionsAppliedValue != SongRequirementFilterOption.Off;
+        public bool IsFilterApplied => _oneSaberAppliedValue ||
+            _noArrowsAppliedValue ||
+            _90AppliedValue ||
+            _360AppliedValue ||
+            _lightshowAppliedValue;
         public bool HasChanges => _oneSaberAppliedValue != _oneSaberStagingValue ||
             _noArrowsAppliedValue != _noArrowsStagingValue ||
             _90AppliedValue != _90StagingValue ||
             _360AppliedValue != _360StagingValue ||
-            _lightshowAppliedValue != _lightshowStagingValue ||
-            _mappingExtensionsAppliedValue != _mappingExtensionsStagingValue;
+            _lightshowAppliedValue != _lightshowStagingValue;
         public bool IsStagingDefaultValues => _oneSaberStagingValue == false &&
             _noArrowsStagingValue == false &&
             _90StagingValue == false &&
             _360StagingValue == false &&
-            _lightshowStagingValue == false &&
-            _mappingExtensionsStagingValue == SongRequirementFilterOption.Off;
+            _lightshowStagingValue == false;
 
 #pragma warning disable CS0649
         [UIObject("root")]
@@ -116,37 +114,22 @@ namespace EnhancedSearchAndFilters.Filters
                 SettingChanged?.Invoke();
             }
         }
-        private SongRequirementFilterOption _mappingExtensionsStagingValue = SongRequirementFilterOption.Off;
-        [UIValue("mapping-extensions-value")]
-        public SongRequirementFilterOption MappingExtensionsStagingValue
-        {
-            get => _mappingExtensionsStagingValue;
-            set
-            {
-                _mappingExtensionsStagingValue = value;
-                SettingChanged?.Invoke();
-            }
-        }
 
         private bool _oneSaberAppliedValue = false;
         private bool _noArrowsAppliedValue = false;
         private bool _90AppliedValue = false;
         private bool _360AppliedValue = false;
         private bool _lightshowAppliedValue = false;
-        private SongRequirementFilterOption _mappingExtensionsAppliedValue = SongRequirementFilterOption.Off;
 
         private BSMLParserParams _parserParams;
-
-        [UIValue("mapping-extensions-options")]
-        private static readonly List<object> MappingExtensionsOptions = Enum.GetValues(typeof(SongRequirementFilterOption)).Cast<SongRequirementFilterOption>().Select(x => (object)x).ToList();
 
         public void Init(GameObject viewContainer)
         {
             if (_viewGameObject != null)
                 return;
 
-            _parserParams = BSMLParser.instance.Parse(BSMLUtilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.Filters.OtherFilterView.bsml"), viewContainer, this);
-            _viewGameObject.name = "OtherFilterViewContainer";
+            _parserParams = BSMLParser.instance.Parse(BSMLUtilities.GetResourceContent(Assembly.GetExecutingAssembly(), "EnhancedSearchAndFilters.UI.Views.Filters.CharacteristicsFilterView.bsml"), viewContainer, this);
+            _viewGameObject.name = "CharacteristicsFilterViewContainer";
         }
 
         public void Cleanup()
@@ -167,7 +150,6 @@ namespace EnhancedSearchAndFilters.Filters
             _90StagingValue = false;
             _360StagingValue = false;
             _lightshowStagingValue = false;
-            _mappingExtensionsStagingValue = SongRequirementFilterOption.Off;
 
             if (_viewGameObject != null)
                 _parserParams.EmitEvent("refresh-values");
@@ -180,7 +162,6 @@ namespace EnhancedSearchAndFilters.Filters
             _90StagingValue = _90AppliedValue;
             _360StagingValue = _360AppliedValue;
             _lightshowStagingValue = _lightshowAppliedValue;
-            _mappingExtensionsStagingValue = _mappingExtensionsAppliedValue;
 
             if (_viewGameObject != null)
                 _parserParams.EmitEvent("refresh-values");
@@ -193,7 +174,6 @@ namespace EnhancedSearchAndFilters.Filters
             _90AppliedValue = _90StagingValue;
             _360AppliedValue = _360StagingValue;
             _lightshowAppliedValue = _lightshowStagingValue;
-            _mappingExtensionsAppliedValue = _mappingExtensionsStagingValue;
         }
 
         public void ApplyDefaultValues()
@@ -203,21 +183,12 @@ namespace EnhancedSearchAndFilters.Filters
             _90AppliedValue = false;
             _360AppliedValue = false;
             _lightshowAppliedValue = false;
-            _mappingExtensionsAppliedValue = SongRequirementFilterOption.Off;
         }
 
         public void FilterSongList(ref List<BeatmapDetails> detailsList)
         {
             if (!IsFilterApplied)
                 return;
-
-            List<CustomPreviewBeatmapLevel> customLevels = null;
-            bool mappingExtensionsApplied = false;
-            if (_mappingExtensionsAppliedValue != SongRequirementFilterOption.Off)
-            {
-                mappingExtensionsApplied = true;
-                customLevels = Loader.CustomLevels.Values.ToList();
-            }
 
             for (int i = 0; i < detailsList.Count;)
             {
@@ -244,35 +215,6 @@ namespace EnhancedSearchAndFilters.Filters
                 {
                     detailsList.RemoveAt(i);
                 }
-                else if (mappingExtensionsApplied && !beatmap.IsOST)
-                {
-                    // remove songs that somehow aren't OST, but also aren't custom levels handled by SongCore
-                    // get any level that starts with the level ID stored in the BeatmapDetails object since there could be duplicates
-                    CustomPreviewBeatmapLevel customLevel = customLevels.FirstOrDefault(x => x.levelID.StartsWith(beatmap.LevelID));
-                    if (customLevel == null)
-                    {
-                        detailsList.RemoveAt(i);
-                        continue;
-                    }
-
-                    ExtraSongData songData = Collections.RetrieveExtraSongData(Hashing.GetCustomLevelHash(customLevel), customLevel.customLevelPath);
-                    if (songData == null)
-                    {
-                        detailsList.RemoveAt(i);
-                        continue;
-                    }
-
-                    bool required = songData._difficulties?.Any(x => x.additionalDifficultyData?._requirements?.Any(y => y == "Mapping Extensions") == true) == true;
-                    if ((_mappingExtensionsAppliedValue == SongRequirementFilterOption.Required && !required) ||
-                        (_mappingExtensionsAppliedValue == SongRequirementFilterOption.NotRequired && required))
-                    {
-                        detailsList.RemoveAt(i);
-                        continue;
-                    }
-
-                    // passes check, requires mapping extensions
-                    ++i;
-                }
                 else
                 {
                     ++i;
@@ -287,8 +229,7 @@ namespace EnhancedSearchAndFilters.Filters
                 "noArrows", _noArrowsAppliedValue,
                 "90Degree", _90AppliedValue,
                 "360Degree", _360AppliedValue,
-                "lightshow", _lightshowAppliedValue,
-                "mappingExtensions", _mappingExtensionsAppliedValue);
+                "lightshow", _lightshowAppliedValue);
         }
 
         public void SetStagingValuesFromPairs(List<FilterSettingsKeyValuePair> settingsList)
@@ -318,37 +259,10 @@ namespace EnhancedSearchAndFilters.Filters
                             break;
                     }
                 }
-                else if (pair.Key == "mappingExtensions" && Enum.TryParse(pair.Value, out SongRequirementFilterOption reqValue))
-                {
-                    _mappingExtensionsStagingValue = reqValue;
-                }
             }
 
             if (_viewGameObject != null)
                 _parserParams.EmitEvent("refresh-values");
         }
-
-        [UIAction("mapping-extensions-formatter")]
-        private string MappingExtensionsFormatter(object value)
-        {
-            switch ((SongRequirementFilterOption)value)
-            {
-                case SongRequirementFilterOption.Off:
-                    return "Off";
-                case SongRequirementFilterOption.NotRequired:
-                    return "Not Required";
-                case SongRequirementFilterOption.Required:
-                    return "Required";
-                default:
-                    return "ERROR!";
-            }
-        }
-    }
-
-    internal enum SongRequirementFilterOption
-    {
-        Off = 0,
-        Required = 1,
-        NotRequired = 2
     }
 }
