@@ -4,6 +4,7 @@ using UnityEngine;
 using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.Components.Settings;
 using EnhancedSearchAndFilters.SongData;
+using EnhancedSearchAndFilters.Utilities;
 
 namespace EnhancedSearchAndFilters.Filters
 {
@@ -240,7 +241,7 @@ namespace EnhancedSearchAndFilters.Filters
                             break;
                     }
                 }
-                else if (float.TryParse(pair.Value, out float floatValue))
+                else if (StringUtilities.TryParseInvariantFloat(pair.Value, out float floatValue))
                 {
                     if (pair.Key == "minValue")
                         _minStagingValue = floatValue;

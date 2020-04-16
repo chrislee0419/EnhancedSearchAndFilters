@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.Components.Settings;
 using EnhancedSearchAndFilters.SongData;
-using UnityEngine;
+using EnhancedSearchAndFilters.Utilities;
 
 namespace EnhancedSearchAndFilters.Filters
 {
@@ -196,12 +197,12 @@ namespace EnhancedSearchAndFilters.Filters
                     else if (pair.Key == "maxEnabled")
                         _maxEnabledStagingValue = boolValue;
                 }
-                else if (int.TryParse(pair.Value, out int intValue))
+                else if (StringUtilities.TryParseInvariantFloat(pair.Value, out float floatValue))
                 {
                     if (pair.Key == "minValue")
-                        _minStagingValue = intValue;
+                        _minStagingValue = floatValue;
                     else if (pair.Key == "maxValue")
-                        _maxStagingValue = intValue;
+                        _maxStagingValue = floatValue;
                 }
             }
 

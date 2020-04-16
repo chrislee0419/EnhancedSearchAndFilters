@@ -166,13 +166,13 @@ namespace EnhancedSearchAndFilters.Filters
             }
         }
 
-        public static readonly Regex AlphanumericRegex = new Regex("^[A-Za-z0-9]+$");
+        public static readonly Regex AlphanumericRegex = new Regex("^[A-Za-z0-9.]+$");
         public const char SeparatorCharacter = ':';
 
         public FilterSettingsKeyValuePair(string key, object value)
         {
             Key = key;
-            Value = value.ToString();
+            Value = value.InvariantToString();
         }
 
         public FilterSettingsKeyValuePair(string key, string value)
