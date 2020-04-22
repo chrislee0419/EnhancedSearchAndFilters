@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Linq;
 using EnhancedSearchAndFilters.Filters;
+using EnhancedSearchAndFilters.SongData;
+using EnhancedSearchAndFilters.Tweaks;
 
 namespace EnhancedSearchAndFilters.Search
 {
@@ -16,20 +18,28 @@ namespace EnhancedSearchAndFilters.Search
         public static readonly char[] SpaceCharArray = new char[] { ' ' };
 
         public const int SuggestedWordsCountThreshold = 10;
+        public const string BuiltInFavouritesPackCollectionName = "Favorites";
 
         private WordPredictionEngine()
         { }
 
-        public void SetActiveWordStorageFromLevelPack(IBeatmapLevelPack levelPack)
+        public void SetActiveWordStorageFromLevelPack(IAnnotatedBeatmapLevelCollection levelCollection)
         {
-            if (!_cache.TryGetValue(levelPack.packName, out var storage))
+            if (!_cache.TryGetValue(levelCollection.collectionName, out var storage))
             {
-                storage = new WordCountStorage(levelPack);
+                storage = new WordCountStorage(levelCollection);
 
-                // never cache filtered level packs
-                if (!(levelPack.packName == FilteredLevelsLevelPack.PackName) &&
-                    !Tweaks.SongBrowserTweaks.IsFilterApplied())
-                    _cache[levelPack.packName] = storage;
+                string collectionName = levelCollection.collectionName;
+
+                // never cache filtered/built-in favorites level packs
+                if (collectionName != FilteredLevelsLevelPack.CollectionName &&
+                    collectionName != BuiltInFavouritesPackCollectionName &&
+                    collectionName != BuiltInFavouritesPackCollectionName + SortedLevelsLevelPack.PackIDSuffix &&
+                    collectionName != SortedLevelsLevelPack.PackIDSuffix &&
+                    !SongBrowserTweaks.IsFilterApplied())
+                    _cache[levelCollection.collectionName.Replace(SortedLevelsLevelPack.PackIDSuffix, "")] = storage;
+                else
+                    Logger.log.Warn($"not storing '{levelCollection.collectionName}' collection in wordpredictionengine");
             }
 
             _activeWordStorage = storage;

@@ -285,8 +285,7 @@ namespace EnhancedSearchAndFilters.UI
                 _searchFlowCoordinator.SongSelected += SelectSongFromSearchResult;
             }
 
-            IBeatmapLevelPack levelPack = LevelSelectionNavigationController.GetPrivateField<IBeatmapLevelPack>("_levelPack");
-            _searchFlowCoordinator.Activate(_freePlayFlowCoordinator, levelPack);
+            _searchFlowCoordinator.Activate(_freePlayFlowCoordinator, _lastPack);
 
             if (!ButtonPanel.IsSingletonAvailable || !ButtonPanel.instance.Initialized)
                 Logger.log.Debug("'Search' button pressed.");
@@ -373,27 +372,20 @@ namespace EnhancedSearchAndFilters.UI
 
             if (_lastPack != null)
             {
-                if (_lastPack is IBeatmapLevelPack levelPack)
-                {
-                    LevelSelectionNavigationController.SetData(_sortedLevelsLevelPack.SetupFromLevelPack(levelPack),
-                        true,
-                        LevelSelectionNavigationController.GetPrivateField<bool>("_showPlayerStatsInDetailView"),
-                        LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView"));
-                }
-                else if (!SongSortModule.IsDefaultSort)
-                {
-                    LevelSelectionNavigationController.SetData(_sortedLevelsLevelPack.SetupFromLevels(_lastPack.beatmapLevelCollection.beatmapLevels),
-                        true,
-                        LevelSelectionNavigationController.GetPrivateField<bool>("_showPlayerStatsInDetailView"),
-                        LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView"));
-                }
-                else
+                if (SongSortModule.IsDefaultSort)
                 {
                     LevelSelectionNavigationController.SetData(_lastPack,
                         true,
                         LevelSelectionNavigationController.GetPrivateField<bool>("_showPlayerStatsInDetailView"),
                         LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView"),
                         null);
+                }
+                else
+                {
+                    LevelSelectionNavigationController.SetData(_sortedLevelsLevelPack.SetupFromLevelCollection(_lastPack),
+                        true,
+                        LevelSelectionNavigationController.GetPrivateField<bool>("_showPlayerStatsInDetailView"),
+                        LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView"));
                 }
             }
             else
@@ -418,44 +410,53 @@ namespace EnhancedSearchAndFilters.UI
                     LevelSelectionNavigationController.GetPrivateField<bool>("_showPlayerStatsInDetailView"),
                     LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView"));
             }
-            else
+            else if (_lastPack != null)
             {
-                if (_lastPack != null && _lastPack is IBeatmapLevelPack beatmapLevelPack)
+                if (SongSortModule.IsDefaultSort)
                 {
                     LevelSelectionNavigationController.SetData(
-                        _sortedLevelsLevelPack.SetupFromLevelPack(beatmapLevelPack),
+                        _lastPack,
+                        true,
+                        LevelSelectionNavigationController.GetPrivateField<bool>("_showPlayerStatsInDetailView"),
+                        LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView"),
+                        null);
+                }
+                else
+                {
+                    LevelSelectionNavigationController.SetData(
+                        _sortedLevelsLevelPack.SetupFromLevelCollection(_lastPack),
                         true,
                         LevelSelectionNavigationController.GetPrivateField<bool>("_showPlayerStatsInDetailView"),
                         LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView"));
                 }
-                else
+            }
+            // this should pretty much never run (_lastPack should always be non-null)
+            else
+            {
+                var lastLevels = _levelCollectionTableView.GetPrivateField<IPreviewBeatmapLevel[]>("_previewBeatmapLevels");
+                if (lastLevels != null)
                 {
-                    var lastLevels = _levelCollectionTableView.GetPrivateField<IPreviewBeatmapLevel[]>("_previewBeatmapLevels");
-
-                    if (lastLevels != null)
+                    // if using default sort on a playlist, just show it as a playlist instead of creating a new level pack
+                    if (SongSortModule.IsDefaultSort)
                     {
-                        // if using default sort on a playlist, just show it as a playlist instead of creating a new level pack
-                        if (SongSortModule.IsDefaultSort)
-                        {
-                            LevelSelectionNavigationController.SetData(
-                                new BeatmapLevelCollection(lastLevels),
-                                LevelSelectionNavigationController.GetPrivateField<bool>("_showPlayerStatsInDetailView"),
-                                LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView"),
-                                null);
-                        }
-                        else
-                        {
-                            LevelSelectionNavigationController.SetData(
-                                _sortedLevelsLevelPack.SetupFromLevels(lastLevels),
-                                true,
-                                LevelSelectionNavigationController.GetPrivateField<bool>("_showPlayerStatsInDetailView"),
-                                LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView"));
-                        }
+                        LevelSelectionNavigationController.SetData(
+                            new BeatmapLevelCollection(lastLevels),
+                            LevelSelectionNavigationController.GetPrivateField<bool>("_showPlayerStatsInDetailView"),
+                            LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView"),
+                            null);
                     }
                     else
                     {
-                        Logger.log.Warn("Unable to find songs to sort");
+                        LevelSelectionNavigationController.SetData(
+                            _sortedLevelsLevelPack.SetupFromLevels(lastLevels),
+                            true,
+                            LevelSelectionNavigationController.GetPrivateField<bool>("_showPlayerStatsInDetailView"),
+                            LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView"));
                     }
+                }
+                else
+                {
+                    Logger.log.Warn("Unable to find songs to sort");
                 }
             }
         }
@@ -592,10 +593,7 @@ namespace EnhancedSearchAndFilters.UI
                 // reapply sort mode
                 if (!SongSortModule.IsDefaultSort)
                 {
-                    if (levelPack is IBeatmapLevelPack beatmapLevelPack2)
-                        _sortedLevelsLevelPack.SetupFromLevelPack(beatmapLevelPack2);
-                    else
-                        _sortedLevelsLevelPack.SetupFromLevels(levelPack.beatmapLevelCollection.beatmapLevels);
+                    _sortedLevelsLevelPack.SetupFromLevelCollection(levelPack);
 
                     // since the level selection navigation controller shows a level pack using the same event that calls this function
                     // and it technically isn't a guarantee that this function will run after it is set,
@@ -684,12 +682,17 @@ namespace EnhancedSearchAndFilters.UI
             }
             else
             {
-                if (_lastPack is IBeatmapLevelPack levelPack)
-                    _levelsToApply = _sortedLevelsLevelPack.SetupFromLevelPack(levelPack);
-                else if (_lastPack != null)
-                    _levelsToApply = _sortedLevelsLevelPack.SetupFromLevels(_lastPack.beatmapLevelCollection.beatmapLevels);
+                if (_lastPack != null)
+                {
+                    if (!SongSortModule.IsDefaultSort)
+                        _levelsToApply = _sortedLevelsLevelPack.SetupFromLevelCollection(_lastPack);
+                    else
+                        _levelsToApply = _lastPack;
+                }
                 else        // this should never happen (_lastPack should always be defined by this point)
+                {
                     Logger.log.Warn("Unable to unapply filters (could not find previous level pack)");
+                }
 
                 ButtonPanel.instance.SetFilterStatus(false);
             }

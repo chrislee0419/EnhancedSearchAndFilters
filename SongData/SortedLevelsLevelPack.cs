@@ -21,21 +21,41 @@ namespace EnhancedSearchAndFilters.SongData
         public const string PackName = "Sorted Songs";
 
         /// <summary>
-        /// Applies and stores sorting of a provided IBeatmapLevelPack.
+        /// Applies and stores sorting of a provided <see cref="IBeatmapLevelPack"/>.
         /// </summary>
         /// <param name="levelPack">A level pack to sort.</param>
         /// <returns>Returns itself if not using the non-default sort mode, otherwise returns the provided level pack.</returns>
-        public IBeatmapLevelPack SetupFromLevelPack(IBeatmapLevelPack levelPack)
+        private IBeatmapLevelPack SetupFromLevelPack(IBeatmapLevelPack levelPack)
         {
             if (SongSortModule.IsDefaultSort)
                 return levelPack;
 
             packID = levelPack.packID + PackIDSuffix;
             packName = levelPack.packName;
-            shortPackName = levelPack.shortPackName;
+            shortPackName = levelPack.shortPackName + PackIDSuffix;
             coverImage = levelPack.coverImage;
 
             _beatmapLevelCollection.SetPrivateField("_levels", SongSortModule.SortSongs(levelPack.beatmapLevelCollection.beatmapLevels), typeof(BeatmapLevelCollection));
+
+            return this;
+        }
+
+        /// <summary>
+        /// Applies and stores sorting of a provided <see cref="IAnnotatedBeatmapLevelCollection"/>.
+        /// </summary>
+        /// <param name="levelCollection">A level collection to sort.</param>
+        /// <returns>Returns itself if not using the non-default sort mode, otherwise returns the provided level pack.</returns>
+        public IBeatmapLevelPack SetupFromLevelCollection(IAnnotatedBeatmapLevelCollection levelCollection)
+        {
+            if (levelCollection is IBeatmapLevelPack levelPack)
+                return SetupFromLevelPack(levelPack);
+
+            packID = PackIDSuffix;
+            packName = PackName;
+            shortPackName = levelCollection.collectionName + PackIDSuffix;
+            coverImage = levelCollection.coverImage;
+
+            _beatmapLevelCollection.SetPrivateField("_levels", SongSortModule.SortSongs(levelCollection.beatmapLevelCollection.beatmapLevels), typeof(BeatmapLevelCollection));
 
             return this;
         }

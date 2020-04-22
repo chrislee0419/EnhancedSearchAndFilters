@@ -122,7 +122,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
         /// </summary>
         /// <param name="parentFlowCoordinator">The flow coordinator that will be immediately higher in the hierarchy that will present this flow coordinator.</param>
         /// <param name="levels">The list of levels that will be used as the search space.</param>
-        public void Activate(FlowCoordinator parentFlowCoordinator, IBeatmapLevelPack levelPack)
+        public void Activate(FlowCoordinator parentFlowCoordinator, IAnnotatedBeatmapLevelCollection levelPack)
         {
             _levelsSearchSpace = levelPack.beatmapLevelCollection.beatmapLevels;
             Action onFinish = PushInitialViewControllersToNavigationController;

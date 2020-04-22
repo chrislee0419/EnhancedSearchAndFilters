@@ -24,7 +24,7 @@ namespace EnhancedSearchAndFilters.Search
         public WordCountStorage()
         { }
 
-        public WordCountStorage(IBeatmapLevelPack levelPack)
+        public WordCountStorage(IAnnotatedBeatmapLevelCollection levelPack)
         {
             SetupStorage(levelPack);
         }
@@ -33,7 +33,7 @@ namespace EnhancedSearchAndFilters.Search
         /// Populate word storage with the words in the song name, sub-name, author, and map creator of a level pack.
         /// </summary>
         /// <param name="levelPack">The level pack whose words you want to store.</param>
-        public void SetupStorage(IBeatmapLevelPack levelPack)
+        public void SetupStorage(IAnnotatedBeatmapLevelCollection levelPack)
         {
             IsLoading = true;
             _manualResetEvent = new ManualResetEvent(true);
@@ -43,13 +43,13 @@ namespace EnhancedSearchAndFilters.Search
                 delegate ()
                 {
                     var sw = System.Diagnostics.Stopwatch.StartNew();
-                    Logger.log.Info($"Creating word count storage object for the \"{levelPack.packName}\" level pack (contains {levelPack.beatmapLevelCollection.beatmapLevels.Length} songs)");
+                    Logger.log.Info($"Creating word count storage object for the \"{levelPack.collectionName}\" level pack (contains {levelPack.beatmapLevelCollection.beatmapLevels.Length} songs)");
 
                     if (!SetWordsFromLevelPack(levelPack))
                         return;
 
                     sw.Stop();
-                    Logger.log.Info($"Finished creating word count storage object for the \"{levelPack.packName}\" level pack (took {sw.ElapsedMilliseconds/1000f} seconds, {_words.Count} unique words processed)");
+                    Logger.log.Info($"Finished creating word count storage object for the \"{levelPack.collectionName}\" level pack (took {sw.ElapsedMilliseconds/1000f} seconds, {_words.Count} unique words processed)");
                 },
                 delegate ()
                 {
@@ -98,7 +98,7 @@ namespace EnhancedSearchAndFilters.Search
             Logger.log.Info("Cancelling word count storage setup thread");
         }
 
-        private bool SetWordsFromLevelPack(IBeatmapLevelPack levelPack)
+        private bool SetWordsFromLevelPack(IAnnotatedBeatmapLevelCollection levelPack)
         {
             // we don't build the _words object immediately only because we want to also add the
             // counts of other words that are prefixed by a word to the count
