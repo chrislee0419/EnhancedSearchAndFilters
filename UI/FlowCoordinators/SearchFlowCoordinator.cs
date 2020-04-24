@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine;
 using HMUI;
 using BeatSaberMarkupLanguage;
 using EnhancedSearchAndFilters.UI.ViewControllers;
@@ -20,6 +21,8 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
         private SearchKeyboardViewController _searchKeyboardViewController;
         private SearchCompactKeyboardViewController _searchCompactKeyboardViewController;
 
+        private LaserPointerInputManager _laserPointerInputManager;
+
         private string _searchQuery = "";
         private string _lastSearchQuery = "";
         private IPreviewBeatmapLevel[] _levelsSearchSpace;
@@ -34,6 +37,9 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             {
                 title = "Search For Songs";
                 showBackButton = true;
+
+                _laserPointerInputManager = new GameObject("ESAFOffHandLaserPointerInputManager").AddComponent<LaserPointerInputManager>();
+                _laserPointerInputManager.transform.SetParent(this.transform);
 
                 _searchResultsNavigationController = BeatSaberUI.CreateViewController<SearchResultsNavigationController>();
                 _searchResultsListViewController = BeatSaberUI.CreateViewController<SearchResultsListViewController>();
@@ -112,8 +118,18 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             {
                 _searchQuery = "";
                 _readyForDeactivation = false;
-            }
 
+                if (_laserPointerInputManager != null)
+                    _laserPointerInputManager.gameObject.SetActive(true);
+            }
+        }
+
+        protected override void DidDeactivate(DeactivationType deactivationType)
+        {
+            base.DidDeactivate(deactivationType);
+
+            if (_laserPointerInputManager != null)
+                _laserPointerInputManager.gameObject.SetActive(false);
         }
 
         /// <summary>

@@ -7,6 +7,7 @@ using UnityEngine.SceneManagement;
 using IPALogger = IPA.Logging.Logger;
 using IPAPluginManager = IPA.Loader.PluginManager;
 using SemVer;
+using HarmonyLib;
 using SongCore;
 using BeatSaberMarkupLanguage.Settings;
 using BS_Utils.Utilities;
@@ -22,11 +23,16 @@ namespace EnhancedSearchAndFilters
     {
         public static Version Version { get; private set; }
 
+        public const string HarmonyId = "com.chrislee0419.BeatSaber.EnhancedSearchAndFilters";
+
         [Init]
         public void Init(IPALogger logger, PluginMetadata metadata)
         {
             Logger.log = logger;
             Version = metadata.Version;
+
+            var harmony = new Harmony(HarmonyId);
+            harmony.PatchAll();
         }
 
         [OnStart]
