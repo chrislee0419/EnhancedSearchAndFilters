@@ -105,6 +105,22 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             }
         }
 
+        private bool _twoHandedTypingStagingValue = PluginConfig.TwoHandedTyping;
+        [UIValue("two-handed-typing-value")]
+        public bool TwoHandedTypingStagingValue
+        {
+            get => _twoHandedTypingStagingValue;
+            set
+            {
+                if (_twoHandedTypingStagingValue == value)
+                    return;
+                _twoHandedTypingStagingValue = value;
+
+                _resetButton.interactable = true;
+                _applyButton.interactable = true;
+            }
+        }
+
 #pragma warning disable CS0649
         [UIComponent("reset-button")]
         private Button _resetButton;
@@ -133,11 +149,14 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             "Options - 'All', 'Title and Author', 'Title Only'";
         [UIValue("strip-symbols-hover-hint")]
         private const string StripSymbolsHoverHintText =
-            "Removes symbols from song title, subtitle, artist, etc. fields when performing search.\n" +
+            "Remove symbols from song title, subtitle, artist, etc. fields when performing search.\n" +
             "<color=#11FF11>Can be useful when searching for song remixes and titles with apostrophes, quotations, or hyphens.</color>";
         [UIValue("compact-mode-hover-hint")]
         private const string CompactModeHoverHintText =
-            "Removes the keyboard on the right screen, replacing it with a smaller keyboard on the center screen.";
+            "Remove the keyboard on the right screen, replacing it with a smaller keyboard on the center screen.";
+        [UIValue("two-handed-typing-hover-hint")]
+        private const string TwoHandedTypingHoverHintText =
+            "Add a laser pointer to the off-hand for easier two handed typing.";
 
         protected override void DidActivate(bool firstActivation, ActivationType activationType)
         {
@@ -175,6 +194,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             SplitQueryStagingValue = PluginConfig.SplitQueryByWordsDefaultValue;
             SongFieldsStagingValue = PluginConfig.SongFieldsToSearchDefaultValue;
             CompactModeStagingValue = PluginConfig.CompactSearchModeDefaultValue;
+            TwoHandedTypingStagingValue = PluginConfig.TwoHandedTypingDefaultValue;
 
             _resetButton.interactable = true;
             _applyButton.interactable = true;
@@ -190,6 +210,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             SplitQueryStagingValue = PluginConfig.SplitQueryByWords;
             SongFieldsStagingValue = PluginConfig.SongFieldsToSearch;
             CompactModeStagingValue = PluginConfig.CompactSearchMode;
+            TwoHandedTypingStagingValue = PluginConfig.TwoHandedTyping;
 
             _resetButton.GetComponentInChildren<TextMeshProUGUI>().color = Color.white;
 
@@ -207,6 +228,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             PluginConfig.SplitQueryByWords = SplitQueryStagingValue;
             PluginConfig.SongFieldsToSearch = SongFieldsStagingValue;
             PluginConfig.CompactSearchMode = CompactModeStagingValue;
+            PluginConfig.TwoHandedTyping = TwoHandedTypingStagingValue;
 
             _applyButton.GetComponentInChildren<TextMeshProUGUI>().color = Color.white;
 

@@ -11,7 +11,7 @@
             anchor-max-x="1" anchor-max-y="1"
             size-delta-x="-10" size-delta-y="-22"
             anchor-pos-y="2"
-            spacing="3"
+            spacing="2"
             pad="2" >
     <increment-setting text="Maximum # of Results Shown"
                        hover-hint="~max-results-hover-hint"
@@ -48,6 +48,12 @@
                   hover-hint="~compact-mode-hover-hint"
                   preferred-width="105"
                   value="compact-mode-value"
+                  get-event="refresh-values"
+                  apply-on-change="true" />
+    <bool-setting text="Use Two Handed Typing Mode"
+                  hover-hint="~two-handed-typing-hover-hint"
+                  preferred-width="105"
+                  value="two-handed-typing-value"
                   get-event="refresh-values"
                   apply-on-change="true" />
   </vertical>

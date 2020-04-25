@@ -72,6 +72,13 @@ namespace EnhancedSearchAndFilters
         }
         public const bool CompactSearchModeDefaultValue = false;
 
+        public static bool TwoHandedTyping
+        {
+            get => config.GetBool(MainSection, "TwoHandedTyping", TwoHandedTypingDefaultValue, true);
+            set => config.SetBool(MainSection, "TwoHandedTyping", value);
+        }
+        public const bool TwoHandedTypingDefaultValue = true;
+
         /// <summary>
         /// The number of songs to search through in one frame. This setting is not exposed in the UI and can only be edited in the config.
         /// </summary>

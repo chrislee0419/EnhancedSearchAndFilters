@@ -38,8 +38,8 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                 title = "Search For Songs";
                 showBackButton = true;
 
-                _laserPointerInputManager = new GameObject("ESAFOffHandLaserPointerInputManager").AddComponent<LaserPointerInputManager>();
-                _laserPointerInputManager.transform.SetParent(this.transform);
+                if (PluginConfig.TwoHandedTyping)
+                    CreateLaserPointerManager();
 
                 _searchResultsNavigationController = BeatSaberUI.CreateViewController<SearchResultsNavigationController>();
                 _searchResultsListViewController = BeatSaberUI.CreateViewController<SearchResultsListViewController>();
@@ -333,6 +333,11 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                 ProvideInitialViewControllers(_searchResultsNavigationController, _searchOptionsViewController, _searchKeyboardViewController);
             }
 
+            if (PluginConfig.TwoHandedTyping && _laserPointerInputManager == null)
+                CreateLaserPointerManager();
+            else if (!PluginConfig.TwoHandedTyping && _laserPointerInputManager != null)
+                Destroy(_laserPointerInputManager.gameObject);
+
             if (_searchQuery.Length > 0)
             {
                 PopAllViewControllersFromNavigationController();
@@ -380,6 +385,12 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             // or search can be completed before transition animation and can't interrupt (?)
             if (numOfViewControllers > 0)
                 PopViewControllersFromNavigationController(_searchResultsNavigationController, numOfViewControllers, null, true);
+        }
+
+        private void CreateLaserPointerManager()
+        {
+            _laserPointerInputManager = new GameObject("ESAFOffHandLaserPointerInputManager").AddComponent<LaserPointerInputManager>();
+            _laserPointerInputManager.transform.SetParent(this.transform);
         }
     }
 }
