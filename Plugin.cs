@@ -30,9 +30,6 @@ namespace EnhancedSearchAndFilters
         {
             Logger.log = logger;
             Version = metadata.Version;
-
-            var harmony = new Harmony(HarmonyId);
-            harmony.PatchAll();
         }
 
         [OnStart]
@@ -47,6 +44,9 @@ namespace EnhancedSearchAndFilters
             Loader.SongsLoadedEvent += SongCoreLoaderFinishedLoading;
 
             BSMLSettings.instance.AddSettingsMenu("<size=75%>Enhanced Search And Filters</size>", "EnhancedSearchAndFilters.UI.Views.SettingsView.bsml", SettingsMenu.instance);
+
+            var harmony = new Harmony(HarmonyId);
+            harmony.PatchAll();
         }
 
         [OnExit]
