@@ -57,6 +57,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 _standardLevelDetailView = Instantiate(reference, this.transform, false);
                 _standardLevelDetailView.gameObject.SetActive(true);
                 _standardLevelDetailView.name = "SearchResultLevelDetail";
+                (_standardLevelDetailView.transform as RectTransform).anchoredPosition -= new Vector2(0f, -2f);
                 if (Tweaks.SongBrowserTweaks.ModLoaded)
                     Logger.log.Notice("Finished instantiating StandardLevelDetailView");
 

@@ -2,7 +2,7 @@
   <horizontal id="header" bg="panel-top" anchor-min-x="0" anchor-min-y="1" anchor-max-x="1" anchor-max-y="1" size-delta-x="-60" size-delta-y="10" anchor-pos-y="-5">
     <text text="Search Results" align="Center" font-size="7" />
   </horizontal>
-  <text id="results-text" text="~results-text-placeholder" font-align="Center" font-size="6" />
+  <text id="results-text" text="~results-text-placeholder" font-align="Center" font-size="6" word-wrapping="true" />
   <text id="last-search-text"
         text=""
         font-size="3.5"

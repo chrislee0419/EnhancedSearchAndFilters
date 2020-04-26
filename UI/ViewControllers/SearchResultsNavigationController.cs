@@ -65,8 +65,6 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
                 _loadingSpinner = UIUtilities.CreateLoadingSpinner(this.rectTransform);
 
-                _resultsText.enableWordWrapping = true;
-
                 var handler = _lastSearchButton.gameObject.AddComponent<EnterExitEventHandler>();
                 handler.PointerEntered += () => _lastSearchButton.SetButtonText(RedoSearchButtonHighlightedText);
                 handler.PointerExited += () => _lastSearchButton.SetButtonText(RedoSearchButtonDefaultText);
