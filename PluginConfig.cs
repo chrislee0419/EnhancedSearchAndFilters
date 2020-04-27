@@ -84,8 +84,10 @@ namespace EnhancedSearchAndFilters
         /// </summary>
         public static int MaxSongsToSearchInOneFrame
         {
-            get => config.GetInt(MainSection, "MaxSongsToSearchInOneFrame", 100, true);
+            get => config.GetInt(MainSection, "MaxSongsToSearchInOneFrame", MaxSongsToSearchInOneFrameDefaultValue, true);
+            set => config.SetInt(MainSection, "MaxSongsToSearchInOneFrame", value);
         }
+        public const int MaxSongsToSearchInOneFrameDefaultValue = 100;
 
         /// <summary>
         /// Show the explanatory loading screen on the filters page.
