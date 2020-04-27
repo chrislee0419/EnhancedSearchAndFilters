@@ -9,12 +9,13 @@ using SuggestionType = EnhancedSearchAndFilters.Search.SuggestedWord.SuggestionT
 
 namespace EnhancedSearchAndFilters.UI.ViewControllers
 {
-    class SearchKeyboardViewController : ViewController
+    internal class SearchKeyboardViewController : ViewController
     {
         public event Action<char> TextKeyPressed;
         public event Action DeleteButtonPressed;
         public event Action ClearButtonPressed;
         public event Action<string, SuggestionType> PredictionPressed;
+        public event Action FilterButtonPressed;
 
         private SearchKeyboard _keyboard;
         private TextMeshProUGUI _textDisplayComponent;
@@ -83,6 +84,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
                     ClearButtonPressed?.Invoke();
                 };
+                _keyboard.FilterButtonPressed += () => FilterButtonPressed?.Invoke();
 
                 _textDisplayComponent = BeatSaberUI.CreateText(this.rectTransform, "", new Vector2(0f, 28f), new Vector2(4f, 4f));
                 _textDisplayComponent.fontSize = 7.5f;

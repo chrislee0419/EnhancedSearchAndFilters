@@ -12,6 +12,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
     {
         public event Action BackButtonPressed;
         public event Action<IPreviewBeatmapLevel> SongSelected;
+        public event Action<string> SearchFilterButtonPressed;
 
         private SearchResultsNavigationController _searchResultsNavigationController;
         private SearchResultsListViewController _searchResultsListViewController;
@@ -70,6 +71,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                         _searchKeyboardViewController.SetText(_searchQuery);
                     SearchBehaviour.Instance.StartNewSearch(_levelsSearchSpace, _searchQuery, levels => ShowSearchResult(levels, true));
                 };
+
                 _searchResultsListViewController.SongSelected += delegate (IPreviewBeatmapLevel level)
                 {
                     if (_searchCompactKeyboardViewController.isInViewControllerHierarchy)
@@ -106,11 +108,13 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                 _searchKeyboardViewController.DeleteButtonPressed += KeyboardDeleteButtonPressed;
                 _searchKeyboardViewController.ClearButtonPressed += KeyboardClearButtonPressed;
                 _searchKeyboardViewController.PredictionPressed += KeyboardPredictionPressed;
+                _searchKeyboardViewController.FilterButtonPressed += KeyboardFilterButtonPressed;
 
                 _searchCompactKeyboardViewController.TextKeyPressed += KeyboardTextKeyPressed;
                 _searchCompactKeyboardViewController.DeleteButtonPressed += KeyboardDeleteButtonPressed;
                 _searchCompactKeyboardViewController.ClearButtonPressed += KeyboardClearButtonPressed;
                 _searchCompactKeyboardViewController.PredictionPressed += KeyboardPredictionPressed;
+                _searchCompactKeyboardViewController.FilterButtonPressed += KeyboardFilterButtonPressed;
 
                 ProvideInitialViewControllers(_searchResultsNavigationController, _searchOptionsViewController, PluginConfig.CompactSearchMode ? null : _searchKeyboardViewController);
             }
@@ -290,6 +294,11 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                 SearchBehaviour.Instance.StartNewSearch(_levelsSearchSpace, _searchQuery, SearchCompleted);
             else
                 SearchBehaviour.Instance.StartSearchOnExistingList(_searchQuery, SearchCompleted);
+        }
+
+        private void KeyboardFilterButtonPressed()
+        {
+            SearchFilterButtonPressed?.Invoke(_searchQuery);
         }
 
         private void OptionsChanged()

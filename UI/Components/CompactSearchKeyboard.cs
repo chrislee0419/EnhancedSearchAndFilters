@@ -2,14 +2,16 @@
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using BS_Utils.Utilities;
 
 namespace EnhancedSearchAndFilters.UI.Components
 {
-    class CompactSearchKeyboard : MonoBehaviour
+    internal class CompactSearchKeyboard : MonoBehaviour
     {
         public event Action<char> TextKeyPressed;
         public event Action DeleteButtonPressed;
         public event Action ClearButtonPressed;
+        public event Action FilterButtonPressed;
 
         public bool SymbolButtonInteractivity
         {
@@ -69,7 +71,7 @@ namespace EnhancedSearchAndFilters.UI.Components
                 else
                     anchoredPos = new Vector2((i - 19) * 8f + 8f, 13f);
 
-                button = CreateKeyboardButton(anchoredPos);
+                button = CreateKeyboardButton(anchoredPos, keyArray[i].ToUpper());
 
                 button.text.text = keyArray[i];
 
@@ -95,7 +97,7 @@ namespace EnhancedSearchAndFilters.UI.Components
             }
 
             // Backspace
-            button = CreateKeyboardButton(new Vector2(64f, 13f), new Vector2(15f, 7f));
+            button = CreateKeyboardButton(new Vector2(64f, 13f), new Vector2(15f, 7f), "Backspace");
             button.text.text = "<-";
             button.button.onClick.AddListener(delegate ()
             {
@@ -103,7 +105,7 @@ namespace EnhancedSearchAndFilters.UI.Components
             });
 
             // Space bar
-            button = CreateKeyboardButton(new Vector2(16f, 5f), new Vector2(47f, 7f));
+            button = CreateKeyboardButton(new Vector2(15.5f, 5f), new Vector2(33f, 7f), "Spacebar");
             button.text.text = "Space";
             button.button.onClick.AddListener(delegate ()
             {
@@ -111,7 +113,7 @@ namespace EnhancedSearchAndFilters.UI.Components
             });
 
             // Symbols
-            _symbolButton = CreateKeyboardButton(new Vector2(0f, 5f), new Vector2(15f, 7f));
+            _symbolButton = CreateKeyboardButton(new Vector2(0f, 5f), new Vector2(15f, 7f), "Symbols");
             _symbolButton.text.text = "Symbols";
             _symbolButton.text.fontSize = 3f;
             _symbolButton.button.onClick.AddListener(delegate ()
@@ -120,12 +122,34 @@ namespace EnhancedSearchAndFilters.UI.Components
             });
 
             // Clear
-            button = CreateKeyboardButton(new Vector2(64f, 5f), new Vector2(15f, 7f));
+            button = CreateKeyboardButton(new Vector2(66f, 5f), new Vector2(13f, 7f), "Clear");
             button.text.text = "Clear";
             button.button.onClick.AddListener(delegate ()
             {
                 ClearButtonPressed?.Invoke();
             });
+
+            // To Filter key
+            button = CreateKeyboardButton(new Vector2(49.25f, 5f), new Vector2(16f, 7f), "To Filter");
+            button.text.text = "To\nFilter";
+            button.text.fontSize = 2.6f;
+
+            Image filterIcon = new GameObject("FilterIcon").AddComponent<Image>();
+            filterIcon.sprite = UIUtilities.LoadSpriteFromResources("EnhancedSearchAndFilters.Assets.filter.png");
+
+            var layout = filterIcon.gameObject.AddComponent<LayoutElement>();
+            layout.preferredHeight = 3.5f;
+            layout.preferredWidth = 3.5f;
+
+            filterIcon.transform.SetParent(button.text.transform.parent, false);
+
+            var handler = button.button.gameObject.AddComponent<EnterExitEventHandler>();
+            handler.PointerEntered += () => filterIcon.color = Color.black;
+            handler.PointerExited += () => filterIcon.color = Color.white;
+
+            (button.text.transform.parent as RectTransform).sizeDelta += new Vector2(0f, 1.5f);
+
+            button.button.onClick.AddListener(() => FilterButtonPressed?.Invoke());
 
             // Numbers
             string[] numSymbolArray = new string[]
@@ -134,7 +158,7 @@ namespace EnhancedSearchAndFilters.UI.Components
             };
             for (int i = 1; i <= 10; ++i)
             {
-                button = CreateKeyboardButton(new Vector2((i - 1) * 8f, 37f));
+                button = CreateKeyboardButton(new Vector2((i - 1) * 8f, 37f), i.ToString());
 
                 string key = i.ToString().Last().ToString();
                 string symbol = numSymbolArray[i - 1];
@@ -155,12 +179,12 @@ namespace EnhancedSearchAndFilters.UI.Components
             }
         }
 
-        private TextMeshProButton CreateKeyboardButton(Vector2 anchoredPosition)
+        private TextMeshProButton CreateKeyboardButton(Vector2 anchoredPosition, string name=null)
         {
-            return CreateKeyboardButton(anchoredPosition, new Vector2(7f, 7f));
+            return CreateKeyboardButton(anchoredPosition, new Vector2(7f, 7f), name);
         }
 
-        private TextMeshProButton CreateKeyboardButton(Vector2 anchoredPosition, Vector2 sizeDelta)
+        private TextMeshProButton CreateKeyboardButton(Vector2 anchoredPosition, Vector2 sizeDelta, string name=null)
         {
             TextMeshProButton button = Instantiate(_buttonPrefab, this.transform, false);
 
@@ -178,6 +202,9 @@ namespace EnhancedSearchAndFilters.UI.Components
 
             button.text.fontSize = 3.5f;
             button.button.onClick.RemoveAllListeners();
+
+            if (!string.IsNullOrEmpty(name))
+                button.gameObject.name = name;
 
             return button;
         }
