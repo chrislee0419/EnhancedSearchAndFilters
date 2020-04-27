@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace EnhancedSearchAndFilters.Search
 {
-    class SearchBehaviour : MonoBehaviour
+    internal class SearchBehaviour : MonoBehaviour
     {
         private static SearchBehaviour _instance;
         public static SearchBehaviour Instance
