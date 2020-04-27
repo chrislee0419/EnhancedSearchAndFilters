@@ -154,8 +154,16 @@ namespace EnhancedSearchAndFilters.Filters
             get => _key;
             set
             {
-                if (string.IsNullOrEmpty(value) || !AlphanumericRegex.IsMatch(value))
-                    throw new ArgumentException($"The key of a filter setting should only contain alphanumeric characters (got '{value ?? "null"}').");
+                if (value == null)
+                {
+                    throw new ArgumentNullException("The key of a filter setting cannot be null.");
+                }
+                else if (value == string.Empty || !LimitedCharactersRegex.IsMatch(value))
+                {
+                    throw new ArgumentException(
+                        $"The key of a filter setting should only contain specific characters (got '{value ?? "null"}'). " +
+                        "Refer to IFilter.FilterSettingsKeyValuePair.LimitedCharacterRegex for the full list of allowed characters.");
+                }
 
                 _key = value;
             }
@@ -166,14 +174,23 @@ namespace EnhancedSearchAndFilters.Filters
             get => _value;
             set
             {
-                if (string.IsNullOrEmpty(value) || !AlphanumericRegex.IsMatch(value))
-                    throw new ArgumentException($"The value of a filter setting should only contain alphanumeric characters (got '{value ?? "null"}').");
+                if (value == null)
+                {
+                    throw new ArgumentNullException("The value of a filter setting cannot be null.");
+                }
+                else if (value == string.Empty || !LimitedCharactersRegex.IsMatch(value))
+                {
+                    throw new ArgumentException(
+                        $"The value of a filter setting should only contain specific characters (got '{value ?? "null"}'). " +
+                        "Refer to IFilter.FilterSettingsKeyValuePair.LimitedCharacterRegex for the full list of allowed characters.");
+                }
 
                 _value = value;
             }
         }
 
-        public static readonly Regex AlphanumericRegex = new Regex("^[A-Za-z0-9.]+$");
+        // should contain alphanumerics and any symbol that can be typed on the ingame keyboards
+        public static readonly Regex LimitedCharactersRegex = new Regex("^[-_=+;:,.<>/?{}|' A-Za-z0-9\\[\\]\\\"\\\\]+$");
         public const char SeparatorCharacter = ':';
 
         public FilterSettingsKeyValuePair(string key, object value)
