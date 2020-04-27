@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using EnhancedSearchAndFilters.Utilities;
 
 namespace EnhancedSearchAndFilters.Filters
 {
@@ -140,12 +141,16 @@ namespace EnhancedSearchAndFilters.Filters
         }
         public List<FilterSettings> Filters { get; set; }
 
-        private const char EscapeCharacter = '~';
-        private const char BackslashReplacementCharacter = 's';
-        private const char SeparatorReplacementCharacter = 'b';
-
         private const char FilterListStartCharacter = ';';
         private const char FilterListSeparatorCharacter = '|';
+
+        private const char EscapeCharacter = '~';
+        private readonly static Dictionary<char, char> EscapeMapping = new Dictionary<char, char>()
+        {
+            { '\\', 's' },
+            { FilterListStartCharacter, 'a' },
+            { FilterListSeparatorCharacter, 'b' }
+        };
 
         // NOTE: there is a text-based reference to this constant in the FilterTutorialView.bsml
         // if i ever change this again, make sure to update that reference too
@@ -173,20 +178,14 @@ namespace EnhancedSearchAndFilters.Filters
         {
             StringBuilder builder = new StringBuilder();
 
-            StringBuilder escapedName = new StringBuilder(Name)
-                .Replace(EscapeCharacter.ToString(), $"{EscapeCharacter}{EscapeCharacter}")
-                .Replace("\\", $"{EscapeCharacter}{BackslashReplacementCharacter}")
-                .Replace(FilterListSeparatorCharacter.ToString(), $"{EscapeCharacter}{SeparatorReplacementCharacter}")
-                .Replace(FilterListStartCharacter.ToString(), $"{EscapeCharacter}{FilterListStartCharacter}");
+            StringBuilder escapedName = new StringBuilder(Name).EscapeString(EscapeCharacter, EscapeMapping);
 
             builder.Append(escapedName);
             builder.Append(FilterListStartCharacter);
 
             foreach (var filter in Filters)
             {
-                StringBuilder filterString = new StringBuilder(filter.ToString())
-                    .Replace(EscapeCharacter.ToString(), $"{EscapeCharacter}{EscapeCharacter}")
-                    .Replace(FilterListSeparatorCharacter.ToString(), $"{EscapeCharacter}{SeparatorReplacementCharacter}");
+                StringBuilder filterString = new StringBuilder(filter.ToString()).EscapeString(EscapeCharacter, EscapeMapping);
 
                 builder.Append(filterString);
                 builder.Append(FilterListSeparatorCharacter);
@@ -222,67 +221,14 @@ namespace EnhancedSearchAndFilters.Filters
                 return null;
             }
 
-            StringBuilder name = new StringBuilder(quickFilterString.Substring(0, startCharPos));
-
-            for (int i = 0; i < name.Length; ++i)
-            {
-                if (name[i] == EscapeCharacter && (i + 1) < name.Length)
-                {
-                    char c = name[i + 1];
-
-                    switch (c)
-                    {
-                        case EscapeCharacter:
-                            name.Replace($"{EscapeCharacter}{EscapeCharacter}", EscapeCharacter.ToString(), i, 1);
-                            break;
-                        case BackslashReplacementCharacter:
-                            name.Replace($"{EscapeCharacter}{BackslashReplacementCharacter}", "\\", i, 1);
-                            break;
-                        case SeparatorReplacementCharacter:
-                            name.Replace($"{EscapeCharacter}{SeparatorReplacementCharacter}", FilterListSeparatorCharacter.ToString(), i, 1);
-                            break;
-                        case FilterListStartCharacter:
-                            name.Replace($"{EscapeCharacter}{FilterListStartCharacter}", FilterListStartCharacter.ToString(), i, 1);
-                            break;
-                        default:
-                            name.Remove(i, 1);
-                            --i;
-                            break;
-                    }
-                }
-            }
+            StringBuilder name = new StringBuilder(quickFilterString.Substring(0, startCharPos)).UnescapeString(EscapeCharacter, EscapeMapping);
 
             quickFilter.Name = name.ToString();
 
             string[] filterSettings = quickFilterString.Substring(startCharPos + 1).Split(FilterListSeparatorCharacter);
             foreach (var filter in filterSettings)
             {
-                StringBuilder filterString = new StringBuilder(filter);
-
-                for (int i = 0; i < filterString.Length; ++i)
-                {
-                    if (filterString[i] == EscapeCharacter && (i + 1) < filterString.Length)
-                    {
-                        char c = filterString[i + 1];
-
-                        switch (c)
-                        {
-                            case EscapeCharacter:
-                                filterString.Replace($"{EscapeCharacter}{EscapeCharacter}", EscapeCharacter.ToString(), i, 1);
-                                break;
-                            case SeparatorReplacementCharacter:
-                                filterString.Replace($"{EscapeCharacter}{SeparatorReplacementCharacter}", FilterListSeparatorCharacter.ToString(), i, 1);
-                                break;
-                            default:
-                                filterString.Remove(i, 1);
-                                --i;
-                                break;
-                        }
-                    }
-                }
-
-                var fs = FilterSettings.FromString(filterString.ToString());
-
+                var fs = FilterSettings.FromString(new StringBuilder(filter).UnescapeString(EscapeCharacter, EscapeMapping).ToString());
                 if (fs != null)
                     quickFilter.Filters.Add(fs);
             }
@@ -296,13 +242,19 @@ namespace EnhancedSearchAndFilters.Filters
         public string Name { get; set; }
         public List<FilterSettingsKeyValuePair> Settings { get; set; }
 
-        private const char EscapeCharacter = '?';
-        private const char NewLineReplacementCharacter = 'n';
-        private const char BackslashReplacementCharacter = 's';
-
         private const char SettingsListStartCharacter = '{';
         private const char SettingsListEndCharacter = '}';
         private const char SettingsListSeparatorCharacter = ',';
+
+        private const char EscapeCharacter = '?';
+        private readonly static Dictionary<char, char> EscapeMapping = new Dictionary<char, char>
+        {
+            { '\n', 'n' },
+            { '\\', 's' },
+            { SettingsListStartCharacter, 'a' },
+            { SettingsListEndCharacter, 'z' },
+            { SettingsListSeparatorCharacter, 'c' },
+        };
 
         public FilterSettings()
         {
@@ -319,18 +271,14 @@ namespace EnhancedSearchAndFilters.Filters
         {
             StringBuilder builder = new StringBuilder();
 
-            StringBuilder escapedName = new StringBuilder(Name)
-                .Replace(EscapeCharacter.ToString(), $"{EscapeCharacter}{EscapeCharacter}")
-                .Replace("\n", $"{EscapeCharacter}{NewLineReplacementCharacter}")
-                .Replace("\\", $"{EscapeCharacter}{BackslashReplacementCharacter}")
-                .Replace(SettingsListStartCharacter.ToString(), $"{EscapeCharacter}{SettingsListStartCharacter}");
+            StringBuilder escapedName = new StringBuilder(Name).EscapeString(EscapeCharacter, EscapeMapping);
 
             builder.Append(escapedName);
             builder.Append(SettingsListStartCharacter);
 
             foreach (var pair in Settings)
             {
-                builder.Append(pair.ToString());
+                builder.Append(new StringBuilder(pair.ToString()).EscapeString(EscapeCharacter, EscapeMapping));
                 builder.Append(SettingsListSeparatorCharacter);
             }
 
@@ -364,35 +312,7 @@ namespace EnhancedSearchAndFilters.Filters
                 return null;
             }
 
-            StringBuilder name = new StringBuilder(settingsString.Substring(0, startCharPos));
-
-            for (int i = 0; i < name.Length; ++i)
-            {
-                if (name[i] == EscapeCharacter && (i + 1) < name.Length)
-                {
-                    char c = name[i + 1];
-
-                    switch (c)
-                    {
-                        case EscapeCharacter:
-                            name.Replace($"{EscapeCharacter}{EscapeCharacter}", EscapeCharacter.ToString(), i, 1);
-                            break;
-                        case NewLineReplacementCharacter:
-                            name.Replace($"{EscapeCharacter}{NewLineReplacementCharacter}", "\n", i, 1);
-                            break;
-                        case BackslashReplacementCharacter:
-                            name.Replace($"{EscapeCharacter}{BackslashReplacementCharacter}", "\\", i, 1);
-                            break;
-                        case SettingsListStartCharacter:
-                            name.Replace($"{EscapeCharacter}{SettingsListStartCharacter}", SettingsListStartCharacter.ToString(), i, 1);
-                            break;
-                        default:
-                            name.Remove(i, 1);
-                            --i;
-                            break;
-                    }
-                }
-            }
+            StringBuilder name = new StringBuilder(settingsString.Substring(0, startCharPos)).UnescapeString(EscapeCharacter, EscapeMapping);
 
             FilterSettings filterSettings = new FilterSettings();
             filterSettings.Name = name.ToString();
@@ -405,7 +325,7 @@ namespace EnhancedSearchAndFilters.Filters
             string[] settings = settingsString.Substring(startCharPos + 1, endCharPos - startCharPos - 1).Split(SettingsListSeparatorCharacter);
             foreach (var setting in settings)
             {
-                var kv = FilterSettingsKeyValuePair.FromString(setting);
+                var kv = FilterSettingsKeyValuePair.FromString(new StringBuilder(setting).UnescapeString(EscapeCharacter, EscapeMapping).ToString());
                 if (kv != null)
                     filterSettings.Settings.Add(kv);
             }
