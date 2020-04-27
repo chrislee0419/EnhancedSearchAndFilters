@@ -90,8 +90,8 @@ namespace EnhancedSearchAndFilters.Filters
         public abstract bool HasChanges { get; }
         public abstract bool IsStagingDefaultValues { get; }
 
-        protected abstract string ViewResource { get; }
-        protected abstract string ContainerGameObjectName { get; }
+        protected virtual string ViewResource => null;
+        protected virtual string ContainerGameObjectName => null;
 
 #pragma warning disable CS0649
         [UIObject("root")]
@@ -107,8 +107,15 @@ namespace EnhancedSearchAndFilters.Filters
             if (_viewGameObject != null)
                 return;
 
-            _parserParams = UIUtilities.ParseBSML(ViewResource, viewContainer, this);
-            _viewGameObject.name = ContainerGameObjectName;
+            if (!string.IsNullOrEmpty(ViewResource) && !string.IsNullOrEmpty(ContainerGameObjectName))
+            {
+                _parserParams = UIUtilities.ParseBSML(ViewResource, viewContainer, this);
+                _viewGameObject.name = ContainerGameObjectName;
+            }
+            else
+            {
+                Logger.log.Warn("FilterBase could not initialize filter view (ViewResource or ContainerGameObjectName are null or empty). Is this intentional?");
+            }
         }
 
         public virtual void Cleanup()
