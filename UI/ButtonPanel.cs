@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using Screen = HMUI.Screen;
+using IPA.Utilities;
 using EnhancedSearchAndFilters.Filters;
 using EnhancedSearchAndFilters.UI.Components;
 using EnhancedSearchAndFilters.UI.Components.ButtonPanelModules;
@@ -52,6 +53,8 @@ namespace EnhancedSearchAndFilters.UI
                     _container = null;
                     _mainModule = null;
                     _sortModeModule = null;
+                    _quickFilterModule = null;
+                    _miscModule = null;
                 }
             }
 
@@ -104,10 +107,16 @@ namespace EnhancedSearchAndFilters.UI
                 StartCoroutine(_contractAnimation);
             };
 
-            Destroy(_container.GetComponentInChildren<SetMainCameraToCanvas>(true));
             Destroy(_container.transform.Find("TitleViewController").gameObject);
             Destroy(_container.GetComponentInChildren<Screen>(true));
             Destroy(_container.GetComponentInChildren<HorizontalLayoutGroup>(true));
+
+            // yoinked from:
+            // https://github.com/monkeymanboy/BeatSaberMarkupLanguage/blob/master/BeatSaberMarkupLanguage/FloatingScreen/FloatingScreen.cs
+            // prevents lots of exceptions being thrown by the VRGraphicRaycaster in some situations
+            SetMainCameraToCanvas setCamera = _container.GetComponent<SetMainCameraToCanvas>();
+            setCamera.SetField("_canvas", canvas);
+            setCamera.SetField("_mainCamera", Resources.FindObjectsOfTypeAll<MainCamera>().FirstOrDefault(camera => camera.camera?.stereoTargetEye != StereoTargetEyeMask.None) ?? Resources.FindObjectsOfTypeAll<MainCamera>().FirstOrDefault());
 
             // position the screen
             var rt = _container.transform as RectTransform;
