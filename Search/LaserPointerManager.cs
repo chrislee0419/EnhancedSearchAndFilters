@@ -20,6 +20,9 @@ namespace EnhancedSearchAndFilters.Search
 
         private LaserPointer _laserPointer;
 
+        private static FieldAccessor<BaseInputModule, EventSystem>.Accessor EventSystemAccessor = FieldAccessor<BaseInputModule, EventSystem>.GetAccessor("m_EventSystem");
+        private static FieldAccessor<VRInputModule, VRPlatformHelper>.Accessor VRPlatformHelperAccessor = FieldAccessor<VRInputModule, VRPlatformHelper>.GetAccessor("_vrPlatformHelper");
+
         private const int OffHandPointerId = 2;
 
         protected void Awake()
@@ -51,7 +54,8 @@ namespace EnhancedSearchAndFilters.Search
             if (!_laserPointer.IsInitialized || offHandController == null)
                 return;
 
-            EventSystem eventSystem = vrInputModule.GetField<EventSystem, BaseInputModule>("m_EventSystem");
+            BaseInputModule baseInputModule = vrInputModule as BaseInputModule;
+            EventSystem eventSystem = EventSystemAccessor(ref baseInputModule);
             if (_pointerEventData == null)
                 _pointerEventData = new PointerEventData(eventSystem) { pointerId = OffHandPointerId };
 
@@ -167,7 +171,7 @@ namespace EnhancedSearchAndFilters.Search
                         if ((selectable != null && selectable.isActiveAndEnabled && selectable.interactable) ||
                             (interactable != null && interactable.isActiveAndEnabled && interactable.interactable))
                         {
-                            vrInputModule.GetField<VRPlatformHelper, VRInputModule>("_vrPlatformHelper").TriggerHapticPulse(_laserPointer.OffHandController.node, 0.25f);
+                            VRPlatformHelperAccessor(ref vrInputModule).TriggerHapticPulse(_laserPointer.OffHandController.node, 0.25f);
                             hasTriggeredHapticPulse = true;
                             break;
                         }
@@ -194,6 +198,8 @@ namespace EnhancedSearchAndFilters.Search
             private static Transform _pointerPrefab;
             private static float _defaultPointerLength;
             private static float _pointerWidth;
+
+            private static FieldAccessor<VRPointer, VRController>.Accessor VRControllerAccessor = FieldAccessor<VRPointer, VRController>.GetAccessor("_vrController");
 
             private void Awake()
             {
@@ -244,7 +250,7 @@ namespace EnhancedSearchAndFilters.Search
                     return;
 
                 VRController lastOffHandController = OffHandController;
-                VRController currentMainController = _originalPointer.GetField<VRController, VRPointer>("_vrController");
+                VRController currentMainController = VRControllerAccessor(ref _originalPointer);
                 OffHandController = currentMainController == _rightController ? _leftController : _rightController;
 
                 if (lastOffHandController != OffHandController)
@@ -282,7 +288,18 @@ namespace EnhancedSearchAndFilters.Search
 
             private static void Postfix(VRInputModule __instance)
             {
-                ProcessHook?.Invoke(__instance);
+                try
+                {
+                    ProcessHook?.Invoke(__instance);
+                }
+                catch (Exception e)
+                {
+                    Logger.log.Error("Exception thrown in VRInputModule Process hook. Removing harmony patch to prevent further exceptions");
+                    Logger.log.Debug(e);
+
+                    var harmony = new Harmony(Plugin.HarmonyId);
+                    harmony.Unpatch(typeof(VRInputModule).GetMethod("Process"), HarmonyPatchType.Postfix, Plugin.HarmonyId);
+                }
             }
         }
     }
