@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using UnityEngine;
 using TMPro;
 using HMUI;
@@ -43,12 +42,19 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                     PredictionPressed?.Invoke(query, type);
                 };
 
-                var keyboardGO = Instantiate(Resources.FindObjectsOfTypeAll<UIKeyboard>().First(x => x.name != "CustomUIKeyboard"), this.rectTransform, false).gameObject;
-                Destroy(keyboardGO.GetComponent<UIKeyboard>());
-                _keyboard = keyboardGO.AddComponent<SearchKeyboard>();
-                keyboardGO.name = "EnhancedSearchKeyboard";
+                var keyboardGO = new GameObject("EnhancedSearchKeyboard", typeof(SearchKeyboard), typeof(RectTransform));
 
-                _keyboard.TextKeyPressed += delegate (char key)
+                var rt = keyboardGO.GetComponent<RectTransform>();
+                rt.SetParent(this.rectTransform, false);
+                rt.anchorMin = Vector2.zero;
+                rt.anchorMax = new Vector2(1f, 0f);
+                rt.pivot = new Vector2(0.5f, 0f);
+                rt.anchoredPosition = new Vector2(0f, 5f);
+                rt.sizeDelta = new Vector2(-10f, 50f);
+
+                _keyboard = keyboardGO.GetComponent<SearchKeyboard>();
+
+                _keyboard.TextButtonPressed += delegate (char key)
                 {
                     _searchText += key.ToString();
                     _textDisplayComponent.text = _searchText.ToUpper() + CursorText;

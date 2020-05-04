@@ -3,23 +3,104 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using BS_Utils.Utilities;
+using EnhancedSearchAndFilters.SongData;
 
 namespace EnhancedSearchAndFilters.UI.Components
 {
-    internal struct KeyPair
+    internal interface ISearchKeyboard
     {
-        public TextMeshProButton button;
-        public string key;
-        public string symKey;
+        event Action<char> TextButtonPressed;
+        event Action DeleteButtonPressed;
+        event Action ClearButtonPressed;
+        event Action FilterButtonPressed;
     }
 
-    internal class SearchKeyboard : MonoBehaviour
+    internal abstract class SearchKeyboardBase : MonoBehaviour, ISearchKeyboard
     {
-        public event Action<char> TextKeyPressed;
+        public event Action<char> TextButtonPressed;
         public event Action DeleteButtonPressed;
         public event Action ClearButtonPressed;
         public event Action FilterButtonPressed;
 
+        protected virtual Vector2 DefaultKeySize => new Vector2(9f, 9f);
+        protected virtual float DefaultFontSize => 4.5f;
+
+        protected TextMeshProButton _buttonPrefab;
+
+        protected readonly static string[] KeyArray = new string[]
+        {
+            "q", "w", "e", "r", "t", "y", "u", "i", "o",  "p",
+            "a", "s", "d", "f", "g", "h", "j", "k", "l",
+            "z", "x", "c", "v", "b", "n", "m"
+        };
+        protected readonly static string[] ButtonArray = new string[]
+        {
+            "<-", "Space", "To\nFilter", "Symbols", "Clear"
+        };
+        protected readonly static string[] SymbolArray = new string[]
+        {
+            "[", "]", "{", "}", "\\", "|", "-", "_", "=", "+",
+            "", "", "", "", "", ";", ":", "'", "\"",
+            "", ",", ".", "<", ">", "/", "?"
+        };
+        protected readonly static string[] NumberSymbolArray = new string[]
+        {
+            "!", "@", "#", "$", "%", "^", "&", "*", "(", ")"
+        };
+
+        protected void InvokeTextButtonPressed(char c) => TextButtonPressed?.Invoke(c);
+        protected void InvokeDeleteButtonPressed() => DeleteButtonPressed?.Invoke();
+        protected void InvokeClearButtonPressed() => ClearButtonPressed?.Invoke();
+        protected void InvokeFilterButtonPressed() => FilterButtonPressed?.Invoke();
+
+        protected TextMeshProButton CreateKeyboardButton(Vector2 anchoredPosition, string name = null)
+        {
+            return CreateKeyboardButton(anchoredPosition, DefaultKeySize, DefaultFontSize, name);
+        }
+
+        protected TextMeshProButton CreateKeyboardButton(Vector2 anchoredPosition, Vector2 sizeDelta, string name = null)
+        {
+            return CreateKeyboardButton(anchoredPosition, sizeDelta, DefaultFontSize, name);
+        }
+
+        protected TextMeshProButton CreateKeyboardButton(Vector2 anchoredPosition, Vector2 sizeDelta, float fontSize = -1f, string name = null)
+        {
+            if (_buttonPrefab == null)
+                _buttonPrefab = Resources.FindObjectsOfTypeAll<TextMeshProButton>().First(x => x.name == "KeyboardButton");
+
+            TextMeshProButton button = Instantiate(_buttonPrefab, this.transform, false);
+
+            // use bottom left edge as origin
+            RectTransform rt = button.transform as RectTransform;
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.zero;
+            rt.pivot = Vector2.zero;
+            rt.anchoredPosition = anchoredPosition;
+            rt.sizeDelta = sizeDelta;
+
+            Navigation nav = button.button.navigation;
+            nav.mode = Navigation.Mode.None;
+            button.button.navigation = nav;
+
+            button.text.fontSize = fontSize > 0f ? fontSize : DefaultFontSize;
+            button.button.onClick.RemoveAllListeners();
+
+            if (!string.IsNullOrEmpty(name))
+                button.gameObject.name = name;
+
+            return button;
+        }
+
+        protected struct KeyPair
+        {
+            public TextMeshProButton button;
+            public string key;
+            public string symKey;
+        }
+    }
+
+    internal class SearchKeyboard : SearchKeyboardBase
+    {
         public bool SymbolButtonInteractivity
         {
             get
@@ -37,214 +118,137 @@ namespace EnhancedSearchAndFilters.UI.Components
         private bool _symbolModeActive = false;
 
         private TextMeshProButton _symbolButton;
+        private TextMeshProButton _filterButton;
 
         /// <summary>
         /// Indices 0-25 => a to z, indices 26-35 => 0 to 9
         /// </summary>
         private KeyPair[] _keyPairs = new KeyPair[36];
 
+        // keyboard should be of size 110w x 50h
         public void Awake()
         {
             // create buttons for letters and their respective symbols
-            string[] keyArray = new string[]
+            TextMeshProButton button;
+            Vector2 anchoredPos;
+            float xOffset = 5f;
+            float keySize = DefaultKeySize.x + 1f;
+            float halfKeySize = keySize / 2f;
+            for (int i = 0; i < KeyArray.Length; ++i)
             {
-                "q", "w", "e", "r", "t", "y", "u", "i", "o",  "p",
-                "a", "s", "d", "f", "g", "h", "j", "k", "l",
-                "z", "x", "c", "v", "b", "n", "m",
-                "<-", "Space", "To\nFilter", /*"Cancel",*/ "Symbols", "Clear"
-            };
-            string[] symbolArray = new string[]
-            {
-                "[", "]", "{", "}", "\\", "|", "-", "_", "=", "+",
-                "", "", "", "", "", ";", ":", "'", "\"",
-                "", ",", ".", "<", ">", "/", "?"
-            };
-            for (int i = 0; i < keyArray.Length; i++)
-            {
-                TextMeshProButton textMeshProButton;
-                if (i < keyArray.Length - 3)
-                {
-                    textMeshProButton = CreateKeyboardButton(i);
-                }
-                else if (i == keyArray.Length - 3)
-                {
-                    textMeshProButton = CreateKeyboardButton(26, true);
-                }
-                else if (i == keyArray.Length - 2)
-                {
-                    // Symbol button adapted from Cancel button
-                    textMeshProButton = CreateKeyboardButton(29);
-                }
+                if (i < 10)
+                    anchoredPos = new Vector2(i * keySize + xOffset, keySize * 3f);
+                else if (i < 19)
+                    anchoredPos = new Vector2((i - 10) * keySize + halfKeySize + xOffset, keySize * 2f);
                 else
+                    anchoredPos = new Vector2((i - 19) * keySize + keySize + xOffset, keySize);
+
+                button = CreateKeyboardButton(anchoredPos, KeyArray[i].ToUpper());
+                button.text.text = KeyArray[i];
+
+                string key = KeyArray[i];
+                string symbol = SymbolArray[i];
+                _keyPairs[i].button = button;
+                _keyPairs[i].key = key;
+                _keyPairs[i].symKey = symbol;
+
+                button.button.onClick.AddListener(delegate ()
                 {
-                    // Clear button adapted from Delete button
-                    textMeshProButton = CreateKeyboardButton(26, true);
-                }
-                
-                textMeshProButton.text.text = keyArray[i];
-
-                if (i < keyArray.Length - 5)
-                {
-                    // letters
-                    string key = keyArray[i];
-                    string symbolKey = symbolArray[i];
-
-                    _keyPairs[i].button = textMeshProButton;
-                    _keyPairs[i].key = key;
-                    _keyPairs[i].symKey = symbolArray[i];
-
-                    textMeshProButton.button.onClick.AddListener(delegate ()
+                    if (_symbolModeActive)
                     {
-                        if (_symbolModeActive)
-                        {
-                            if (!string.IsNullOrEmpty(symbolKey))
-                                TextKeyPressed?.Invoke(symbolKey[0]);
-                        }
-                        else
-                        {
-                            TextKeyPressed?.Invoke(key[0]);
-                        }
-                    });
-                }
-                else if (i == keyArray.Length - 5)
-                {
-                    // Delete/Backspace button
-                    (textMeshProButton.transform as RectTransform).sizeDelta = new Vector2(6f, 0f);
-                    (textMeshProButton.transform as RectTransform).anchoredPosition = new Vector2(3f, 0f);
-                    textMeshProButton.button.onClick.AddListener(delegate ()
+                        if (!string.IsNullOrEmpty(symbol))
+                            InvokeTextButtonPressed(symbol[0]);
+                    }
+                    else
                     {
-                        DeleteButtonPressed?.Invoke();
-                    });
-                }
-                else if (i == keyArray.Length - 4)
+                        InvokeTextButtonPressed(key[0]);
+                    }
+                });
+            }
+
+            // create buttons for other stuff
+            // backspace
+            button = CreateKeyboardButton(new Vector2(85f, keySize), new Vector2(22f, 9f), 6f, "Backspace");
+            button.text.text = "<-";
+            button.button.onClick.AddListener(InvokeDeleteButtonPressed);
+
+            // symbols
+            _symbolButton = CreateKeyboardButton(Vector2.zero, new Vector2(20f, 9f), "Symbols");
+            _symbolButton.text.text = "Symbols";
+            _symbolButton.button.onClick.AddListener(() => SetSymbolMode(!_symbolModeActive));
+
+            // spacebar
+            button = CreateKeyboardButton(new Vector2(21f, 0f), new Vector2(44.5f, 9f), "Spacebar");
+            button.text.text = "Space";
+            button.button.onClick.AddListener(() => InvokeTextButtonPressed(' '));
+
+            // to filter
+            _filterButton = CreateKeyboardButton(new Vector2(66.5f, 0f), new Vector2(22f, 9f), "To Filter");
+            _filterButton.text.text = "To\nFilter";
+            _filterButton.text.fontSize = 3.5f;
+
+            Image filterIcon = new GameObject("FilterIcon").AddComponent<Image>();
+            filterIcon.sprite = UIUtilities.LoadSpriteFromResources("EnhancedSearchAndFilters.Assets.filter.png");
+
+            var layout = filterIcon.gameObject.AddComponent<LayoutElement>();
+            layout.preferredWidth = 4;
+            layout.preferredHeight = 4;
+
+            filterIcon.transform.SetParent(_filterButton.text.transform.parent, false);
+
+            var handler = _filterButton.button.gameObject.AddComponent<EnterExitEventHandler>();
+            handler.PointerEntered += () => filterIcon.color = Color.black;
+            handler.PointerExited += () => filterIcon.color = Color.white;
+
+            _filterButton.button.onClick.AddListener(InvokeFilterButtonPressed);
+
+            if (PluginConfig.DisableFilters)
+            {
+                _filterButton.button.interactable = false;
+            }
+            else
+            {
+                BeatmapDetailsLoader.instance.CachingStarted += OnCachingStarted;
+
+                if (!BeatmapDetailsLoader.instance.SongsAreCached)
                 {
-                    // Space key
-                    (textMeshProButton.button.transform as RectTransform).sizeDelta = new Vector2(6f, 0f);
-                    (textMeshProButton.button.transform as RectTransform).anchoredPosition = new Vector2(-3.5f, 0f);
-                    textMeshProButton.button.onClick.AddListener(delegate ()
-                    {
-                        TextKeyPressed?.Invoke(' ');
-                    });
-                }
-                else if (i == keyArray.Length - 3)
-                {
-                    // To Filter key
-                    (textMeshProButton.button.transform as RectTransform).sizeDelta = new Vector2(6f, 0f);
-                    (textMeshProButton.button.transform as RectTransform).anchoredPosition = new Vector2(-18f, -10f);
-
-                    textMeshProButton.text.fontSize = 3.5f;
-
-                    Image filterIcon = new GameObject("FilterIcon").AddComponent<Image>();
-                    filterIcon.sprite = UIUtilities.LoadSpriteFromResources("EnhancedSearchAndFilters.Assets.filter.png");
-
-                    var layout = filterIcon.gameObject.AddComponent<LayoutElement>();
-                    layout.preferredWidth = 4;
-                    layout.preferredHeight = 4;
-
-                    filterIcon.transform.SetParent(textMeshProButton.text.transform.parent, false);
-
-                    var handler = textMeshProButton.button.gameObject.AddComponent<EnterExitEventHandler>();
-                    handler.PointerEntered += () => filterIcon.color = Color.black;
-                    handler.PointerExited += () => filterIcon.color = Color.white;
-
-                    textMeshProButton.button.onClick.AddListener(() => FilterButtonPressed?.Invoke());
-                }
-                else if (i == keyArray.Length - 2)
-                {
-                    // Symbols button
-                    (textMeshProButton.transform as RectTransform).sizeDelta = new Vector2(10f, 0f);
-                    (textMeshProButton.transform as RectTransform).anchoredPosition += new Vector2(-2f, 0f);
-
-                    _symbolButton = textMeshProButton;
-                    _symbolButton.button.onClick.AddListener(delegate ()
-                    {
-                        SetSymbolMode(!_symbolModeActive);
-                    });
-                }
-                else
-                {
-                    // Clear button
-                    (textMeshProButton.transform as RectTransform).sizeDelta = new Vector2(6f, 0);
-                    (textMeshProButton.transform as RectTransform).anchoredPosition += new Vector2(3f, -10f);
-                    textMeshProButton.button.onClick.AddListener(delegate ()
-                    {
-                        ClearButtonPressed?.Invoke();
-                    });
+                    _filterButton.button.interactable = false;
+                    BeatmapDetailsLoader.instance.CachingFinished += OnCachingFinished;
                 }
             }
 
-            // destroy the existing "OK" button
-            Destroy(this.transform.GetChild(28).gameObject);
+            // clear
+            button = CreateKeyboardButton(new Vector2(89.5f, 0f), new Vector2(20f, 9f), "Clear");
+            button.text.text = "Clear";
+            button.button.onClick.AddListener(InvokeClearButtonPressed);
 
             // create buttons for numbers and their respective symbols
-            TextMeshProButton keyButtonPrefab = Resources.FindObjectsOfTypeAll<TextMeshProButton>().First(x => x.name == "KeyboardButton");
-            string[] numSymbolArray = new string[]
-            {
-                "!", "@", "#", "$", "%", "^", "&", "*", "(", ")"
-            };
-
             for (int i = 1; i <= 10; i++)
             {
-                TextMeshProButton textButton = Instantiate(keyButtonPrefab);
+                button = CreateKeyboardButton(new Vector2((i - 1) * keySize + xOffset, keySize * 4), i.ToString());
+
                 string key = i.ToString().Last().ToString();
-                string symbolKey = numSymbolArray[i - 1];
+                string symbol = NumberSymbolArray[i - 1];
                 int index = (i % 10) + 26;
 
                 _keyPairs[index].key = key;
-                _keyPairs[index].symKey = symbolKey;
-                _keyPairs[index].button = textButton;
+                _keyPairs[index].symKey = symbol;
+                _keyPairs[index].button = button;
 
-                textButton.text.text = key;
-                textButton.button.onClick.AddListener(delegate ()
+                button.text.text = key;
+                button.button.onClick.AddListener(delegate ()
                 {
                     if (_symbolModeActive)
-                        TextKeyPressed?.Invoke(symbolKey[0]);
+                        InvokeTextButtonPressed(symbol[0]);
                     else
-                        TextKeyPressed?.Invoke(key[0]);
+                        InvokeTextButtonPressed(key[0]);
                 });
-
-                RectTransform buttonRect = textButton.GetComponent<RectTransform>();
-                RectTransform component2 = this.transform.GetChild(i - 1).gameObject.GetComponent<RectTransform>();
-
-                RectTransform buttonHolder = Instantiate(component2, component2.parent, false);
-                Destroy(buttonHolder.GetComponentInChildren<Button>().gameObject);
-
-                buttonHolder.anchoredPosition -= new Vector2(0f, -10.5f);
-
-                buttonRect.SetParent(buttonHolder, false);
-
-                buttonRect.localPosition = Vector2.zero;
-                buttonRect.localScale = Vector3.one;
-                buttonRect.anchoredPosition = Vector2.zero;
-                buttonRect.anchorMin = Vector2.zero;
-                buttonRect.anchorMax = Vector3.one;
-                buttonRect.offsetMin = Vector2.zero;
-                buttonRect.offsetMax = Vector2.zero;
             }
-
-            name = "EnhancedSearchKeyboard";
         }
 
-        private TextMeshProButton CreateKeyboardButton(int childTransformIndex, bool duplicate = false)
+        private void OnDestroy()
         {
-            RectTransform parent = this.transform.GetChild(childTransformIndex) as RectTransform;
-            TextMeshProButton textMeshProButton = parent.GetComponentInChildren<TextMeshProButton>();
-            if (duplicate)
-                textMeshProButton = Instantiate(textMeshProButton, parent, false);
-
-            RectTransform rectTransform = textMeshProButton.transform as RectTransform;
-            rectTransform.localPosition = Vector2.zero;
-            rectTransform.localScale = Vector3.one;
-            rectTransform.anchoredPosition = Vector2.zero;
-            rectTransform.anchorMin = Vector2.zero;
-            rectTransform.anchorMax = Vector3.one;
-            rectTransform.offsetMin = Vector2.zero;
-            rectTransform.offsetMax = Vector2.zero;
-            Navigation navigation = textMeshProButton.button.navigation;
-            navigation.mode = Navigation.Mode.None;
-            textMeshProButton.button.navigation = navigation;
-            textMeshProButton.button.onClick.RemoveAllListeners();
-            return textMeshProButton;
+            BeatmapDetailsLoader.instance.CachingStarted -= OnCachingStarted;
         }
 
         private void SetSymbolMode(bool useSymbols)
@@ -276,6 +280,19 @@ namespace EnhancedSearchAndFilters.UI.Components
         public void ResetSymbolMode()
         {
             SetSymbolMode(false);
+        }
+
+        private void OnCachingStarted()
+        {
+            if (_filterButton != null)
+                _filterButton.button.interactable = false;
+            BeatmapDetailsLoader.instance.CachingFinished += OnCachingFinished;
+        }
+
+        private void OnCachingFinished()
+        {
+            _filterButton.button.interactable = true;
+            BeatmapDetailsLoader.instance.CachingFinished -= OnCachingFinished;
         }
     }
 }
