@@ -63,7 +63,11 @@ namespace EnhancedSearchAndFilters.Utilities
 
                     if (mapping.ContainsValue(escapeCharCode))
                     {
-                        sb.Replace($"{escapeChar}{escapeCharCode}", mapping.First(kv => kv.Value == escapeCharCode).Key.ToString(), i, 1);
+                        sb.Replace($"{escapeChar}{escapeCharCode}", mapping.First(kv => kv.Value == escapeCharCode).Key.ToString(), i, 2);
+                    }
+                    else if (escapeCharCode == escapeChar)
+                    {
+                        sb.Replace($"{escapeChar}{escapeChar}", escapeChar.ToString(), i, 2);
                     }
                     else
                     {
