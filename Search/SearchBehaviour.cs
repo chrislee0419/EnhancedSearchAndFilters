@@ -106,16 +106,19 @@ namespace EnhancedSearchAndFilters.Search
         /// </summary>
         /// <param name="searchSpace">A list of songs to search through.</param>
         /// <param name="searchQuery">The search term that all returned songs should contain.</param>
+        /// <param name="overrideStripSymbols">Strip symbols from the query and search space fields. Set as null to use config settings.</param>
+        /// <param name="overrideSplitWords">Split a query into separate words. Set as null to use config settings.</param>
+        /// <param name="overrideSongFields">Fields of a beatmap to search for the query. Set as null to use config settings.</param>
         /// <returns>A list of songs that contain the provided search term.</returns>
-        public List<IPreviewBeatmapLevel> StartInstantSearch(IEnumerable<IPreviewBeatmapLevel> searchSpace, string searchQuery)
+        public List<IPreviewBeatmapLevel> StartInstantSearch(IEnumerable<IPreviewBeatmapLevel> searchSpace, string searchQuery, bool? overrideStripSymbols = null, bool? overrideSplitWords = null, SearchableSongFields? overrideSongFields = null)
         {
             if (searchSpace == null || string.IsNullOrEmpty(searchQuery))
                 return searchSpace?.ToList() ?? new List<IPreviewBeatmapLevel>(0);
 
             string[] queryWords;
-            bool stripSymbols = PluginConfig.StripSymbols;
-            bool splitWords = PluginConfig.SplitQueryByWords;
-            SearchableSongFields songFields = PluginConfig.SongFieldsToSearch;
+            bool stripSymbols = overrideStripSymbols.HasValue ? overrideStripSymbols.Value : PluginConfig.StripSymbols;
+            bool splitWords = overrideSplitWords.HasValue ? overrideSplitWords.Value : PluginConfig.SplitQueryByWords;
+            SearchableSongFields songFields = overrideSongFields.HasValue ? overrideSongFields.Value : PluginConfig.SongFieldsToSearch;
 
             if (stripSymbols)
                 searchQuery = RemoveSymbolsRegex.Replace(searchQuery.ToLower(), string.Empty);
