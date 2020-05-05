@@ -250,7 +250,8 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
             if (_applyAnimation != null)
                 return;
 
-            StartCoroutine(QuickFilterAppliedAnimationCoroutine());
+            _applyAnimation = QuickFilterAppliedAnimationCoroutine();
+            StartCoroutine(_applyAnimation);
 
             // let the installed delegate handle applying the quick filter
             if (_currentQuickFilter != null)
