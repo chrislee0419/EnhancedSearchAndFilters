@@ -127,14 +127,11 @@ namespace EnhancedSearchAndFilters.Search
             else
                 queryWords = new string[] { searchQuery };
 
-            List<IPreviewBeatmapLevel> filteredSearchSpace = new List<IPreviewBeatmapLevel>(searchSpace.Count());
-            foreach (var level in searchSpace)
-            {
-                if (CheckSong(level, stripSymbols, splitWords, songFields, queryWords))
-                    filteredSearchSpace.Add(level);
-            }
-
-            return filteredSearchSpace;
+            return searchSpace
+                .AsParallel()
+                .Where(level => CheckSong(level, stripSymbols, splitWords, songFields, queryWords))
+                .AsSequential()
+                .ToList();
         }
 
         public void StopSearch()
