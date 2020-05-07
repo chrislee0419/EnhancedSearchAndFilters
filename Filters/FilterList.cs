@@ -39,6 +39,7 @@ namespace EnhancedSearchAndFilters.Filters
 
         private static readonly IFilter[] DefaultFilters =
         {
+            new SearchFilter(),
             new DifficultyFilter(),
             new DurationFilter(),
             new NoteDensityFilter(),

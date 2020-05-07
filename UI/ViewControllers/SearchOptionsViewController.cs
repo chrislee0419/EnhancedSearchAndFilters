@@ -23,7 +23,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         [UIValue("max-results-max-value")]
         public int MaxResultsShownMaxValue { get => PluginConfig.MaxSearchResultsUnlimitedValue; }
         [UIValue("song-fields-options")]
-        public List<object> SongFieldsOptions { get => Enum.GetValues(typeof(SearchableSongFields)).Cast<SearchableSongFields>().Select(x => (object)x).ToList(); }
+        public static List<object> SongFieldsOptions { get => Enum.GetValues(typeof(SearchableSongFields)).Cast<SearchableSongFields>().Select(x => (object)x).ToList(); }
 
         private int _maxResultsShownStagingValue = PluginConfig.MaxSearchResults;
         [UIValue("max-results-value")]
@@ -137,18 +137,18 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             "<color=#11FF11>A lower number is less distracting and only displays results when most irrelevant songs are removed.</color>\n" +
             "<color=#FFFF11>You can force a search result to be shown using the button on the center screen.</color>";
         [UIValue("split-query-hover-hint")]
-        private const string SplitQueryHoverHintText =
+        public const string SplitQueryHoverHintText =
             "Split up the search query into words and searches the song details for those words individually. " +
             "A song will only appear in the results if it contains all the words typed.\n" +
             "<color=#11FF11>'ON' - For when you know some words or names in the song details, but not the specific order.</color>\n" +
             "<color=#11FF11>'OFF' - Useful if you want to search for a particular phrase.</color>";
         [UIValue("song-fields-hover-hint")]
-        private const string SongFieldsHoverHintText =
+        public const string SongFieldsHoverHintText =
             "A query will only search in these particular details of a song.\n" +
             "<color=#11FF11>Can get relevant results quicker if you never search for song artist or beatmap creator.</color>\n" +
             "Options - 'All', 'Title and Author', 'Title Only'";
         [UIValue("strip-symbols-hover-hint")]
-        private const string StripSymbolsHoverHintText =
+        public const string StripSymbolsHoverHintText =
             "Remove symbols from song title, subtitle, artist, etc. fields when performing search.\n" +
             "<color=#11FF11>Can be useful when searching for song remixes and titles with apostrophes, quotations, or hyphens.</color>";
         [UIValue("compact-mode-hover-hint")]
@@ -171,7 +171,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         private string MaxResultsFormatter(int value) => value == PluginConfig.MaxSearchResultsUnlimitedValue ? "Unlimited" : value.ToString();
 
         [UIAction("song-fields-formatter")]
-        private string SongFieldsFormatter(object value)
+        public static string SongFieldsFormatter(object value)
         {
             switch ((SearchableSongFields)value)
             {

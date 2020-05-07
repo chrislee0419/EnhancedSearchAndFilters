@@ -1,0 +1,54 @@
+﻿<bg id="container"
+    anchor-min-x="0" anchor-min-y="0"
+    anchor-max-x="1" anchor-max-y="1"
+    size-delta-x="0" size-delta-y="0"
+    anchor-pos-x="0" anchor-pos-y="0"
+    xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+    xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
+  <button id='settings-button'
+          font-size='4'
+          stroke-type='Clean'
+          on-click='settings-button-clicked'
+          anchor-min-x='0' anchor-min-y='0'
+          anchor-max-x='0' anchor-max-y='0'
+          preferred-width='22' preferred-height='10'
+          pivot-x='0' pivot-y='0'
+          anchor-pos-x='4' anchor-pos-y='4'
+          pad='1' />
+
+  <bg id='settings-view'
+      anchor-min-x='0' anchor-min-y='0'
+      anchor-max-x='1' anchor-max-y='1'
+      size-delta-x='0' size-delta-y='0'
+      anchor-pos-x='0' anchor-pos-y='0'>
+    <bool-setting text='Search Each Word Individually'
+                  hover-hint='~split-query-hover-hint'
+                  value='split-query-value'
+                  get-event='refresh-values'
+                  apply-on-change='true'
+                  anchor-min-x='0' anchor-min-y='1'
+                  anchor-max-x='1' anchor-max-y='1'
+                  size-delta-x='-30' size-delta-y='12'
+                  anchor-pos-x='0' anchor-pos-y='-9' />
+    <list-setting text='Song Fields to Search'
+                  hover-hint='~song-fields-hover-hint'
+                  value='song-fields-value'
+                  get-event='refresh-values'
+                  options='song-fields-options'
+                  apply-on-change='true'
+                  formatter='song-fields-formatter'
+                  anchor-min-x='0' anchor-min-y='1'
+                  anchor-max-x='1' anchor-max-y='1'
+                  size-delta-x='-30' size-delta-y='12'
+                  anchor-pos-x='0' anchor-pos-y='-21' />
+    <bool-setting text="Strip Symbols from Song Details"
+                  hover-hint="~strip-symbols-hover-hint"
+                  value="strip-symbols-value"
+                  get-event="refresh-values"
+                  apply-on-change="true"
+                  anchor-min-x='0' anchor-min-y='1'
+                  anchor-max-x='1' anchor-max-y='1'
+                  size-delta-x='-30' size-delta-y='12'
+                  anchor-pos-x='0' anchor-pos-y='-33' />
+  </bg>
+</bg>

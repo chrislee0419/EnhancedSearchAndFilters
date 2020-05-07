@@ -56,4 +56,6 @@ Cross icon made by [Silviu Runceanu](https://www.flaticon.com/authors/silviu-run
 
 Garbage can icon made by [Those Icons](https://www.flaticon.com/authors/those-icons) from [www.flaticon.com](https://www.flaticon.com/) (modified with colours inverted and gap widened).
 
-Shuffle icon made by [Freepik](https://www.flaticon.com/authors/freepik) from [www.flaticon.com](https://www.flaticon.com/).
+Shuffle icon made by [Freepik](https://www.flaticon.com/authors/freepik) from [www.flaticon.com](https://www.flaticon.com/) (modified with colours inverted).
+
+Filter icon made by [Freepik](https://www.flaticon.com/authors/freepik) from [www.flaticon.com](https://www.flaticon.com/) (modified with colours inverted).
