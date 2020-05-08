@@ -189,7 +189,9 @@ namespace EnhancedSearchAndFilters.Filters
             _keyboard.TextButtonPressed += key => QueryStagingValue += key;
 
             // text
-            _text = BeatSaberUI.CreateText(rt2, PlaceholderText, new Vector2(0f, 24f));
+            _text = BeatSaberUI.CreateText(rt2,
+                string.IsNullOrEmpty(QueryStagingValue) ? PlaceholderText : QueryStagingValue.ToUpper().EscapeTextMeshProTags() + CursorText,
+                new Vector2(0f, 24f));
             _text.enableWordWrapping = false;
             _text.fontSize = 6f;
             _text.alignment = TextAlignmentOptions.Center;
