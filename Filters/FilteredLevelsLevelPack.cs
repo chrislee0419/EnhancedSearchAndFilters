@@ -47,10 +47,9 @@ namespace EnhancedSearchAndFilters.Filters
         /// </summary>
         /// <param name="filteredLevels">Levels that have already been filtered</param>
         /// <param name="sortSongs">Sort the songs before storing.</param>
-        public void SetupFromPrefilteredLevels(IPreviewBeatmapLevel[] filteredLevels, bool sortSongs = true)
+        public void SetupFromPrefilteredLevels(IPreviewBeatmapLevel[] filteredLevels, Sprite coverImage = null, bool sortSongs = true)
         {
-            if (coverImage == null)
-                coverImage = UIUtilities.DefaultCoverImage;
+            this.coverImage = coverImage != null ? coverImage : UIUtilities.DefaultCoverImage;
 
             if (sortSongs)
                 filteredLevels = SongSortModule.SortSongs(filteredLevels);

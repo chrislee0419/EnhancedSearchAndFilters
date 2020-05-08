@@ -668,7 +668,7 @@ namespace EnhancedSearchAndFilters.UI
 
             // the filter view controller is always provided a default-sorted array of levels,
             // so we apply sorting here
-            _filteredLevelPack.SetupFromPrefilteredLevels(levels);
+            _filteredLevelPack.SetupFromPrefilteredLevels(levels, _lastPack.coverImage);
             _levelsToApply = _filteredLevelPack;
 
             ButtonPanel.instance.SetFilterStatus(true);
