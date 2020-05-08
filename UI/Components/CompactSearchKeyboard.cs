@@ -140,7 +140,11 @@ namespace EnhancedSearchAndFilters.UI.Components
 
             (_filterButton.text.transform.parent as RectTransform).sizeDelta += new Vector2(0f, 1.5f);
 
-            _filterButton.button.onClick.AddListener(InvokeFilterButtonPressed);
+            _filterButton.button.onClick.AddListener(delegate ()
+            {
+                filterIcon.color = Color.white;
+                InvokeFilterButtonPressed();
+            });
 
             if (PluginConfig.DisableFilters)
             {

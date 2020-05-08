@@ -200,7 +200,11 @@ namespace EnhancedSearchAndFilters.UI.Components
             handler.PointerEntered += () => filterIcon.color = Color.black;
             handler.PointerExited += () => filterIcon.color = Color.white;
 
-            _filterButton.button.onClick.AddListener(InvokeFilterButtonPressed);
+            _filterButton.button.onClick.AddListener(delegate ()
+            {
+                filterIcon.color = Color.white;
+                InvokeFilterButtonPressed();
+            });
 
             if (PluginConfig.DisableFilters)
             {
