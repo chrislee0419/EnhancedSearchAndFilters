@@ -34,6 +34,8 @@ namespace EnhancedSearchAndFilters.Filters
             }
         }
 
+        internal static SearchFilter SearchFilter => CurrentFilterList.FirstOrDefault(f => f is SearchFilter) as SearchFilter;
+
         public static bool AnyApplied => CurrentFilterList.Any(x => x.IsFilterApplied);
         public static bool AnyChanged => CurrentFilterList.Any(x => x.HasChanges);
 

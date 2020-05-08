@@ -74,7 +74,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             parentFlowCoordinator.InvokeMethod("PresentFlowCoordinator", new object[] { this, loadBeatmaps, false, false });
         }
 
-        private void RefreshUI()
+        internal void RefreshUI()
         {
             bool anyAppliedNoChanges = FilterList.ActiveFilters.Any(x => x.Status == FilterStatus.Applied);
             bool anyChanged = FilterList.AnyChanged;

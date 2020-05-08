@@ -275,6 +275,7 @@ namespace EnhancedSearchAndFilters.UI
 
                 _searchFlowCoordinator.BackButtonPressed += DismissSearchFlowCoordinator;
                 _searchFlowCoordinator.SongSelected += SelectSongFromSearchResult;
+                _searchFlowCoordinator.SearchFilterButtonPressed += ApplySearchFilter;
             }
 
             IAnnotatedBeatmapLevelCollection levelPack;
@@ -662,6 +663,48 @@ namespace EnhancedSearchAndFilters.UI
             Logger.log.Debug($"Level selected from search: {level.songName} {level.songSubName} - {level.songAuthorName}");
             DismissSearchFlowCoordinator();
             SelectLevel(level);
+        }
+
+        private void ApplySearchFilter(string searchQuery)
+        {
+            SearchFilter filter = FilterList.SearchFilter;
+
+            if (filter == null)
+            {
+                // this should never happen
+                Logger.log.Error("Unable to apply search filter (SearchFilter object doesn't exist)");
+                return;
+            }
+
+            filter.QueryStagingValue = searchQuery;
+            filter.SplitQueryStagingValue = PluginConfig.SplitQueryByWords;
+            filter.SongFieldsStagingValue = PluginConfig.SongFieldsToSearch;
+            filter.StripSymbolsStagingValue = PluginConfig.StripSymbols;
+            filter.ApplyStagingValues();
+
+            if (_filterFlowCoordinator != null)
+                _filterFlowCoordinator.RefreshUI();
+
+            _freePlayFlowCoordinator.InvokeMethod("DismissFlowCoordinator", _searchFlowCoordinator, null, false);
+
+            if (SongBrowserTweaks.Initialized)
+            {
+                SongBrowserTweaks.ApplyFilters();
+            }
+            else
+            {
+                ButtonPanel.instance.SetFilterStatus(true);
+                ButtonPanel.instance.ShowPanel();
+
+                _filteredLevelPack.SetupFromUnfilteredLevels(_lastPack.beatmapLevelCollection.beatmapLevels, _lastPack.coverImage, false);
+                LevelSelectionNavigationController.SetData(
+                    _filteredLevelPack,
+                    true,
+                    LevelSelectionNavigationController.GetPrivateField<bool>("_showPlayerStatsInDetailView"),
+                    LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView"));
+
+                _uiAdditions.RefreshPageButtons();
+            }
         }
 
         private void FilterFlowCoordinatorSetFilteredSongs(IPreviewBeatmapLevel[] levels)

@@ -298,6 +298,12 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 
         private void KeyboardFilterButtonPressed()
         {
+            _lastSearchQuery = _searchQuery;
+
+            SearchBehaviour.Instance.StopSearch();
+            _searchResultsListViewController.UpdateSongs(new IPreviewBeatmapLevel[0]);
+            PopAllViewControllersFromNavigationController(true);
+
             SearchFilterButtonPressed?.Invoke(_searchQuery);
         }
 
