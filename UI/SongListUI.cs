@@ -277,7 +277,13 @@ namespace EnhancedSearchAndFilters.UI
                 _searchFlowCoordinator.SongSelected += SelectSongFromSearchResult;
             }
 
-            _searchFlowCoordinator.Activate(_freePlayFlowCoordinator, _lastPack);
+            IAnnotatedBeatmapLevelCollection levelPack;
+            if (FilterList.AnyApplied)
+                levelPack = _filteredLevelPack;
+            else
+                levelPack = _lastPack;
+
+            _searchFlowCoordinator.Activate(_freePlayFlowCoordinator, levelPack);
 
             if (!ButtonPanel.IsSingletonAvailable || !ButtonPanel.instance.Initialized)
                 Logger.log.Debug("'Search' button pressed.");
