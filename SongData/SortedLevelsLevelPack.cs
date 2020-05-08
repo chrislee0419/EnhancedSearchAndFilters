@@ -31,6 +31,9 @@ namespace EnhancedSearchAndFilters.SongData
                 return levelPack;
 
             packID = levelPack.packID + PackIDSuffix;
+            if (!packID.StartsWith(CustomLevelLoader.kCustomLevelPackPrefixId))
+                packID = CustomLevelLoader.kCustomLevelPackPrefixId + packID;
+
             packName = levelPack.packName;
             shortPackName = levelPack.shortPackName + PackIDSuffix;
             coverImage = levelPack.coverImage;
@@ -50,7 +53,7 @@ namespace EnhancedSearchAndFilters.SongData
             if (levelCollection is IBeatmapLevelPack levelPack)
                 return SetupFromLevelPack(levelPack);
 
-            packID = PackIDSuffix;
+            packID = CustomLevelLoader.kCustomLevelPackPrefixId + PackIDSuffix;
             packName = PackName;
             shortPackName = levelCollection.collectionName + PackIDSuffix;
             coverImage = levelCollection.coverImage;
@@ -67,7 +70,7 @@ namespace EnhancedSearchAndFilters.SongData
         /// <returns>Returns this instance.</returns>
         public IBeatmapLevelPack SetupFromLevels(IEnumerable<IPreviewBeatmapLevel> levels)
         {
-            packID = PackIDSuffix;
+            packID = CustomLevelLoader.kCustomLevelPackPrefixId + PackIDSuffix;
             packName = PackName;
             shortPackName = PackIDSuffix;
             coverImage = UIUtilities.DefaultCoverImage;

@@ -17,7 +17,7 @@ namespace EnhancedSearchAndFilters.Filters
         private BeatmapLevelCollection _beatmapLevelCollection = new BeatmapLevelCollection(new IPreviewBeatmapLevel[0]);
         public IBeatmapLevelCollection beatmapLevelCollection => _beatmapLevelCollection;
 
-        public const string PackID = "EnhancedSearchAndFiltersCustomLevelPack";
+        public const string PackID = CustomLevelLoader.kCustomLevelPackPrefixId + "EnhancedSearchAndFiltersCustomLevelPack";
         public const string PackName = "Filtered Songs";
         public const string CollectionName = "ESAFFiltered";
 
