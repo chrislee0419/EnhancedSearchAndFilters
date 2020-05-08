@@ -85,30 +85,22 @@ namespace EnhancedSearchAndFilters.UI
                 _freePlayFlowCoordinator = FindObjectOfType<SoloFreePlayFlowCoordinator>();
                 (_freePlayFlowCoordinator as SoloFreePlayFlowCoordinator).didFinishEvent += OnFreePlayFlowCoordinatorFinished;
 
+                PrepareLevelPackSelectedEvent();
                 if (!SongBrowserTweaks.ModLoaded)
-                {
-                    PrepareLevelPackSelectedEvent();
                     StartCoroutine(UIUtilities.DelayedAction(SelectSavedLevelPack));
-                }
                 else if (!SongBrowserTweaks.Initialized)
-                {
                     StartCoroutine(GetSongBrowserButtons());
-                }
             }
             else if (mode == FreePlayMode.Party)
             {
                 _freePlayFlowCoordinator = FindObjectOfType<PartyFreePlayFlowCoordinator>();
                 (_freePlayFlowCoordinator as PartyFreePlayFlowCoordinator).didFinishEvent += OnFreePlayFlowCoordinatorFinished;
 
+                PrepareLevelPackSelectedEvent();
                 if (!SongBrowserTweaks.ModLoaded)
-                {
-                    PrepareLevelPackSelectedEvent();
                     StartCoroutine(UIUtilities.DelayedAction(SelectSavedLevelPack));
-                }
                 else if (!SongBrowserTweaks.Initialized)
-                {
                     StartCoroutine(GetSongBrowserButtons());
-                }
             }
             else if (mode == FreePlayMode.Campaign)
             {
@@ -121,8 +113,8 @@ namespace EnhancedSearchAndFilters.UI
 
         private void PrepareLevelPackSelectedEvent()
         {
-            // we don't need the LevelPackSelected event if using SongBrowser, since it passes the songs it needs filtered
-            // directly to us (so we don't need to store last pack at all)
+            // we still need this delegate when using SongBrowser, since the WordPredictionEngine now uses IAnnotatedBeatmapLevelCollections,
+            // which aren't stored by the LevelFilteringNavigationController
             _isSelectingInitialLevelPack = true;
             LevelFilteringNavigationController = _freePlayFlowCoordinator.GetPrivateField<LevelFilteringNavigationController>("_levelFilteringNavigationController", typeof(LevelSelectionFlowCoordinator));
             LevelFilteringNavigationController.didSelectAnnotatedBeatmapLevelCollectionEvent -= LevelPackSelected;
@@ -561,13 +553,19 @@ namespace EnhancedSearchAndFilters.UI
                 _isSelectingInitialLevelPack = false;
                 return;
             }
-
             // in ConfirmDeleteButtonClicked, the call to SongCore.Loader.Instance.DeleteSong will reload the level packs
             // which causes the custom level pack to be re-selected. but, if filters are applied or level pack is sorted,
             // we want to reshow our own filtered/sorted level pack and not reset our UI, so we don't have to handle this event
             // this code is kinda smelly tbh, but can't do anything about it unless there are changes to SongCore
-            if (_isDeletingSongInModOwnedLevelPack)
+            else if (_isDeletingSongInModOwnedLevelPack)
+            {
                 return;
+            }
+            // when SongBrowser is enabled, we only need to store the pack for the WordPredictionEngine when using the search feature
+            else if (SongBrowserTweaks.Initialized)
+            {
+                _lastPack = levelPack;
+            }
 
             if (levelPack.collectionName != FilteredLevelsLevelPack.CollectionName)
             {
