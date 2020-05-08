@@ -40,7 +40,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         private CancellationTokenSource _cancellationTokenSource;
 
         [UIValue("results-text-placeholder")]
-        private const string _placeholderResultsText = "Use the keyboard on the right screen\nto search for a song.\n\n---->";
+        private const string PlaceholderResultsText = "Use the keyboard on the right screen\nto search for a song.\n\n---->";
 
         private static readonly Vector2 ResultsTextDefaultAnchoredPosition = Vector2.zero;
         private static readonly Vector2 ResultsTextDefaultSizeDelta = new Vector2(120f, 40f);
@@ -75,7 +75,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             }
             else
             {
-                _resultsText.text = _placeholderResultsText;
+                _resultsText.text = PlaceholderResultsText;
                 _resultsText.fontSize = 6f;
             }
 
@@ -114,7 +114,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _lastSearchButton.gameObject.SetActive(false);
             _lastSearchText.gameObject.SetActive(false);
 
-            _resultsText.text = _placeholderResultsText;
+            _resultsText.text = PlaceholderResultsText;
             _resultsText.gameObject.SetActive(true);
             SetHeaderActive(true);
         }
@@ -125,9 +125,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
             string color = searchResultsList.Count() > 0 ? "#FFFF55" : "#FF2222";
 
-            // NOTE: unsanitized user input (Pog)
             _resultsText.text = $"<color={color}>{searchResultsList.Count()} out of {searchSpaceSize}</color> beatmaps\n" +
-                $"contain the text \"<color=#11FF11>{searchQuery}</color>\"";
+                $"contain the text \"<color=#11FF11>{searchQuery.EscapeTextMeshProTags()}</color>\"";
             _resultsText.gameObject.SetActive(true);
 
             _forceButton.interactable = searchResultsList.Any() ? true : false;
@@ -191,7 +190,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _lastSearchText.gameObject.SetActive(show);
 
             if (show && lastQuery != null)
-                _lastSearchText.SetText($"<line-height=85%><u>Last Search</u>\n</line-height><color=#FFFFCC>\"{lastQuery}\"</color>");
+                _lastSearchText.SetText($"<line-height=85%><u>Last Search</u>\n</line-height><color=#FFFFCC>\"{lastQuery.EscapeTextMeshProTags()}\"</color>");
         }
 
         /// <summary>

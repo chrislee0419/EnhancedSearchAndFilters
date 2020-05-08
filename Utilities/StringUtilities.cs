@@ -83,5 +83,15 @@ namespace EnhancedSearchAndFilters.Utilities
 
             return sb;
         }
+
+        /// <summary>
+        /// Sanitize user input of TextMeshPro tags.
+        /// </summary>
+        /// <param name="s">A <see cref="string"/> containing user input.</param>
+        /// <returns>Sanitized <see cref="string"/>.</returns>
+        public static string EscapeTextMeshProTags(this string s)
+        {
+            return new StringBuilder(s).Replace("<", "<\u200B").Replace(">", "\u200B>").ToString();
+        }
     }
 }

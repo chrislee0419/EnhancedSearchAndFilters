@@ -7,6 +7,7 @@ using TMPro;
 using HMUI;
 using UEImage = UnityEngine.UI.Image;
 using BS_Utils.Utilities;
+using EnhancedSearchAndFilters.Utilities;
 
 namespace EnhancedSearchAndFilters.UI.ViewControllers
 {
@@ -180,8 +181,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 contributorsText = (string.IsNullOrEmpty(level.songAuthorName) ? "" : " ") + contributorsText;
             }
 
-            tableCell.GetPrivateField<TextMeshProUGUI>("_songNameText").text = $"{level.songName} <size=80%>{level.songSubName}</size>";
-            tableCell.GetPrivateField<TextMeshProUGUI>("_authorText").text = $"{level.songAuthorName}<size=80%>{contributorsText}</size>";
+            tableCell.GetPrivateField<TextMeshProUGUI>("_songNameText").text = $"{level.songName.EscapeTextMeshProTags()} <size=80%>{level.songSubName.EscapeTextMeshProTags()}</size>";
+            tableCell.GetPrivateField<TextMeshProUGUI>("_authorText").text = $"{level.songAuthorName.EscapeTextMeshProTags()}<size=80%>{contributorsText.EscapeTextMeshProTags()}</size>";
             tableCell.SetPrivateField("_bought", true);
 
             // black placeholder image

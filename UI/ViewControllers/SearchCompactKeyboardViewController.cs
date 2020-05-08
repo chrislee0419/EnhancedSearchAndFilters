@@ -4,6 +4,7 @@ using TMPro;
 using HMUI;
 using BeatSaberMarkupLanguage;
 using EnhancedSearchAndFilters.UI.Components;
+using EnhancedSearchAndFilters.Utilities;
 using SuggestionType = EnhancedSearchAndFilters.Search.SuggestedWord.SuggestionType;
 
 namespace EnhancedSearchAndFilters.UI.ViewControllers
@@ -63,7 +64,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 _keyboard.TextButtonPressed += delegate (char key)
                 {
                     _searchText += key.ToString();
-                    _textDisplayComponent.text = _searchText.ToUpper() + CursorText;
+                    SetDisplayedText(_searchText);
 
                     _predictionBar.ClearAndSetPredictionButtons(_searchText);
 
@@ -74,15 +75,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                     if (_searchText.Length > 0)
                         _searchText = _searchText.Substring(0, _searchText.Length - 1);
 
-                    if (_searchText.Length > 0)
-                    {
-                        _textDisplayComponent.text = _searchText.ToUpper() + CursorText;
-                    }
-                    else
-                    {
-                        _textDisplayComponent.text = PlaceholderText;
-                    }
-
+                    SetDisplayedText(_searchText);
                     _predictionBar.ClearAndSetPredictionButtons(_searchText);
 
                     DeleteButtonPressed?.Invoke();
@@ -114,7 +107,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         public void SetText(string text)
         {
             _searchText = text;
-            _textDisplayComponent.text = string.IsNullOrEmpty(text) ? PlaceholderText : (text.ToUpper() + CursorText);
+            SetDisplayedText(text);
 
             _predictionBar.ClearAndSetPredictionButtons(_searchText);
         }
@@ -127,6 +120,11 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _keyboard.SymbolButtonInteractivity = isInteractive;
             if (!isInteractive)
                 _keyboard.ResetSymbolMode();
+        }
+
+        private void SetDisplayedText(string text)
+        {
+            _textDisplayComponent.text = string.IsNullOrEmpty(text) ? PlaceholderText : (text.ToUpper().EscapeTextMeshProTags() + CursorText);
         }
     }
 }

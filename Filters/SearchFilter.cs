@@ -311,7 +311,7 @@ namespace EnhancedSearchAndFilters.Filters
                 if (string.IsNullOrEmpty(QueryStagingValue))
                     _text.SetText(PlaceholderText);
                 else
-                    _text.SetText(QueryStagingValue.ToUpper() + CursorText);
+                    _text.SetText(QueryStagingValue.ToUpper().EscapeTextMeshProTags() + CursorText);
             }
         }
 
