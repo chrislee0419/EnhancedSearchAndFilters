@@ -17,15 +17,15 @@
   <custom-list id="filter-list"
                contents="filter-cell-list"
                list-direction="Vertical"
-               list-width="48"
+               list-width="56"
                cell-size="8"
                clickable-cells="true"
                active="~filter-list-active"
                select-cell="filter-cell-selected"
                anchor-min-x="1" anchor-min-y="0"
                anchor-max-x="1" anchor-max-y="1"
-               size-delta-x="48" size-delta-y="-24"
-               anchor-pos-x="-42" anchor-pos-y="0">
+               size-delta-x="56" size-delta-y="-34"
+               anchor-pos-x="-38" anchor-pos-y="0">
     <raw-image id='hovered-image'
             tags='hovered'
             anchor-min-x='0' anchor-min-y='0'
@@ -39,8 +39,8 @@
     <raw-image id='status-image'
             anchor-min-x='0' anchor-min-y='0'
             anchor-max-x='0' anchor-max-y='1'
-            size-delta-x='3' size-delta-y='0'
-            anchored-pos-x='1.5' anchored-pos-y='0' />
+            size-delta-x='2' size-delta-y='0'
+            anchor-pos-x='1' anchor-pos-y='0' />
     <text id='text'
           text=''
           font-align='Left'
@@ -48,19 +48,19 @@
           anchor-min-x='0' anchor-min-y='0'
           anchor-max-x='1' anchor-max-y='1'
           size-delta-x='-5' size-delta-y='0'
-          anchored-pos-x='1' anchored-pos-y='0' />
+          anchor-pos-x='1' anchor-pos-y='0' />
   </custom-list>
   <page-button direction='Up'
-               preferred-width='6' preferred-height="6"
+               preferred-width='48' preferred-height="6"
                anchor-min-x="1" anchor-min-y="1"
                anchor-max-x="1" anchor-max-y="1"
-               anchor-pos-x="-13" anchor-pos-y="-14"
+               anchor-pos-x="-38" anchor-pos-y="-13"
                click-event="filter-list#PageUp"/>
   <page-button direction='Down'
-               preferred-width='6' preferred-height="6"
+               preferred-width='48' preferred-height="6"
                anchor-min-x="1" anchor-min-y="0"
                anchor-max-x="1" anchor-max-y="0"
-               anchor-pos-x="-13" anchor-pos-y="16"
+               anchor-pos-x="-38" anchor-pos-y="13"
                click-event="filter-list#PageDown"/>
   <!-- tutorial modal -->
   <button text="Filters Tutorial"
@@ -69,7 +69,7 @@
           anchor-min-x="1" anchor-min-y="0"
           anchor-max-x="1" anchor-max-y="0"
           preferred-width="40" preferred-height="7"
-          anchor-pos-x="-38" anchor-pos-y="6"
+          anchor-pos-x="-38" anchor-pos-y="5.5"
           pad="1"
           on-click="tutorial-button-clicked" />
   <modal id="tutorial-modal"
@@ -99,7 +99,7 @@
             anchor-pos-x="25" anchor-pos-y="-29"
             pad="1" spacing="2">
     <vertical child-align="UpperCenter"
-              expand-width="true"
+              child-expand-width="true"
               preferred-height="20"
               vertical-fit="PreferredSize"
               active="~quick-filter-section-active"
