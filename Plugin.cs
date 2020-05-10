@@ -37,7 +37,8 @@ namespace EnhancedSearchAndFilters
         {
             SceneManager.activeSceneChanged += OnActiveSceneChanged;
 
-            BSEvents.menuSceneLoadedFresh += OnMenuSceneLoadedFresh;
+            BSEvents.earlyMenuSceneLoadedFresh += OnEarlyMenuSceneLoadedFresh;
+            BSEvents.lateMenuSceneLoadedFresh += OnLateMenuSceneLoadedFresh;
             BSEvents.levelSelected += OnLevelSelected;
             Loader.DeletingSong += SongCoreLoaderDeletingSong;
             Loader.LoadingStartedEvent += SongCoreLoaderLoadingStarted;
@@ -77,7 +78,7 @@ namespace EnhancedSearchAndFilters
             }
         }
 
-        private void OnMenuSceneLoadedFresh()
+        private void OnEarlyMenuSceneLoadedFresh(ScenesTransitionSetupDataSO setupData)
         {
 #pragma warning disable CS0618 // remove PluginManager.Plugins is obsolete warning
             SongBrowserTweaks.ModLoaded = IPAPluginManager.GetPluginFromId("SongBrowser") != null || IPAPluginManager.GetPlugin("Song Browser") != null || IPAPluginManager.Plugins.Any(x => x.Name == "Song Browser");
@@ -96,7 +97,12 @@ namespace EnhancedSearchAndFilters
             // reset initialization status if settings were applied
             SongBrowserTweaks.Initialized = false;
 
-            SongListUI.instance.OnMenuSceneLoadedFresh();
+            SongListUI.instance.OnEarlyMenuSceneLoadedFresh();
+        }
+
+        private void OnLateMenuSceneLoadedFresh(ScenesTransitionSetupDataSO setupData)
+        {
+            SongListUI.instance.OnLateMenuSceneLoadedFresh();
         }
 
         private void OnLevelSelected(LevelCollectionViewController _, IPreviewBeatmapLevel level)

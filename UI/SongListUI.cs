@@ -43,7 +43,7 @@ namespace EnhancedSearchAndFilters.UI
         public LevelSelectionNavigationController LevelSelectionNavigationController { get; private set; } = null;
         public LevelFilteringNavigationController LevelFilteringNavigationController { get; private set; } = null;
 
-        public void OnMenuSceneLoadedFresh()
+        public void OnEarlyMenuSceneLoadedFresh()
         {
             // get view controller which will contain our buttons
             RectTransform viewControllersContainer = FindObjectsOfType<RectTransform>().First(x => x.name == "ViewControllers");
@@ -51,6 +51,11 @@ namespace EnhancedSearchAndFilters.UI
             _levelCollectionTableView = viewControllersContainer.GetComponentInChildren<LevelCollectionTableView>(true);
             LevelSelectionNavigationController = viewControllersContainer.GetComponentInChildren<LevelSelectionNavigationController>(true);
 
+            // TODO: get unmodified level details panel for search screen
+        }
+
+        public void OnLateMenuSceneLoadedFresh()
+        {
             Button soloFreePlayButton = Resources.FindObjectsOfTypeAll<Button>().First(x => x.name == "SoloFreePlayButton");
             Button partyFreePlayButton = Resources.FindObjectsOfTypeAll<Button>().First(x => x.name == "PartyFreePlayButton");
             Button campaignButton = Resources.FindObjectsOfTypeAll<Button>().First(x => x.name == "CampaignButton");
