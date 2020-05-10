@@ -38,8 +38,6 @@ namespace EnhancedSearchAndFilters.Search
                     collectionName != SortedLevelsLevelPack.PackIDSuffix &&
                     !SongBrowserTweaks.IsFilterApplied())
                     _cache[levelCollection.collectionName.Replace(SortedLevelsLevelPack.PackIDSuffix, "")] = storage;
-                else
-                    Logger.log.Warn($"not storing '{levelCollection.collectionName}' collection in wordpredictionengine");
             }
 
             _activeWordStorage = storage;
