@@ -257,7 +257,8 @@ namespace EnhancedSearchAndFilters.UI.Components
 
         private void OnDestroy()
         {
-            BeatmapDetailsLoader.instance.CachingStarted -= OnCachingStarted;
+            if (BeatmapDetailsLoader.IsSingletonAvailable)
+                BeatmapDetailsLoader.instance.CachingStarted -= OnCachingStarted;
         }
 
         private void SetSymbolMode(bool useSymbols)
