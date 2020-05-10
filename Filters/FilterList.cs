@@ -41,7 +41,6 @@ namespace EnhancedSearchAndFilters.Filters
 
         private static readonly IFilter[] DefaultFilters =
         {
-            new SearchFilter(),
             new DifficultyFilter(),
             new DurationFilter(),
             new NoteDensityFilter(),
@@ -51,7 +50,8 @@ namespace EnhancedSearchAndFilters.Filters
             new VotedFilter(),
             new PlayerStatsFilter(),
             new CharacteristicsFilter(),
-            new ModRequirementsFilter()
+            new ModRequirementsFilter(),
+            new SearchFilter()
         };
 
         /// <summary>
