@@ -465,12 +465,19 @@ namespace EnhancedSearchAndFilters.UI
             FilterList.ApplyQuickFilter(quickFilter);
 
             IPreviewBeatmapLevel[] unfilteredLevels = null;
+            Sprite coverImage = null;
             if (_lastPack == null)
                 _lastPack = LevelSelectionNavigationController.GetPrivateField<IBeatmapLevelPack>("_levelPack");
+
             if (_lastPack == null)
+            {
                 unfilteredLevels = _levelCollectionTableView.GetPrivateField<IPreviewBeatmapLevel[]>("_previewBeatmapLevels");
+            }
             else
+            {
                 unfilteredLevels = _lastPack.beatmapLevelCollection.beatmapLevels;
+                coverImage = _lastPack.coverImage;
+            }
 
             if (unfilteredLevels == null)
             {
@@ -478,7 +485,7 @@ namespace EnhancedSearchAndFilters.UI
                 return;
             }
 
-            _filteredLevelPack.SetupFromUnfilteredLevels(unfilteredLevels);
+            _filteredLevelPack.SetupFromUnfilteredLevels(unfilteredLevels, coverImage);
             LevelSelectionNavigationController.SetData(
                 _filteredLevelPack,
                 true,
