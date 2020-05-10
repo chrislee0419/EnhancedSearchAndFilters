@@ -298,6 +298,9 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 
         private void KeyboardFilterButtonPressed()
         {
+            if (string.IsNullOrEmpty(_searchQuery))
+                return;
+
             _lastSearchQuery = _searchQuery;
 
             SearchBehaviour.Instance.StopSearch();

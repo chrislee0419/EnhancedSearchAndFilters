@@ -674,6 +674,12 @@ namespace EnhancedSearchAndFilters.UI
 
         private void ApplySearchFilter(string searchQuery)
         {
+            if (string.IsNullOrEmpty(searchQuery))
+            {
+                _freePlayFlowCoordinator.InvokeMethod("DismissFlowCoordinator", _searchFlowCoordinator, null, false);
+                return;
+            }
+
             SearchFilter filter = FilterList.SearchFilter;
 
             if (filter == null)
