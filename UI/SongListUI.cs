@@ -291,10 +291,25 @@ namespace EnhancedSearchAndFilters.UI
             }
 
             IAnnotatedBeatmapLevelCollection levelPack;
-            if (FilterList.AnyApplied)
+            if (SongBrowserTweaks.Initialized)
+            {
+                if (SongBrowserTweaks.IsFilterApplied())
+                    levelPack = LevelSelectionNavigationController.GetPrivateField<IBeatmapLevelPack>("_levelPack", typeof(LevelSelectionNavigationController));
+                // technically, the _lastPack doesn't actually contain the pack being shown
+                // (since SongBrowser always overrides the selected pack with its own pack to handle sorting/filtering)
+                // but any non-filtered level pack is going to contain the same levels anyways
+                // and i'll need the true level pack ID for word storage caching
+                else
+                    levelPack = _lastPack;
+            }
+            else if (FilterList.AnyApplied)
+            {
                 levelPack = _filteredLevelPack;
+            }
             else
+            {
                 levelPack = _lastPack;
+            }
 
             _searchFlowCoordinator.Activate(_freePlayFlowCoordinator, levelPack);
 
@@ -579,6 +594,7 @@ namespace EnhancedSearchAndFilters.UI
             else if (SongBrowserTweaks.Initialized)
             {
                 _lastPack = levelPack;
+                return;
             }
 
             if (levelPack.collectionName != FilteredLevelsLevelPack.CollectionName)
