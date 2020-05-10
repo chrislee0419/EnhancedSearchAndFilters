@@ -25,19 +25,30 @@ namespace EnhancedSearchAndFilters.Search
 
         public void SetActiveWordStorageFromLevelPack(IAnnotatedBeatmapLevelCollection levelCollection)
         {
-            if (!_cache.TryGetValue(levelCollection.collectionName, out var storage))
+            WordCountStorage storage;
+            IBeatmapLevelPack levelPack = levelCollection as IBeatmapLevelPack;
+            string collectionName = levelCollection.collectionName;
+            bool storageWasCached;
+            if (levelPack != null)
+                storageWasCached = _cache.TryGetValue(levelPack.packID, out storage);
+            else
+                storageWasCached = _cache.TryGetValue(collectionName.Replace(SortedLevelsLevelPack.PackIDSuffix, ""), out storage);
+
+            if (!storageWasCached)
             {
                 storage = new WordCountStorage(levelCollection);
 
-                string collectionName = levelCollection.collectionName;
-
                 // never cache filtered/built-in favorites level packs
-                if (collectionName != FilteredLevelsLevelPack.CollectionName &&
+                // NOTE: ESAF filtered level pack should already be sorted (will never have sorted level pack suffix)
+                if (levelPack != null &&
+                    levelPack.packID != FilteredLevelsLevelPack.PackID &&
+                    !SongBrowserTweaks.IsFilterApplied())
+                    _cache[levelPack.packID] = storage;
+                else if (collectionName != FilteredLevelsLevelPack.CollectionName &&
                     collectionName != BuiltInFavouritesPackCollectionName &&
                     collectionName != BuiltInFavouritesPackCollectionName + SortedLevelsLevelPack.PackIDSuffix &&
-                    collectionName != SortedLevelsLevelPack.PackIDSuffix &&
-                    !SongBrowserTweaks.IsFilterApplied())
-                    _cache[levelCollection.collectionName.Replace(SortedLevelsLevelPack.PackIDSuffix, "")] = storage;
+                    collectionName != SortedLevelsLevelPack.PackIDSuffix)
+                    _cache[collectionName.Replace(SortedLevelsLevelPack.PackIDSuffix, "")] = storage;
             }
 
             _activeWordStorage = storage;
