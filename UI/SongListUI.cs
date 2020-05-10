@@ -266,7 +266,14 @@ namespace EnhancedSearchAndFilters.UI
         public void UnapplyFilters()
         {
             if (_filterFlowCoordinator != null)
+            {
                 _filterFlowCoordinator.UnapplyFilters(false);
+            }
+            else
+            {
+                foreach (var filter in FilterList.ActiveFilters)
+                    filter.ApplyDefaultValues();
+            }
 
             ButtonPanel.instance.SetFilterStatus(false);
         }
@@ -344,21 +351,9 @@ namespace EnhancedSearchAndFilters.UI
         public void ClearButtonPressed()
         {
             if (FilterList.AnyApplied)
-            {
-                if (_filterFlowCoordinator != null)
-                {
-                    _filterFlowCoordinator.UnapplyFilters(false);
-                }
-                else
-                {
-                    foreach (var filter in FilterList.ActiveFilters)
-                        filter.ApplyDefaultValues();
-                }
-            }
+                UnapplyFilters();
             else
-            {
                 return;
-            }
 
             if (SongBrowserTweaks.Initialized)
             {
