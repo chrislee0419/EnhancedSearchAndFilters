@@ -196,10 +196,6 @@ namespace EnhancedSearchAndFilters.UI.Components
 
             filterIcon.transform.SetParent(_filterButton.text.transform.parent, false);
 
-            var handler = _filterButton.button.gameObject.AddComponent<EnterExitEventHandler>();
-            handler.PointerEntered += () => filterIcon.color = Color.black;
-            handler.PointerExited += () => filterIcon.color = Color.white;
-
             _filterButton.button.onClick.AddListener(delegate ()
             {
                 filterIcon.color = Color.white;
@@ -209,12 +205,21 @@ namespace EnhancedSearchAndFilters.UI.Components
             if (PluginConfig.DisableFilters)
             {
                 _filterButton.button.interactable = false;
+                filterIcon.color = Color.gray;
             }
             else
             {
+                var handler = _filterButton.button.gameObject.AddComponent<EnterExitEventHandler>();
+                handler.PointerEntered += () => filterIcon.color = Color.black;
+                handler.PointerExited += () => filterIcon.color = Color.white;
+
                 BeatmapDetailsLoader.instance.CachingStarted += OnCachingStarted;
 
-                if (!BeatmapDetailsLoader.instance.SongsAreCached)
+                if (BeatmapDetailsLoader.instance.SongsAreCached)
+                {
+                    _filterButton.button.interactable = true;
+                }
+                else
                 {
                     _filterButton.button.interactable = false;
                     BeatmapDetailsLoader.instance.CachingFinished += OnCachingFinished;
