@@ -473,6 +473,9 @@ namespace EnhancedSearchAndFilters.UI
                     Logger.log.Warn("Unable to find songs to sort");
                 }
             }
+
+            if (_uiAdditions != null)
+                _uiAdditions.RefreshPageButtons();
         }
 
         private void ApplyQuickFilterPressed(QuickFilter quickFilter)
