@@ -192,8 +192,8 @@ namespace EnhancedSearchAndFilters.UI.Components
             filterIcon.preserveAspect = true;
 
             var layout = filterIcon.gameObject.AddComponent<LayoutElement>();
-            layout.preferredWidth = 4;
-            layout.preferredHeight = 4;
+            layout.preferredWidth = 4f;
+            layout.preferredHeight = 4f;
 
             filterIcon.transform.SetParent(_filterButton.text.transform.parent, false);
 
@@ -211,8 +211,8 @@ namespace EnhancedSearchAndFilters.UI.Components
             else
             {
                 var handler = _filterButton.button.gameObject.AddComponent<EnterExitEventHandler>();
-                handler.PointerEntered += () => filterIcon.color = Color.black;
-                handler.PointerExited += () => filterIcon.color = Color.white;
+                handler.PointerEntered += () => filterIcon.color = _filterButton.button.interactable ? Color.black : Color.gray;
+                handler.PointerExited += () => filterIcon.color = _filterButton.button.interactable ? Color.white : Color.gray;
 
                 BeatmapDetailsLoader.instance.CachingStarted += OnCachingStarted;
 
@@ -223,6 +223,7 @@ namespace EnhancedSearchAndFilters.UI.Components
                 else
                 {
                     _filterButton.button.interactable = false;
+                    filterIcon.color = Color.gray;
                     BeatmapDetailsLoader.instance.CachingFinished += OnCachingFinished;
                 }
             }
@@ -303,6 +304,10 @@ namespace EnhancedSearchAndFilters.UI.Components
         private void OnCachingFinished()
         {
             _filterButton.button.interactable = true;
+            Image icon = _filterButton.button.transform.parent.GetComponentsInChildren<Image>().FirstOrDefault(x => x.name == "FilterIcon");
+            if (icon != null)
+                icon.color = Color.white;
+
             BeatmapDetailsLoader.instance.CachingFinished -= OnCachingFinished;
         }
     }
