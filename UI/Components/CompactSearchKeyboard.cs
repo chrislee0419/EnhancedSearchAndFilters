@@ -127,6 +127,7 @@ namespace EnhancedSearchAndFilters.UI.Components
 
             Image filterIcon = new GameObject("FilterIcon").AddComponent<Image>();
             filterIcon.sprite = UIUtilities.LoadSpriteFromResources("EnhancedSearchAndFilters.Assets.filter.png");
+            filterIcon.preserveAspect = true;
 
             var layout = filterIcon.gameObject.AddComponent<LayoutElement>();
             layout.preferredHeight = 3.5f;
