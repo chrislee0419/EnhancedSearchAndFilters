@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -15,16 +16,24 @@ using UIUtilities = EnhancedSearchAndFilters.Utilities.UIUtilities;
 
 namespace EnhancedSearchAndFilters.UI.ViewControllers
 {
-    class SongDetailsViewController : ViewController
+    internal class SongDetailsViewController : ViewController
     {
         public Action<IPreviewBeatmapLevel> SelectButtonPressed;
         public Action CompactKeyboardButtonPressed;
 
-        private StandardLevelDetailView _standardLevelDetailView;
+        public static GameObject ReferenceDetailView { private get; set; }
+        public static KawaseBlurRendererSO BlurRenderer { private get; set; }
+
         private LevelParamsPanel _levelParamsPanel;
+        private RawImage _coverImage;
         private TextMeshProUGUI _songNameText;
         private TextMeshProUGUI _detailsText;
+        private Button _selectLevelButton;
         private Button _compactKeyboardButton;
+
+        private string _settingCoverImageForLevelId;
+        private CancellationTokenSource _cancellationTokenSource;
+        private Texture2D _blurredCoverImageTexture;
 
         private static readonly string[] _difficultyStrings = new string[] { "Easy", "Normal", "Hard", "Expert", "Expert+" };
         private static readonly Color _checkmarkColor = new Color(0.8f, 1f, 0.8f);
@@ -43,41 +52,45 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             {
                 this.name = "SongDetailsViewController";
 
-                var referenceViewController = Resources.FindObjectsOfTypeAll<StandardLevelDetailViewController>().First();
-                StandardLevelDetailView reference = referenceViewController.GetPrivateField<StandardLevelDetailView>("_standardLevelDetailView");
-                RectTransform referenceParent = reference.transform.parent as RectTransform;
+                // fallback to using original method of getting StandardLevelDetailView if reference is somehow null
+                // if this triggers, there is an issue
+                if (ReferenceDetailView == null)
+                {
+                    Logger.log.Debug("ReferenceDetailView is null. Using fallback method of obtaining StandardLevelDetailView object");
 
-                this.rectTransform.anchorMin = referenceParent.anchorMin;
-                this.rectTransform.anchorMax = referenceParent.anchorMax;
+                    var referenceViewController = Resources.FindObjectsOfTypeAll<StandardLevelDetailViewController>().First();
+                    ReferenceDetailView = referenceViewController.GetPrivateField<StandardLevelDetailView>("_standardLevelDetailView").gameObject;
+                }
+
+                this.rectTransform.anchorMin = new Vector2(0.5f, 0f);
+                this.rectTransform.anchorMax = new Vector2(0.5f, 1f);
                 this.rectTransform.anchoredPosition = Vector2.zero;
                 this.rectTransform.sizeDelta = new Vector2(80f, 0f);
 
-                if (Tweaks.SongBrowserTweaks.ModLoaded)
-                    Logger.log.Notice("SongBrowser detected. Instantiating StandardLevelDetailView with SongBrowser's modifications. This may result in various NullReferenceExceptions being thrown (and caught) by UnityEngine. These exceptions appear to have no effect on regular operation and can be ignored.");
-                _standardLevelDetailView = Instantiate(reference, this.transform, false);
-                _standardLevelDetailView.gameObject.SetActive(true);
-                _standardLevelDetailView.name = "SearchResultLevelDetail";
-                (_standardLevelDetailView.transform as RectTransform).anchoredPosition -= new Vector2(0f, -2f);
-                if (Tweaks.SongBrowserTweaks.ModLoaded)
-                    Logger.log.Notice("Finished instantiating StandardLevelDetailView");
+                var detailView = Instantiate(ReferenceDetailView, this.transform, false);
+                detailView.SetActive(true);
+                detailView.name = "SearchResultLevelDetail";
+                (detailView.transform as RectTransform).anchoredPosition -= new Vector2(0f, -2f);
 
-                _levelParamsPanel = _standardLevelDetailView.GetPrivateField<LevelParamsPanel>("_levelParamsPanel");
-                _songNameText = _standardLevelDetailView.GetPrivateField<TextMeshProUGUI>("_songNameText");
+                _levelParamsPanel = detailView.GetComponentInChildren<LevelParamsPanel>();
+                _coverImage = detailView.GetComponentsInChildren<RawImage>().First(x => x.name == "CoverImage");
+                _songNameText = detailView.GetComponentsInChildren<TextMeshProUGUI>().First(x => x.name == "SongNameText");
+                _selectLevelButton = detailView.GetComponentsInChildren<Button>().First(x => x.name == "PlayButton");
 
                 _checkmarkSprite = BSUtilsUtilities.LoadSpriteFromResources("EnhancedSearchAndFilters.Assets.checkmark.png");
                 _crossSprite = BSUtilsUtilities.LoadSpriteFromResources("EnhancedSearchAndFilters.Assets.cross.png");
                 _blankSprite = Sprite.Create(Texture2D.blackTexture, new Rect(0f, 0f, 1f, 1f), Vector2.zero);
 
                 RemoveCustomUIElements(this.rectTransform);
-                ModifyPanelElements();
-                ModifyTextElements();
-                ModifySelectionElements();
+                ModifyPanelElements(detailView);
+                ModifyTextElements(detailView);
+                ModifySelectionElements(detailView);
             }
             else
             {
-                // stats panel gets disabled when in party mode, so re-enable it here just in case
-                RectTransform statsPanel = _standardLevelDetailView.GetComponentsInChildren<RectTransform>(true).First(x => x.name == "Stats");
-                statsPanel.gameObject.SetActive(true);
+                //// stats panel gets disabled when in party mode, so re-enable it here just in case
+                //RectTransform statsPanel = _standardLevelDetailView.GetComponentsInChildren<RectTransform>(true).First(x => x.name == "Stats");
+                //statsPanel.gameObject.SetActive(true);
                 _compactKeyboardButton.gameObject.SetActive(PluginConfig.CompactSearchMode);
 
                 // strings get reset, so they have to be reapplied
@@ -94,7 +107,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
             _songNameText.text = level.songName;
             _levelParamsPanel.bpm = level.beatsPerMinute;
-            _standardLevelDetailView.SetTextureAsync(level);
+            SetCoverImageAsync(level);
             _levelParamsPanel.duration = level.songDuration;
             _detailsText.text = "";
 
@@ -128,6 +141,45 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 }
 
                 _detailsText.text = ": DLC song not yet purchased";
+            }
+        }
+
+        private async void SetCoverImageAsync(IPreviewBeatmapLevel level)
+        {
+            string levelID = level.levelID;
+            if (_settingCoverImageForLevelId == levelID)
+                return;
+
+            try
+            {
+                _settingCoverImageForLevelId = levelID;
+
+                if (_cancellationTokenSource != null)
+                    _cancellationTokenSource.Cancel();
+
+                _cancellationTokenSource = new CancellationTokenSource();
+                _coverImage.enabled = false;
+                _coverImage.texture = null;
+
+                Texture2D coverImageTexture = await level.GetCoverImageTexture2DAsync(_cancellationTokenSource.Token);
+                _cancellationTokenSource.Token.ThrowIfCancellationRequested();
+
+                if (_blurredCoverImageTexture != null)
+                    Destroy(_blurredCoverImageTexture);
+
+                _blurredCoverImageTexture = BlurRenderer.Blur(coverImageTexture, KawaseBlurRendererSO.KernelSize.Kernel7);
+                _coverImage.texture = _blurredCoverImageTexture;
+                _coverImage.enabled = true;
+
+                _cancellationTokenSource.Dispose();
+                _cancellationTokenSource = null;
+            }
+            catch (OperationCanceledException)
+            { }
+            finally
+            {
+                if (_settingCoverImageForLevelId == levelID)
+                    _settingCoverImageForLevelId = null;
             }
         }
 
@@ -216,8 +268,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             }
         }
 
-        // NOTE: also deletes any elements added in by other mods
-        private void ModifyPanelElements()
+        private void ModifyPanelElements(GameObject detailViewGO)
         {
             RectTransform[] rectTransforms = _levelParamsPanel.GetComponentsInChildren<RectTransform>();
 
@@ -259,12 +310,12 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             }
 
             // remove favorites toggle
-            Destroy(_standardLevelDetailView.transform.Find("LevelInfo/FavoritesToggle").gameObject);
+            Destroy(detailViewGO.transform.Find("LevelInfo/FavoritesToggle").gameObject);
         }
 
-        private void ModifyTextElements()
+        private void ModifyTextElements(GameObject detailViewGO)
         {
-            RectTransform statsPanel = _standardLevelDetailView.GetComponentsInChildren<RectTransform>(true).First(x => x.name == "Stats");
+            RectTransform statsPanel = detailViewGO.GetComponentsInChildren<RectTransform>(true).First(x => x.name == "Stats");
             statsPanel.gameObject.SetActive(true);
 
             Func<RectTransform, bool> getStatsRectTransforms = x => x.name != "Stats" && x.name != "Title" && x.name != "Value";
@@ -325,22 +376,21 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             }
         }
 
-        private void ModifySelectionElements()
+        private void ModifySelectionElements(GameObject detailViewGO)
         {
-            Button selectButton = _standardLevelDetailView.playButton;
-            selectButton.name = "SearchSelectSongButton";
-            selectButton.SetButtonText("SELECT SONG");
-            selectButton.interactable = true;
-            selectButton.GetComponentInChildren<Image>().color = new Color(0f, 0.706f, 1f, 0.784f);
-            (selectButton.transform as RectTransform).sizeDelta += new Vector2(10f, 0);
-            selectButton.ToggleWordWrapping(false);
-            selectButton.onClick.RemoveAllListeners();
-            selectButton.onClick.AddListener(delegate ()
+            _selectLevelButton.name = "SearchSelectSongButton";
+            _selectLevelButton.SetButtonText("SELECT SONG");
+            _selectLevelButton.interactable = true;
+            _selectLevelButton.GetComponentInChildren<Image>().color = new Color(0f, 0.706f, 1f, 0.784f);
+            (_selectLevelButton.transform as RectTransform).sizeDelta += new Vector2(10f, 0);
+            _selectLevelButton.ToggleWordWrapping(false);
+            _selectLevelButton.onClick.RemoveAllListeners();
+            _selectLevelButton.onClick.AddListener(delegate ()
             {
                 SelectButtonPressed?.Invoke(_level);
             });
 
-            _compactKeyboardButton = Instantiate(selectButton, selectButton.transform.parent, false);
+            _compactKeyboardButton = Instantiate(_selectLevelButton, _selectLevelButton.transform.parent, false);
             _compactKeyboardButton.name = "SearchDisplayKeyboardButton";
             _compactKeyboardButton.SetButtonText("DISPLAY\nKEYBOARD");
             _compactKeyboardButton.SetButtonTextSize(3f);
@@ -352,12 +402,12 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             });
             _compactKeyboardButton.gameObject.SetActive(PluginConfig.CompactSearchMode);
 
-            Destroy(_standardLevelDetailView.GetComponentInChildren<BeatmapDifficultySegmentedControlController>()?.gameObject);
-            Destroy(_standardLevelDetailView.GetComponentInChildren<BeatmapCharacteristicSegmentedControlController>()?.gameObject);
-            Destroy(_standardLevelDetailView.practiceButton?.gameObject);
+            Destroy(detailViewGO.GetComponentInChildren<BeatmapDifficultySegmentedControlController>()?.gameObject);
+            Destroy(detailViewGO.GetComponentInChildren<BeatmapCharacteristicSegmentedControlController>()?.gameObject);
+            Destroy(detailViewGO.GetComponentsInChildren<Button>().FirstOrDefault(x => x.name == "PracticeButton")?.gameObject);
 
             // transform: PlayButton -> PlayButtons -> PlayContainer
-            _detailsText = BeatSaberUI.CreateText(selectButton.transform.parent.parent as RectTransform, "", new Vector2(0f, -2f));
+            _detailsText = BeatSaberUI.CreateText(_selectLevelButton.transform.parent.parent as RectTransform, "", new Vector2(0f, -2f));
             _detailsText.rectTransform.anchorMin = new Vector2(0.5f, 1f);
             _detailsText.rectTransform.anchorMax = new Vector2(0.5f, 1f);
             _detailsText.rectTransform.pivot = new Vector2(0.5f, 1f);
