@@ -129,7 +129,8 @@ namespace EnhancedSearchAndFilters.UI
                 (_freePlayFlowCoordinator as CampaignFlowCoordinator).didFinishEvent += OnFreePlayFlowCoordinatorFinished;
             }
 
-            SongBrowserTweaks.OnModeSelection();
+            // UIState in SongBrowser is always reset to Main, so we need to disable the filter button
+            SongBrowserTweaks.DisableOtherFiltersButton();
         }
 
         private void PrepareLevelPackSelectedEvent()
@@ -613,6 +614,7 @@ namespace EnhancedSearchAndFilters.UI
             else if (SongBrowserTweaks.Initialized)
             {
                 _lastPack = levelPack;
+                SongBrowserTweaks.DisableOtherFiltersButton();
                 return;
             }
 

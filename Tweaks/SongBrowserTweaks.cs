@@ -212,12 +212,11 @@ namespace EnhancedSearchAndFilters.Tweaks
             return (_songBrowserUI as SongBrowserUI).Model.Settings.filterMode != SongFilterMode.None;
         }
 
-        public static void OnModeSelection()
+        public static void DisableOtherFiltersButton()
         {
             if (!ModLoaded || !Initialized)
                 return;
 
-            // UIState is always reset to Main, so we need to disable the filter button
             _filterButton.gameObject.SetActive(false);
         }
     }
