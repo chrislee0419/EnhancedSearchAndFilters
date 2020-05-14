@@ -257,7 +257,7 @@ namespace EnhancedSearchAndFilters.UI
                     }
                     else
                     {
-                        issue.SetText(issues[i]);
+                        issue.SetText(issues[i].EscapeTextMeshProTags());
                     }
 
                     _issues.Add(issue);
@@ -309,7 +309,7 @@ namespace EnhancedSearchAndFilters.UI
             if (level is CustomBeatmapLevel customLevel)
             {
                 _levelToDelete = customLevel;
-                DeleteConfirmationText = $"Are you sure you would like to delete '<color=#FFFFCC>{customLevel.songName}</color>' by {customLevel.levelAuthorName}?";
+                DeleteConfirmationText = $"Are you sure you would like to delete '<color=#FFFFCC>{customLevel.songName.EscapeTextMeshProTags()}</color>' by {customLevel.levelAuthorName.EscapeTextMeshProTags()}?";
 
                 _parserParams.EmitEvent("show-delete-confirmation-modal");
             }

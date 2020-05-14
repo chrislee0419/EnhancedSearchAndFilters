@@ -205,7 +205,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                     else
                         name = value.Name;
 
-                    QuickFilterDropdownTextValue = name;
+                    QuickFilterDropdownTextValue = name.EscapeTextMeshProTags();
                     ApplyQuickFilterButtonInteractable = true;
                     DeleteQuickFilterButtonInteractable = true;
                 }
@@ -550,7 +550,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             else
                 name = SelectedQuickFilter.Name;
 
-            DeleteQuickFilterModalTextValue = $"Are you sure you want to delete the \"<color=#FFFFCC>{name}</color>\" quick filter?";
+            DeleteQuickFilterModalTextValue = $"Are you sure you want to delete the \"<color=#FFFFCC>{name.EscapeTextMeshProTags()}</color>\" quick filter?";
         }
 
         [UIAction("modal-delete-quick-filter-button-clicked")]
@@ -631,7 +631,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 s = "<size=1%>.</size>" + spaces + s + spaces + "<size=1%>.</size>";
             }
 
-            return s;
+            return s.EscapeTextMeshProTags();
         }
         #endregion
     }

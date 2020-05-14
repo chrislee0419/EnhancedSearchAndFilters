@@ -340,18 +340,18 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
             float sizeRatio = textWidth / _maxTextWidth;
             if (sizeRatio < TextScrollAnimationScaleThreshold && sizeRatio > 1f)
             {
-                _text.text = $"<size={(98f / sizeRatio).ToString("N0")}%>" + text + "</size>";
+                _text.text = $"<size={(98f / sizeRatio).ToString("N0")}%>" + text.EscapeTextMeshProTags() + "</size>";
                 _text.rectTransform.anchoredPosition = Vector2.zero;
             }
             else if (sizeRatio >= TextScrollAnimationScaleThreshold)
             {
-                _text.text = text;
+                _text.text = text.EscapeTextMeshProTags();
                 _scrollAnimation = TextScrollAnimationCoroutine(textWidth);
                 StartCoroutine(_scrollAnimation);
             }
             else
             {
-                _text.text = text;
+                _text.text = text.EscapeTextMeshProTags();
                 _text.rectTransform.anchoredPosition = Vector2.zero;
             }
         }
