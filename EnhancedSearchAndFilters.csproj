@@ -200,6 +200,7 @@
     <Compile Include="SongData\BeatmapDetailsCoroutineLoader.cs" />
     <Compile Include="SongData\BeatmapDetailsThreadedLoader.cs" />
     <Compile Include="Tweaks\BeatSaverVotingTweaks.cs" />
+    <Compile Include="Utilities\AudioFileUtilities.cs" />
     <Compile Include="Utilities\LocalLeaderboardDataHelper.cs" />
     <Compile Include="Utilities\PlayerDataHelper.cs" />
     <Compile Include="SongData\SongSortModule.cs" />
