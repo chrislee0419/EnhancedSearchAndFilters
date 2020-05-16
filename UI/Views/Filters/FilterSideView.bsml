@@ -185,7 +185,7 @@
             <text id="delete-quick-filter-modal-text"
                   text="~delete-quick-filter-modal-text-value"
                   font-size="4" />
-            <horizontal>
+            <horizontal spacing="4">
               <button text="Delete"
                       font-size="3.5"
                       stroke-color="#FF3333"
@@ -194,7 +194,7 @@
                       on-click="modal-delete-quick-filter-button-clicked" />
               <button text="Cancel"
                       font-size="3.5"
-                      preferred-width="32" preferred-height="8"
+                      preferred-width="40" preferred-height="8"
                       pad="1"
                       click-event="hide-delete-quick-filter-modal" />
             </horizontal>
