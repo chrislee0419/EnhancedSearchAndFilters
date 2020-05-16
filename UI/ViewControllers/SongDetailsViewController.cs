@@ -81,7 +81,6 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 _crossSprite = BSUtilsUtilities.LoadSpriteFromResources("EnhancedSearchAndFilters.Assets.cross.png");
                 _blankSprite = Sprite.Create(Texture2D.blackTexture, new Rect(0f, 0f, 1f, 1f), Vector2.zero);
 
-                RemoveCustomUIElements(this.rectTransform);
                 ModifyPanelElements(detailView);
                 ModifyTextElements(detailView);
                 ModifySelectionElements(detailView);
@@ -247,25 +246,6 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 _detailsText.text = "<size=68%>" + _detailsText.text + "</size>";
             else if (lineCount > 3)
                 _detailsText.text = "<size=85%>" + _detailsText.text + "</size>";
-        }
-
-        private void RemoveCustomUIElements(Transform parent)
-        {
-            // taken from BeatSaverDownloader
-            // https://github.com/andruzzzhka/BeatSaverDownloader/blob/master/BeatSaverDownloader/UI/ViewControllers/SongDetailViewController.cs
-            for (int i = 0; i < parent.childCount; i++)
-            {
-                Transform child = parent.GetChild(i);
-
-                if (child.name.StartsWith("CustomUI") || child.name.StartsWith("BSML"))
-                {
-                    Destroy(child.gameObject);
-                }
-                if (child.childCount > 0)
-                {
-                    RemoveCustomUIElements(child);
-                }
-            }
         }
 
         private void ModifyPanelElements(GameObject detailViewGO)
