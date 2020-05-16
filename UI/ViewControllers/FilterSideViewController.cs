@@ -197,15 +197,13 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                 }
                 else
                 {
-                    var textWidth = _quickFilterDropdownText.GetPreferredValues(value.Name).x;
-                    string name;
+                    string name = value.Name.EscapeTextMeshProTags();
+                    var textWidth = _quickFilterDropdownText.GetPreferredValues(name).x;
 
                     if (textWidth > 28f)
-                        name = $"<size={(2800f / textWidth).ToString("N0")}%>" + value.Name + "</size>";
-                    else
-                        name = value.Name;
+                        name = $"<size={(2800f / textWidth).ToString("N0")}%>" + name + "</size>";
 
-                    QuickFilterDropdownTextValue = name.EscapeTextMeshProTags();
+                    QuickFilterDropdownTextValue = name;
                     ApplyQuickFilterButtonInteractable = true;
                     DeleteQuickFilterButtonInteractable = true;
                 }
@@ -314,11 +312,11 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
                     else if (AssociatedFilter.Status == FilterStatus.AppliedAndChanged || AssociatedFilter.Status == FilterStatus.NotAppliedAndChanged)
                         statusText = " <size=70%><color=#FFFFCC>[*]</color></size>";
 
-                    _text.text = AssociatedFilter.Name + statusText;
+                    _text.text = AssociatedFilter.Name.EscapeTextMeshProTags() + statusText;
                 }
                 else
                 {
-                    _text.text = $"<color=#FF8888><i>{AssociatedFilter.Name}</i></color>";
+                    _text.text = $"<color=#FF8888><i>{AssociatedFilter.Name.EscapeTextMeshProTags()}</i></color>";
                 }
 
                 if (AssociatedFilter.Status == FilterStatus.NotApplied)
@@ -434,7 +432,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _quickFilterTableData.data.Clear();
 
             foreach (var quickFilter in QuickFiltersManager.QuickFiltersList)
-                _quickFilterTableData.data.Add(new CustomListTableData.CustomCellInfo(quickFilter.Name));
+                _quickFilterTableData.data.Add(new CustomListTableData.CustomCellInfo(quickFilter.Name.EscapeTextMeshProTags()));
 
             _quickFilterTableData.tableView.ReloadData();
         }
@@ -542,15 +540,13 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             // for whatever reason, the first time the modal is shown, the calculated text size is a tenth of what it should be
             // probably has to do with how the elements can be resized to from initially provided preferred size values vs
             // calculated preferred size values after being set to active for the first time
+            string name = SelectedQuickFilter.Name.EscapeTextMeshProTags();
             var textWidth = _deleteQuickFilterModalText.GetPreferredValues(SelectedQuickFilter.Name).x;
-            string name;
 
             if (textWidth > 30f)
-                name = $"<size={(3000f / textWidth).ToString("N0")}%>" + SelectedQuickFilter.Name + "</size>";
-            else
-                name = SelectedQuickFilter.Name;
+                name = $"<size={(3000f / textWidth).ToString("N0")}%>" + name + "</size>";
 
-            DeleteQuickFilterModalTextValue = $"Are you sure you want to delete the \"<color=#FFFFCC>{name.EscapeTextMeshProTags()}</color>\" quick filter?";
+            DeleteQuickFilterModalTextValue = $"Are you sure you want to delete the \"<color=#FFFFCC>{name}</color>\" quick filter?";
         }
 
         [UIAction("modal-delete-quick-filter-button-clicked")]
@@ -622,16 +618,16 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
             if (s.Length > 12)
             {
-                s = s.Substring(0, 10) + "<color=#FFFFBB><size=70%> [...]</size></color>";
+                s = s.Substring(0, 10).EscapeTextMeshProTags() + "<color=#FFFFBB><size=70%> [...]</size></color>";
             }
             else
             {
                 // hacky way of adding padding
                 string spaces = $"<space={(12 - s.Length) + 1}px>";
-                s = "<size=1%>.</size>" + spaces + s + spaces + "<size=1%>.</size>";
+                s = "<size=1%>.</size>" + spaces + s.EscapeTextMeshProTags() + spaces + "<size=1%>.</size>";
             }
 
-            return s.EscapeTextMeshProTags();
+            return s;
         }
         #endregion
     }
