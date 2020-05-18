@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Linq;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace EnhancedSearchAndFilters.Utilities
 {
     public static class AudioFileUtilities
     {
         // technically a bit less than 2^16, but whatever
-        private const int OGGMaxPageLength = 1 << 15;
+        private const int OGGMaxPageLength = 1 << 16;
         private const int OGGHeaderMinByteLength = 26;
         private const byte OGGStreamStructureVersion = 0x00;
         private const byte OGGLastPageHeaderType = 0x04;
@@ -21,11 +22,11 @@ namespace EnhancedSearchAndFilters.Utilities
         private const int WAVHeaderDataSubchunkSizeOffsetBase = 24;
 
         /// <summary>
-        /// Get the length of the audio in a OGG Vorbis audio file.
+        /// Get the length of the audio in a OGG Vorbis audio file asynchronously.
         /// </summary>
         /// <param name="fs">A <see cref="FileStream"/> of an existing OGG Vorbis file.</param>
-        /// <returns>The length of the audio file in seconds. Otherwise, -1 if an error was encountered.</returns>
-        public static float GetLengthOfOGGVorbisAudioFile(FileStream fs)
+        /// <returns>A task that returns the length of the audio file in seconds or -1 if an error was encountered.</returns>
+        public static async Task<float> GetLengthOfOGGVorbisAudioFileAsync(FileStream fs)
         {
             if (!fs.CanSeek)
                 return -1;
@@ -37,14 +38,14 @@ namespace EnhancedSearchAndFilters.Utilities
             // verify that this actually is an ogg file
             byte[] byteArray = new byte[OGGMaxPageLength];
             fs.Seek(0, SeekOrigin.Begin);
-            fs.Read(byteArray, 0, 4);
+            await fs.ReadAsync(byteArray, 0, 4);
 
             if (!VerifyOGGHeader(byteArray))
                 goto OnError;
 
             // get sample rate from vorbis identification header
             uint sampleRate = 0;
-            fs.Read(byteArray, 0, OGGMaxPageLength);
+            await fs.ReadAsync(byteArray, 0, OGGMaxPageLength);
             for (int i = 0; i < OGGMaxPageLength - VorbisIdentificationHeaderByteLength; ++i)
             {
                 // not gonna bother searching for the actual start of the identification header properly
@@ -61,14 +62,14 @@ namespace EnhancedSearchAndFilters.Utilities
 
             // get the last OGG page to find the total number of samples
             fs.Seek(-OGGMaxPageLength, SeekOrigin.End);
-            fs.Read(byteArray, 0, OGGMaxPageLength);
+            await fs.ReadAsync(byteArray, 0, OGGMaxPageLength);
 
             ulong numOfSamples = 0;
             for (int i = 0; i < OGGMaxPageLength - OGGHeaderMinByteLength; ++i)
             {
                 if (!VerifyOGGHeader(byteArray, i) ||
                     byteArray[i + 4] != OGGStreamStructureVersion ||
-                    byteArray[i + 5] != OGGLastPageHeaderType)
+                    (byteArray[i + 5] & OGGLastPageHeaderType) == OGGLastPageHeaderType)
                     continue;
 
                 // granule position holds the number of samples of a vorbis bitstream
@@ -87,7 +88,12 @@ namespace EnhancedSearchAndFilters.Utilities
             return -1;
         }
 
-        public static float GetLengthOfWAVAudioFile(FileStream fs)
+        /// <summary>
+        /// Get the length of the audio in a WAVE audio file asynchronously.
+        /// </summary>
+        /// <param name="fs">A <see cref="FileStream"/> of an existing WAVE file.</param>
+        /// <returns>A task that returns the length of the audio file in seconds or -1 if an error was encountered.</returns>
+        public static async Task<float> GetLengthOfWAVAudioFileAsync(FileStream fs)
         {
             if (!fs.CanSeek)
                 return -1;
@@ -99,7 +105,7 @@ namespace EnhancedSearchAndFilters.Utilities
             // verify that this is a PCM WAV file
             byte[] byteArray = new byte[WAVHeaderMaxByteLength];
             fs.Seek(0, SeekOrigin.Begin);
-            fs.Read(byteArray, 0, WAVHeaderMaxByteLength);
+            await fs.ReadAsync(byteArray, 0, WAVHeaderMaxByteLength);
             if (byteArray[0] != 'R' ||
                 byteArray[1] != 'I' ||
                 byteArray[2] != 'F' ||
