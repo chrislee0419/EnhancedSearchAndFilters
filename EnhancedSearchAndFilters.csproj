@@ -197,8 +197,9 @@
     <Compile Include="Logger.cs" />
     <Compile Include="PluginConfig.cs" />
     <Compile Include="Search\SearchBehaviour.cs" />
-    <Compile Include="SongData\BeatmapDetailsCoroutineLoader.cs" />
-    <Compile Include="SongData\BeatmapDetailsThreadedLoader.cs" />
+    <Compile Include="SongData\BeatmapDetailsLoader.Coroutine.cs" />
+    <Compile Include="SongData\BeatmapDetailsLoader.Threaded.cs" />
+    <Compile Include="SongData\BeatmapDetailsLoader.ThreadedAsync.cs" />
     <Compile Include="Tweaks\BeatSaverVotingTweaks.cs" />
     <Compile Include="Utilities\AudioFileUtilities.cs" />
     <Compile Include="Utilities\LocalLeaderboardDataHelper.cs" />

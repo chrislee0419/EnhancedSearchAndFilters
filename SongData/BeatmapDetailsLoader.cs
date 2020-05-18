@@ -78,8 +78,8 @@ namespace EnhancedSearchAndFilters.SongData
         {
             WorkChunkSize = PluginConfig.LoaderWorkChunkSize;
 
-            SelectCacher(CacherType.SeparateThread);
-            SelectLoader(LoaderType.SeparateThread);
+            SelectCacher(CacherType.SeparateThreadAsync);
+            SelectLoader(LoaderType.SeparateThreadAsync);
         }
 
         internal void SelectCacher(CacherType type)
@@ -104,6 +104,12 @@ namespace EnhancedSearchAndFilters.SongData
                     _cacher = new ThreadedCacher();
 
                     Logger.log.Debug("Using separate thread to cache BeatmapDetails objects");
+                    break;
+
+                case CacherType.SeparateThreadAsync:
+                    _cacher = new ThreadedAsyncCacher();
+
+                    Logger.log.Debug("Using separate thread with async to cache BeatmapDetails objects");
                     break;
 
                 default:
@@ -139,6 +145,14 @@ namespace EnhancedSearchAndFilters.SongData
                     _loader = go.AddComponent<ThreadedLoader>();
 
                     Logger.log.Debug("Using separate thread to load BeatmapDetails objects");
+                    break;
+
+                case LoaderType.SeparateThreadAsync:
+                    go = new GameObject("ESAFThreadedAsyncLoaded");
+                    go.transform.SetParent(this.transform);
+                    _loader = go.AddComponent<ThreadedAsyncLoader>();
+
+                    Logger.log.Debug("Using separate thread with async to load BeatmapDetails objects");
                     break;
             }
         }
@@ -469,13 +483,15 @@ namespace EnhancedSearchAndFilters.SongData
         {
             None,
             Coroutine,
-            SeparateThread
+            SeparateThread,
+            SeparateThreadAsync
         }
 
         internal enum LoaderType
         {
             Coroutine,
-            SeparateThread
+            SeparateThread,
+            SeparateThreadAsync
         }
         #endregion // Private classes and interfaces
     }
