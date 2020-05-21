@@ -9,6 +9,7 @@ using HMUI;
 using BS_Utils.Utilities;
 using BeatSaberMarkupLanguage;
 using EnhancedSearchAndFilters.SongData;
+using EnhancedSearchAndFilters.UI.Components;
 using EnhancedSearchAndFilters.Utilities;
 using Image = UnityEngine.UI.Image;
 using BSUtilsUtilities = BS_Utils.Utilities.UIUtilities;
@@ -45,6 +46,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         private Dictionary<string, Tuple<TextMeshProUGUI, Image>> _difficultyElements = new Dictionary<string, Tuple<TextMeshProUGUI, Image>>();
 
         private IPreviewBeatmapLevel _level;
+        private SongDetailsDisplay _songDetailsDisplay;
 
         protected override void DidActivate(bool firstActivation, ActivationType activationType)
         {
@@ -52,51 +54,62 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             {
                 this.name = "SongDetailsViewController";
 
-                // fallback to using original method of getting StandardLevelDetailView if reference is somehow null
-                // if this triggers, there is an issue
-                if (ReferenceDetailView == null)
-                {
-                    Logger.log.Debug("ReferenceDetailView is null. Using fallback method of obtaining StandardLevelDetailView object");
+                //// fallback to using original method of getting StandardLevelDetailView if reference is somehow null
+                //// if this triggers, there is an issue
+                //if (ReferenceDetailView == null)
+                //{
+                //    Logger.log.Debug("ReferenceDetailView is null. Using fallback method of obtaining StandardLevelDetailView object");
 
-                    var referenceViewController = Resources.FindObjectsOfTypeAll<StandardLevelDetailViewController>().First();
-                    ReferenceDetailView = referenceViewController.GetPrivateField<StandardLevelDetailView>("_standardLevelDetailView").gameObject;
-                }
+                //    var referenceViewController = Resources.FindObjectsOfTypeAll<StandardLevelDetailViewController>().First();
+                //    ReferenceDetailView = referenceViewController.GetPrivateField<StandardLevelDetailView>("_standardLevelDetailView").gameObject;
+                //}
 
                 this.rectTransform.anchorMin = new Vector2(0.5f, 0f);
                 this.rectTransform.anchorMax = new Vector2(0.5f, 1f);
                 this.rectTransform.anchoredPosition = Vector2.zero;
                 this.rectTransform.sizeDelta = new Vector2(80f, 0f);
 
-                var detailView = Instantiate(ReferenceDetailView, this.transform, false);
-                detailView.SetActive(true);
-                detailView.name = "SearchResultLevelDetail";
-                (detailView.transform as RectTransform).anchoredPosition -= new Vector2(0f, -2f);
+                //var detailView = Instantiate(ReferenceDetailView, this.transform, false);
+                //detailView.SetActive(true);
+                //detailView.name = "SearchResultLevelDetail";
+                //(detailView.transform as RectTransform).anchoredPosition -= new Vector2(0f, -2f);
 
-                _levelParamsPanel = detailView.GetComponentInChildren<LevelParamsPanel>();
-                _coverImage = detailView.GetComponentsInChildren<RawImage>().First(x => x.name == "CoverImage");
-                _songNameText = detailView.GetComponentsInChildren<TextMeshProUGUI>().First(x => x.name == "SongNameText");
-                _selectLevelButton = detailView.GetComponentsInChildren<Button>().First(x => x.name == "PlayButton");
+                //_levelParamsPanel = detailView.GetComponentInChildren<LevelParamsPanel>();
+                //_coverImage = detailView.GetComponentsInChildren<RawImage>().First(x => x.name == "CoverImage");
+                //_songNameText = detailView.GetComponentsInChildren<TextMeshProUGUI>().First(x => x.name == "SongNameText");
+                //_selectLevelButton = detailView.GetComponentsInChildren<Button>().First(x => x.name == "PlayButton");
 
-                _checkmarkSprite = BSUtilsUtilities.LoadSpriteFromResources("EnhancedSearchAndFilters.Assets.checkmark.png");
-                _crossSprite = BSUtilsUtilities.LoadSpriteFromResources("EnhancedSearchAndFilters.Assets.cross.png");
-                _blankSprite = Sprite.Create(Texture2D.blackTexture, new Rect(0f, 0f, 1f, 1f), Vector2.zero);
+                //_checkmarkSprite = BSUtilsUtilities.LoadSpriteFromResources("EnhancedSearchAndFilters.Assets.checkmark.png");
+                //_crossSprite = BSUtilsUtilities.LoadSpriteFromResources("EnhancedSearchAndFilters.Assets.cross.png");
+                //_blankSprite = Sprite.Create(Texture2D.blackTexture, new Rect(0f, 0f, 1f, 1f), Vector2.zero);
 
-                ModifyPanelElements(detailView);
-                ModifyTextElements(detailView);
-                ModifySelectionElements(detailView);
+                //ModifyPanelElements(detailView);
+                //ModifyTextElements(detailView);
+                //ModifySelectionElements(detailView);
+                _songDetailsDisplay = new GameObject("SongDetailsDisplay").AddComponent<SongDetailsDisplay>();
+                _songDetailsDisplay.transform.SetParent(this.transform, false);
+                _songDetailsDisplay.rectTransform.anchorMin = Vector2.zero;
+                _songDetailsDisplay.rectTransform.anchorMax = Vector2.one;
+                _songDetailsDisplay.rectTransform.anchoredPosition = Vector2.zero;
+                _songDetailsDisplay.rectTransform.sizeDelta = new Vector2(-6f, -4f);
+
+                _songDetailsDisplay.SelectButtonPressed += () => SelectButtonPressed?.Invoke(_level);
+                _songDetailsDisplay.KeyboardButtonPressed += () => CompactKeyboardButtonPressed?.Invoke();
             }
             else
             {
-                //// stats panel gets disabled when in party mode, so re-enable it here just in case
-                //RectTransform statsPanel = _standardLevelDetailView.GetComponentsInChildren<RectTransform>(true).First(x => x.name == "Stats");
-                //statsPanel.gameObject.SetActive(true);
-                _compactKeyboardButton.gameObject.SetActive(PluginConfig.CompactSearchMode);
+                ////// stats panel gets disabled when in party mode, so re-enable it here just in case
+                ////RectTransform statsPanel = _standardLevelDetailView.GetComponentsInChildren<RectTransform>(true).First(x => x.name == "Stats");
+                ////statsPanel.gameObject.SetActive(true);
+                //_compactKeyboardButton.gameObject.SetActive(PluginConfig.CompactSearchMode);
 
-                // strings get reset, so they have to be reapplied
-                foreach (var str in _difficultyStrings)
-                {
-                    _difficultyElements[str].Item1.text = str;
-                }
+                //// strings get reset, so they have to be reapplied
+                //foreach (var str in _difficultyStrings)
+                //{
+                //    _difficultyElements[str].Item1.text = str;
+                //}
+
+                _songDetailsDisplay.KeyboardButtonActive = PluginConfig.CompactSearchMode;
             }
         }
 
@@ -104,43 +117,45 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         {
             _level = level;
 
-            _songNameText.text = level.songName;
-            _levelParamsPanel.bpm = level.beatsPerMinute;
-            SetCoverImageAsync(level);
-            _levelParamsPanel.duration = level.songDuration;
-            _detailsText.text = "";
+            //            _songNameText.text = level.songName;
+            //            _levelParamsPanel.bpm = level.beatsPerMinute;
+            //            SetCoverImageAsync(level);
+            //            _levelParamsPanel.duration = level.songDuration;
+            //            _detailsText.text = "";
 
-            foreach (var tuple in _difficultyElements.Values)
-            {
-                tuple.Item2.sprite = _blankSprite;
-                tuple.Item2.color = new Color(0f, 0f, 0f, 0f);
-            }
+            //            foreach (var tuple in _difficultyElements.Values)
+            //            {
+            //                tuple.Item2.sprite = _blankSprite;
+            //                tuple.Item2.color = new Color(0f, 0f, 0f, 0f);
+            //            }
 
-            if (level is CustomPreviewBeatmapLevel)
-            {
-#pragma warning disable CS4014
-                BeatmapDetailsLoader.instance.LoadSingleBeatmapAsync(level as CustomPreviewBeatmapLevel,
-                    delegate (IBeatmapLevel beatmapLevel)
-                    {
-                        if (beatmapLevel != null)
-                            SetOtherSongDetails(beatmapLevel);
-                    });
-#pragma warning restore CS4014
-            }
-            else if (level is IBeatmapLevel)
-            {
-                SetOtherSongDetails((level as IBeatmapLevel), false);
-            }
-            else
-            {
-                foreach (var tuple in _difficultyElements.Values)
-                {
-                    tuple.Item2.sprite = _crossSprite;
-                    tuple.Item2.color = _crossColor;
-                }
+            //            if (level is CustomPreviewBeatmapLevel)
+            //            {
+            //#pragma warning disable CS4014
+            //                BeatmapDetailsLoader.instance.LoadSingleBeatmapAsync(level as CustomPreviewBeatmapLevel,
+            //                    delegate (IBeatmapLevel beatmapLevel)
+            //                    {
+            //                        if (beatmapLevel != null)
+            //                            SetOtherSongDetails(beatmapLevel);
+            //                    });
+            //#pragma warning restore CS4014
+            //            }
+            //            else if (level is IBeatmapLevel)
+            //            {
+            //                SetOtherSongDetails((level as IBeatmapLevel), false);
+            //            }
+            //            else
+            //            {
+            //                foreach (var tuple in _difficultyElements.Values)
+            //                {
+            //                    tuple.Item2.sprite = _crossSprite;
+            //                    tuple.Item2.color = _crossColor;
+            //                }
 
-                _detailsText.text = ": DLC song not yet purchased";
-            }
+            //                _detailsText.text = ": DLC song not yet purchased";
+            //}
+
+            _songDetailsDisplay.SetContent(level);
         }
 
         private async void SetCoverImageAsync(IPreviewBeatmapLevel level)

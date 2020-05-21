@@ -9,6 +9,7 @@ using SongCore;
 using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.Parser;
 using BSMLUtilities = BeatSaberMarkupLanguage.Utilities;
+using BSUtilsUtilities = BS_Utils.Utilities.UIUtilities;
 
 namespace EnhancedSearchAndFilters.Utilities
 {
@@ -33,6 +34,7 @@ namespace EnhancedSearchAndFilters.Utilities
 
         public static Sprite DefaultCoverImage => Loader.defaultCoverImage;
 
+        private static Material _noGlowMaterial;
         public static Material NoGlowMaterial
         {
             get
@@ -46,7 +48,53 @@ namespace EnhancedSearchAndFilters.Utilities
                 return _noGlowMaterial;
             }
         }
-        private static Material _noGlowMaterial;
+
+        private static Sprite _roundRectPanelSprite;
+        public static Sprite RoundRectPanelSprite
+        {
+            get
+            {
+                if (_roundRectPanelSprite == null)
+                {
+                    _roundRectPanelSprite = GameObject.Instantiate(Resources.FindObjectsOfTypeAll<Image>().First(x => x.name == "LevelInfo" && x.sprite?.name == "RoundRectPanel").sprite);
+                    _roundRectPanelSprite.name = "ESAFRoundRectPanel";
+                }
+                return _roundRectPanelSprite;
+            }
+        }
+
+        private static Sprite _crossSprite;
+        public static Sprite CrossSprite
+        {
+            get
+            {
+                if (_crossSprite == null)
+                    _crossSprite = BSUtilsUtilities.LoadSpriteFromResources("EnhancedSearchAndFilters.Assets.cross.png");
+                return _crossSprite;
+            }
+        }
+
+        private static Sprite _checkmarkSprite;
+        public static Sprite CheckmarkSprite
+        {
+            get
+            {
+                if (_checkmarkSprite == null)
+                    _checkmarkSprite = BSUtilsUtilities.LoadSpriteFromResources("EnhancedSearchAndFilters.Assets.checkmark.png");
+                return _checkmarkSprite;
+            }
+        }
+
+        private static Sprite _blankSprite;
+        public static Sprite BlankSprite
+        {
+            get
+            {
+                if (_blankSprite == null)
+                    _blankSprite = Sprite.Create(Texture2D.blackTexture, new Rect(0f, 0f, 1f, 1f), Vector2.zero);
+                return _blankSprite;
+            }
+        }
 
         private static GameObject _loadingSpinnerPrefab;
 
