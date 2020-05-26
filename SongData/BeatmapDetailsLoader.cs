@@ -69,8 +69,8 @@ namespace EnhancedSearchAndFilters.SongData
 
         private const int WorkQueryChunkSize = 50;
 
-        // 5 second timeout for loading tasks
-        private static readonly TimeSpan TimeoutDelay = new TimeSpan(0, 0, 5);
+        // 10 second timeout for loading tasks
+        private static readonly TimeSpan TimeoutDelay = new TimeSpan(0, 0, 10);
 
         private static string CachedBeatmapDetailsFilePath = Path.Combine(Environment.CurrentDirectory, "UserData", "EnhancedFilterDetailsCache.json");
 
@@ -169,7 +169,7 @@ namespace EnhancedSearchAndFilters.SongData
         /// </summary>
         public void PauseCaching()
         {
-            if (!IsCaching || _cacher == null)
+            if (_cacher == null || !IsCaching)
                 return;
 
             Logger.log.Info("Pausing beatmap details caching operation");
@@ -181,7 +181,7 @@ namespace EnhancedSearchAndFilters.SongData
         /// </summary>
         public void StopCaching()
         {
-            if (!IsCaching || _cacher == null)
+            if (_cacher == null || !IsCaching)
                 return;
 
             Logger.log.Info("Cancelling ongoing beatmap details caching operation");
@@ -283,7 +283,7 @@ namespace EnhancedSearchAndFilters.SongData
                     customLevel.SetBeatmapLevelData(beatmapData);
 
                     string levelID = GetSimplifiedLevelID(customLevel);
-                    if (!_cache.ContainsKey(levelID))
+                    if (!_cache.ContainsKey(levelID) && !IsCaching)
                         _cache[GetSimplifiedLevelID(customLevel)] = new BeatmapDetails(customLevel);
 
                     try
