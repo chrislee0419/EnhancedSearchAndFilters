@@ -103,12 +103,6 @@ namespace EnhancedSearchAndFilters.Filters
             if (!IsFilterApplied)
                 return;
 
-            List<CustomPreviewBeatmapLevel> allCustomLevels = Loader.CustomLevels.Values.ToList();
-            allCustomLevels.AddRange(Loader.CustomWIPLevels.Values);
-            allCustomLevels.AddRange(Loader.CachedWIPLevels.Values);
-            foreach (var folder in Loader.SeperateSongFolders)
-                allCustomLevels.AddRange(folder.Levels.Values);
-
             bool mappingExtensionsApplied = _mappingExtensionsAppliedValue != ModRequirementFilterOption.Off;
             bool noodleExtensionsApplied = _noodleExtensionsAppliedValue != ModRequirementFilterOption.Off;
             bool chromaApplied = _chromaAppliedValue != ModRequirementFilterOption.Off;
@@ -118,11 +112,7 @@ namespace EnhancedSearchAndFilters.Filters
                 if (details.IsOST)
                     return true;
 
-                CustomPreviewBeatmapLevel customLevel = allCustomLevels.FirstOrDefault(x => x.levelID.StartsWith(details.LevelID));
-                if (customLevel == null)
-                    return true;
-
-                ExtraSongData songData = Collections.RetrieveExtraSongData(Hashing.GetCustomLevelHash(customLevel), customLevel.customLevelPath);
+                ExtraSongData songData = Collections.RetrieveExtraSongData(BeatmapDetailsLoader.GetCustomLevelHash(details));
                 if (songData == null)
                     return true;
 

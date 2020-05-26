@@ -396,6 +396,32 @@ namespace EnhancedSearchAndFilters.SongData
         }
 
         /// <summary>
+        /// Gets the hash of a custom level using its level ID.
+        /// </summary>
+        /// <param name="customLevel">Custom level to get the hash for.</param>
+        /// <returns>A string containing the level's hash or an empty string if unsuccessful.</returns>
+        public static string GetCustomLevelHash(CustomPreviewBeatmapLevel customLevel)
+        {
+            if (!customLevel.levelID.StartsWith(CustomLevelLoader.kCustomLevelPrefixId))
+                return string.Empty;
+            else
+                return customLevel.levelID.Substring(CustomLevelLoader.kCustomLevelPrefixId.Length, 40);
+        }
+
+        /// <summary>
+        /// Gets the hash of a <see cref="BeatmapDetails"/> using its level ID.
+        /// </summary>
+        /// <param name="details"><see cref="BeatmapDetails"/> to get the hash for.</param>
+        /// <returns>A string containing the level's hash or an empty string if unsuccessful.</returns>
+        public static string GetCustomLevelHash(BeatmapDetails details)
+        {
+            if (details.IsOST)
+                return string.Empty;
+            else
+                return details.LevelID.Substring(CustomLevelLoader.kCustomLevelPrefixId.Length, 40);
+        }
+
+        /// <summary>
         /// Get the level ID of an IPreviewBeatmapLevel. Removes the directory from a custom level's ID if it exists.
         /// </summary>
         /// <param name="level">A preview beatmap level.</param>
