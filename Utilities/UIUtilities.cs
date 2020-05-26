@@ -19,6 +19,10 @@ namespace EnhancedSearchAndFilters.Utilities
         /// </summary>
         public static readonly Color RoundRectDefaultColour = new Color(0f, 0f, 0f, 0.25f);
         /// <summary>
+        /// Darker colour for RoundRectPanel image.
+        /// </summary>
+        public static readonly Color RoundRectDarkColour = new Color(0f, 0f, 0f, 0.5f);
+        /// <summary>
         /// Colour used by most highlighted elements.
         /// </summary>
         public static readonly Color LightBlueHighlightedColour = new Color(0.025f, 0.415f, 0.670f);
@@ -81,7 +85,8 @@ namespace EnhancedSearchAndFilters.Utilities
         /// </summary>
         /// <param name="rt">RectTransform to scale.</param>
         /// <param name="scalingFactor">How much to scale the RectTransform by.</param>
-        public static void ScaleRectTransform(RectTransform rt, float scalingFactor = 0.75f)
+        /// <param name="scaleChildren">Scale children TextMeshProUGUI font sizes and RectTransform size deltas.</param>
+        public static void ScaleRectTransform(RectTransform rt, float scalingFactor = 0.75f, bool scaleChildren = false)
         {
             rt.localScale *= scalingFactor;
 
@@ -95,6 +100,29 @@ namespace EnhancedSearchAndFilters.Utilities
             else
             {
                 rt.sizeDelta *= inverseScale;
+            }
+
+            if (scaleChildren)
+            {
+                foreach (var childLayout in rt.GetComponentsInChildren<LayoutElement>())
+                {
+                    if (childLayout == layout)
+                        continue;
+
+                    childLayout.preferredWidth *= inverseScale;
+                    childLayout.preferredHeight *= inverseScale;
+                }
+
+                foreach (var childRT in rt.GetComponentsInChildren<RectTransform>())
+                {
+                    if (childRT == rt || childRT.GetComponent<LayoutElement>() != null)
+                        continue;
+
+                    childRT.sizeDelta *= inverseScale;
+                }
+
+                foreach (var text in rt.GetComponentsInChildren<TextMeshProUGUI>())
+                    text.fontSize *= inverseScale;
             }
         }
 
