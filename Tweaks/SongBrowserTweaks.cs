@@ -214,7 +214,7 @@ namespace EnhancedSearchAndFilters.Tweaks
 
         public static void DisableOtherFiltersButton()
         {
-            if (!ModLoaded || !Initialized)
+            if (!ModLoaded || !Initialized || _filterButton == null)
                 return;
 
             _filterButton.gameObject.SetActive(false);
