@@ -351,6 +351,8 @@ namespace EnhancedSearchAndFilters.UI.Components
             _keyboardButton.name = "DisplayKeyboardButton";
             _keyboardButton.SetButtonText("DISPLAY\nKEYBOARD");
             _keyboardButton.SetButtonTextSize(3.3f);
+            _keyboardButton.interactable = true;
+            _keyboardButton.GetComponentInChildren<Image>().color = new Color(0f, 0.706f, 1f, 0.784f);
             _keyboardButton.onClick.RemoveAllListeners();
             _keyboardButton.onClick.AddListener(() => KeyboardButtonPressed?.Invoke());
             _keyboardButton.gameObject.SetActive(PluginConfig.CompactSearchMode);
