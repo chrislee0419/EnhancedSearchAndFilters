@@ -301,7 +301,7 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
             PreviousButtonInteractable = false;
             NextButtonInteractable = false;
             QuickFilterButtonInteractable = false;
-            SetText(LoadingText);
+            SetText(LoadingText, false);
         }
 
         private void ResetButton()
@@ -312,7 +312,7 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
             if (_currentQuickFilter == null)
             {
                 QuickFilterButtonInteractable = false;
-                SetText(NoQuickFiltersAvailableText);
+                SetText(NoQuickFiltersAvailableText, false);
             }
             else
             {
@@ -323,9 +323,10 @@ namespace EnhancedSearchAndFilters.UI.Components.ButtonPanelModules
             _strokeImage.color = Color.white;
         }
 
-        private void SetText(string text)
+        private void SetText(string text, bool escapeTags = true)
         {
-            text = text.EscapeTextMeshProTags();
+            if (escapeTags)
+                text = text.EscapeTextMeshProTags();
             var textWidth = _text.GetPreferredValues(text).x;
 
             if (_scrollAnimation != null)
