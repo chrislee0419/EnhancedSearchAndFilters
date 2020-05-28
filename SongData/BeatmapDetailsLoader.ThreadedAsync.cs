@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using UnityEngine;
-using IPA.Utilities.Async;
 using EnhancedSearchAndFilters.Tweaks;
 
 namespace EnhancedSearchAndFilters.SongData
@@ -147,15 +146,14 @@ namespace EnhancedSearchAndFilters.SongData
                         {
                             var finishedTask = await Task.WhenAny(taskList);
 
-                            BeatmapDetails beatmapDetails = await finishedTask;
-                            if (beatmapDetails == null)
+                            if (finishedTask.Status == TaskStatus.RanToCompletion)
                             {
-                                ++errorCount;
-                                taskList.Remove(finishedTask);
-                                continue;
+                                BeatmapDetails beatmapDetails = finishedTask.Result;
+                                if (beatmapDetails != null)
+                                    BeatmapDetailsLoader._cache[beatmapDetails.LevelID] = beatmapDetails;
+                                else
+                                    ++errorCount;
                             }
-
-                            BeatmapDetailsLoader._cache[beatmapDetails.LevelID] = beatmapDetails;
 
                             taskList.Remove(finishedTask);
                         }

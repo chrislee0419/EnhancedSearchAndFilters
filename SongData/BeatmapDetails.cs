@@ -292,6 +292,7 @@ namespace EnhancedSearchAndFilters.SongData
             beatmapDetails.BeatsPerMinute = infoData.beatsPerMinute;
 
             // load difficulties for note info
+            List<Task> tasksList = new List<Task>();
             beatmapDetails.DifficultyBeatmapSets = new SimplifiedDifficultyBeatmapSet[infoData.difficultyBeatmapSets.Length];
             for (int i = 0; i < infoData.difficultyBeatmapSets.Length; ++i)
             {
@@ -318,11 +319,46 @@ namespace EnhancedSearchAndFilters.SongData
                     BeatmapSaveData beatmapSaveData = null;
                     try
                     {
-                        using (StreamReader sr = File.OpenText(diffFilePath))
+                        StreamReader sr = File.OpenText(diffFilePath);
+                        tasksList.Add(sr.ReadToEndAsync().ContinueWith(delegate (Task<string> result)
                         {
-                            string text = await sr.ReadToEndAsync();
-                            beatmapSaveData = BeatmapSaveData.DeserializeFromJSONString(text);
-                        }
+                            // before anything else, close the file stream
+                            sr.Close();
+
+                            if (result.Status != TaskStatus.RanToCompletion)
+                            {
+                                currentSimplifiedSet.DifficultyBeatmaps[j] = null;
+                                return;
+                            }
+
+                            beatmapSaveData = BeatmapSaveData.DeserializeFromJSONString(result.Result);
+                            if (beatmapSaveData == null)
+                            {
+                                currentSimplifiedSet.DifficultyBeatmaps[j] = null;
+                                return;
+                            }
+
+                            // count notes and bombs
+                            currentSimplifiedDiff.NotesCount = 0;
+                            currentSimplifiedDiff.BombsCount = 0;
+                            foreach (var note in beatmapSaveData.notes)
+                            {
+                                if (note.type.IsBasicNote())
+                                    ++currentSimplifiedDiff.NotesCount;
+                                else if (note.type == NoteType.Bomb)
+                                    ++currentSimplifiedDiff.BombsCount;
+                            }
+
+                            // count rotation events
+                            currentSimplifiedDiff.SpawnRotationEventsCount = 0;
+                            foreach (var mapEvent in beatmapSaveData.events)
+                            {
+                                if (mapEvent.type.IsRotationEvent())
+                                    ++currentSimplifiedDiff.SpawnRotationEventsCount;
+                            }
+
+                            currentSimplifiedDiff.ObstaclesCount = beatmapSaveData.obstacles.Count;
+                        }));
                     }
                     catch (Exception e)
                     {
@@ -330,54 +366,50 @@ namespace EnhancedSearchAndFilters.SongData
                         Logger.log.Debug(e);
                         return null;
                     }
-
-                    if (beatmapSaveData == null)
-                    {
-                        Logger.log.Debug("Unable to create BeatmapDetails object from files (could not load BeatmapSaveData from file)");
-                        return null;
-                    }
-
-                    // count notes and bombs
-                    currentSimplifiedDiff.NotesCount = 0;
-                    currentSimplifiedDiff.BombsCount = 0;
-                    foreach (var note in beatmapSaveData.notes)
-                    {
-                        if (note.type.IsBasicNote())
-                            ++currentSimplifiedDiff.NotesCount;
-                        else if (note.type == NoteType.Bomb)
-                            ++currentSimplifiedDiff.BombsCount;
-                    }
-
-                    // count rotation events
-                    currentSimplifiedDiff.SpawnRotationEventsCount = 0;
-                    foreach (var mapEvent in beatmapSaveData.events)
-                    {
-                        if (mapEvent.type.IsRotationEvent())
-                            ++currentSimplifiedDiff.SpawnRotationEventsCount;
-                    }
-
-                    currentSimplifiedDiff.ObstaclesCount = beatmapSaveData.obstacles.Count;
                 }
             }
 
             // get map length from audio file
             string audioFilePath = Path.Combine(customLevel.customLevelPath, infoData.songFilename);
-            if (!File.Exists(audioFilePath))
-                return null;
-
-            using (FileStream fs = File.OpenRead(audioFilePath))
+            if (File.Exists(audioFilePath))
             {
+                FileStream fs = File.OpenRead(audioFilePath);
                 string extension = Path.GetExtension(audioFilePath).ToLower();
-                float length = -1;
                 if (extension == ".ogg" || extension == ".egg")
-                    length = await AudioFileUtilities.GetLengthOfOGGVorbisAudioFileAsync(fs);
-                else if (extension == ".wav")
-                    length = await AudioFileUtilities.GetLengthOfWAVAudioFileAsync(fs);
+                {
+                    tasksList.Add(AudioFileUtilities.GetLengthOfOGGVorbisAudioFileAsync(fs).ContinueWith(delegate (Task<float> result)
+                    {
+                        fs.Close();
 
-                if (length <= 0)
-                    return null;
+                        if (result.Status == TaskStatus.RanToCompletion)
+                            beatmapDetails.SongDuration = result.Result;
+                        else
+                            beatmapDetails.SongDuration = -1f;
+                    }));
+                }
+                else if (extension == ".wav")
+                {
+                    tasksList.Add(AudioFileUtilities.GetLengthOfWAVAudioFileAsync(fs).ContinueWith(delegate (Task<float> result)
+                    {
+                        fs.Close();
+
+                        if (result.Status == TaskStatus.RanToCompletion)
+                            beatmapDetails.SongDuration = result.Result;
+                        else
+                            beatmapDetails.SongDuration = -1f;
+                    }));
+                }
                 else
-                    beatmapDetails.SongDuration = length;
+                {
+                    fs.Close();
+                }
+            }
+
+            await Task.WhenAll(tasksList);
+            if (beatmapDetails.SongDuration <= 0f || beatmapDetails.DifficultyBeatmapSets.Any(x => x == null || x.DifficultyBeatmaps.Any(y => y == null)))
+            {
+                Logger.log.Debug("Unable to create BeatmapDetails object from files (could not load BeatmapSaveData from file)");
+                return null;
             }
 
             return beatmapDetails;
