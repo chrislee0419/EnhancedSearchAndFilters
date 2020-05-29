@@ -51,7 +51,7 @@ namespace EnhancedSearchAndFilters.Tweaks
         private static SongDataCoreDataStatus _GetBeatmapDetails(CustomPreviewBeatmapLevel level, out BeatmapDetails beatmapDetails)
         {
             if (!IsDataAvailable ||
-                !SongDataCorePlugin.Songs.Data.Songs.TryGetValue(GetCustomLevelHash(level), out var song))
+                !SongDataCorePlugin.Songs.Data.Songs.TryGetValue(BeatmapDetailsLoader.GetCustomLevelHash(level), out var song))
             {
                 beatmapDetails = null;
                 return SongDataCoreDataStatus.NoData;
@@ -175,7 +175,7 @@ namespace EnhancedSearchAndFilters.Tweaks
         private static bool _IsRanked(string levelID, out float[] ppList)
         {
             if (!IsDataAvailable ||
-                !SongDataCorePlugin.Songs.Data.Songs.TryGetValue(GetCustomLevelHash(levelID), out var song))
+                !SongDataCorePlugin.Songs.Data.Songs.TryGetValue(BeatmapDetailsLoader.GetCustomLevelHash(levelID), out var song))
             {
                 ppList = null;
                 return false;
@@ -201,22 +201,10 @@ namespace EnhancedSearchAndFilters.Tweaks
         private static Tuple<string, double>[] _GetStarDifficultyRating(string levelID)
         {
             if (!IsDataAvailable ||
-                !SongDataCorePlugin.Songs.Data.Songs.TryGetValue(GetCustomLevelHash(levelID), out var song))
+                !SongDataCorePlugin.Songs.Data.Songs.TryGetValue(BeatmapDetailsLoader.GetCustomLevelHash(levelID), out var song))
                 return null;
 
             return song.diffs.Select(x => new Tuple<string, double>(x.diff, x.star)).ToArray();
-        }
-
-        private static string GetCustomLevelHash(CustomPreviewBeatmapLevel level) => GetCustomLevelHash(level.levelID);
-
-        private static string GetCustomLevelHash(string levelID)
-        {
-            var simplifiedID = BeatmapDetailsLoader.GetSimplifiedLevelID(levelID);
-
-            if (simplifiedID.StartsWith(CustomLevelLoader.kCustomLevelPrefixId))
-                return simplifiedID.Substring(CustomLevelLoader.kCustomLevelPrefixId.Length);
-            else
-                return simplifiedID;
         }
     }
 
