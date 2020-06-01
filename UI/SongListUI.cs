@@ -103,6 +103,7 @@ namespace EnhancedSearchAndFilters.UI
         {
             if (mode == FreePlayMode.Solo)
             {
+                Logger.log.Debug("Selected solo free play mode");
                 _freePlayFlowCoordinator = FindObjectOfType<SoloFreePlayFlowCoordinator>();
                 (_freePlayFlowCoordinator as SoloFreePlayFlowCoordinator).didFinishEvent += OnFreePlayFlowCoordinatorFinished;
 
@@ -114,6 +115,7 @@ namespace EnhancedSearchAndFilters.UI
             }
             else if (mode == FreePlayMode.Party)
             {
+                Logger.log.Debug("Selected party free play mode");
                 _freePlayFlowCoordinator = FindObjectOfType<PartyFreePlayFlowCoordinator>();
                 (_freePlayFlowCoordinator as PartyFreePlayFlowCoordinator).didFinishEvent += OnFreePlayFlowCoordinatorFinished;
 
@@ -125,6 +127,7 @@ namespace EnhancedSearchAndFilters.UI
             }
             else if (mode == FreePlayMode.Campaign)
             {
+                Logger.log.Debug("Selected campaign play mode");
                 _freePlayFlowCoordinator = FindObjectOfType<CampaignFlowCoordinator>();
                 (_freePlayFlowCoordinator as CampaignFlowCoordinator).didFinishEvent += OnFreePlayFlowCoordinatorFinished;
             }
@@ -600,6 +603,12 @@ namespace EnhancedSearchAndFilters.UI
             {
                 _lastPack = levelPack;
                 _isSelectingInitialLevelPack = false;
+
+                if (levelPack is IBeatmapLevelPack beatmapLevelPack)
+                    Logger.log.Debug($"Storing '{beatmapLevelPack.packName}' (id = '{beatmapLevelPack.packID}') level pack as initial pack");
+                else
+                    Logger.log.Debug($"Storing '{levelPack.collectionName}' level collection as initial pack");
+
                 return;
             }
             // in ConfirmDeleteButtonClicked, the call to SongCore.Loader.Instance.DeleteSong will reload the level packs
