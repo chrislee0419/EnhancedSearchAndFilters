@@ -132,7 +132,7 @@ namespace EnhancedSearchAndFilters.Tweaks
                 });
 
                 // custom filter handler when the same level pack is selected
-                SongBrowserModel.CustomFilterHandler = delegate (IBeatmapLevelPack levelPack)
+                SongBrowserModel.CustomFilterHandler = delegate (IAnnotatedBeatmapLevelCollection levelPack)
                 {
                     FilterList.ApplyFilter(levelPack.beatmapLevelCollection.beatmapLevels, out var filteredLevels, false);
                     return filteredLevels.ToList();
