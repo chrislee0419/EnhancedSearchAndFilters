@@ -2,6 +2,7 @@
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using SemVer;
 using BS_Utils.Utilities;
 using SongBrowser;
 using SongBrowser.Internals;
@@ -9,12 +10,28 @@ using SongBrowser.UI;
 using SongBrowser.DataAccess;
 using EnhancedSearchAndFilters.Filters;
 using EnhancedSearchAndFilters.UI;
+using Version = SemVer.Version;
 
 namespace EnhancedSearchAndFilters.Tweaks
 {
     internal static class SongBrowserTweaks
     {
         public static bool ModLoaded { get; set; } = false;
+        public static Version ModVersion { get; set; }
+        public static bool IsModAvailable
+        {
+            get
+            {
+                try
+                {
+                    return ModLoaded && ValidVersionRange.IsSatisfied(ModVersion);
+                }
+                catch (NullReferenceException)
+                {
+                    return false;
+                }
+            }
+        }
         public static bool Initialized { get; set; } = false;
 
         private static object _songBrowserUI = null;
@@ -23,9 +40,11 @@ namespace EnhancedSearchAndFilters.Tweaks
         private static Button _filterButton;
         private static Button _clearFiltersButton;
 
+        public static readonly Range ValidVersionRange = new Range("^6.0.6");
+
         public static bool Init()
         {
-            if (!ModLoaded)
+            if (!IsModAvailable)
                 return false;
 
             Logger.log.Info("Attempting to initialize SongBrowser tweaks.");
@@ -162,7 +181,7 @@ namespace EnhancedSearchAndFilters.Tweaks
         /// </summary>
         public static void ApplyFilters()
         {
-            if (!ModLoaded || !Initialized)
+            if (!IsModAvailable || !Initialized)
                 return;
             _ApplyFilters();
         }
@@ -183,7 +202,7 @@ namespace EnhancedSearchAndFilters.Tweaks
         /// </summary>
         public static void FiltersUnapplied()
         {
-            if (!ModLoaded || !Initialized)
+            if (!IsModAvailable || !Initialized)
                 return;
             _FiltersUnapplied();
         }
@@ -201,7 +220,7 @@ namespace EnhancedSearchAndFilters.Tweaks
         /// <returns>A boolean indicating whether a SongBrowser filter is applied.</returns>
         public static bool IsFilterApplied()
         {
-            if (!ModLoaded || !Initialized)
+            if (!IsModAvailable || !Initialized)
                 return false;
 
             return _IsFilterApplied();
@@ -214,7 +233,7 @@ namespace EnhancedSearchAndFilters.Tweaks
 
         public static void DisableOtherFiltersButton()
         {
-            if (!ModLoaded || !Initialized || _filterButton == null)
+            if (!IsModAvailable || !Initialized || _filterButton == null)
                 return;
 
             _filterButton.gameObject.SetActive(false);

@@ -220,6 +220,12 @@ namespace EnhancedSearchAndFilters.UI
 
         private IEnumerator GetSongBrowserButtons()
         {
+            if (SongBrowserTweaks.ModLoaded && !SongBrowserTweaks.IsModAvailable)
+            {
+                Logger.log.Error($"Unable to initialize this mod to work with SongBrowser (SongBrowser v{SongBrowserTweaks.ValidVersionRange.ToString().Replace("^", "")} or above is required)");
+                yield break;
+            }
+
             Logger.log.Info("SongBrowser mod found. Attempting to modify button behaviour.");
 
             int tries;

@@ -80,15 +80,22 @@ namespace EnhancedSearchAndFilters
 
         private void OnEarlyMenuSceneLoadedFresh(ScenesTransitionSetupDataSO setupData)
         {
+            const string SongBrowserPluginId = "SongBrowser";
+            const string SongDataCorePluginId = "SongDataCore";
+            const string BeatSaverVotingPluginId = "BeatSaverVoting";
+
 #pragma warning disable CS0618 // remove PluginManager.Plugins is obsolete warning
-            SongBrowserTweaks.ModLoaded = IPAPluginManager.GetPluginFromId("SongBrowser") != null || IPAPluginManager.GetPlugin("Song Browser") != null || IPAPluginManager.Plugins.Any(x => x.Name == "Song Browser");
-            SongDataCoreTweaks.ModLoaded = IPAPluginManager.GetPluginFromId("SongDataCore") != null;
-            SongDataCoreTweaks.ModVersion = IPAPluginManager.GetPluginFromId("SongDataCore")?.Version;
-            BeatSaverVotingTweaks.ModLoaded = IPAPluginManager.GetPluginFromId("BeatSaverVoting") != null;
+            SongBrowserTweaks.ModLoaded = IPAPluginManager.GetPluginFromId(SongBrowserPluginId) != null;
+            SongBrowserTweaks.ModVersion = IPAPluginManager.GetPluginFromId(SongBrowserPluginId)?.Version;
+
+            SongDataCoreTweaks.ModLoaded = IPAPluginManager.GetPluginFromId(SongDataCorePluginId) != null;
+            SongDataCoreTweaks.ModVersion = IPAPluginManager.GetPluginFromId(SongDataCorePluginId)?.Version;
+
+            BeatSaverVotingTweaks.ModLoaded = IPAPluginManager.GetPluginFromId(BeatSaverVotingPluginId) != null;
 #pragma warning restore CS0618
 
             if (SongBrowserTweaks.ModLoaded)
-                Logger.log.Debug("SongBrowser detected");
+                Logger.log.Debug($"SongBrowser detected (Is correct version = {SongBrowserTweaks.IsModAvailable})");
             if (SongDataCoreTweaks.ModLoaded)
                 Logger.log.Debug($"SongDataCore detected (Is correct version = {SongDataCoreTweaks.IsModAvailable})");
             if (BeatSaverVotingTweaks.ModLoaded)
