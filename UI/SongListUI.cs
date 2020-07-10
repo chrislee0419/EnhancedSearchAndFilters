@@ -179,29 +179,34 @@ namespace EnhancedSearchAndFilters.UI
             LevelFilteringNavigationController.SelectAnnotatedBeatmapLevelCollection(levelPack);
 
             // try to select last level as well
-            string[] lastLevelData = PluginConfig.LastLevelID.Split(new string[]{ PluginConfig.LastLevelIDSeparator }, StringSplitOptions.None);
+            string[] lastLevelData = PluginConfig.LastLevelID.Split(new string[] { PluginConfig.LastLevelIDSeparator }, StringSplitOptions.None);
             if (lastLevelData.Length != 3)
                 return;
 
-            string levelID = lastLevelData[0];
-
-            IPreviewBeatmapLevel level = levelPack.beatmapLevelCollection.beatmapLevels.FirstOrDefault(x => x.levelID == levelID);
-            if (level != null)
+            // select last level on the next frame, since the sort mode reselection done in LevelPackSelected
+            // will be delayed to the next frame and will cause the level to be deselected
+            StartCoroutine(UIUtilities.DelayedAction(delegate ()
             {
-                SelectLevel(level);
-            }
-            else
-            {
-                // could not find level with levelID
-                // either song was deleted or is a WIP level and was changed
-                // try using song name and level author as fallback
-                string songName = lastLevelData[1];
-                string levelAuthor = lastLevelData[2];
+                string levelID = lastLevelData[0];
 
-                level = levelPack.beatmapLevelCollection.beatmapLevels.FirstOrDefault(x => x.songName == songName && x.levelAuthorName == levelAuthor);
+                IPreviewBeatmapLevel level = levelPack.beatmapLevelCollection.beatmapLevels.FirstOrDefault(x => x.levelID == levelID);
                 if (level != null)
+                {
                     SelectLevel(level);
-            }
+                }
+                else
+                {
+                    // could not find level with levelID
+                    // either song was deleted or is a WIP level and was changed
+                    // try using song name and level author as fallback
+                    string songName = lastLevelData[1];
+                    string levelAuthor = lastLevelData[2];
+
+                    level = levelPack.beatmapLevelCollection.beatmapLevels.FirstOrDefault(x => x.songName == songName && x.levelAuthorName == levelAuthor);
+                    if (level != null)
+                        SelectLevel(level);
+                }
+            }, 2, false));
 
             return;
 
