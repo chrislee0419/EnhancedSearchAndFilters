@@ -131,17 +131,17 @@ namespace EnhancedSearchAndFilters.Utilities
         /// Invoke an action after a short wait.
         /// </summary>
         /// <param name="action">Action to invoke after the wait.</param>
+        /// <param name="framesToWait">The number of frames to wait.</param>
         /// <param name="waitForEndOfFrame">True to wait for the end of the frame. False to wait for the next frame</param>
         /// <returns>An IEnumerator to be used by <see cref="MonoBehaviour.StartCoroutine(IEnumerator)"/>.</returns>
-        public static IEnumerator DelayedAction(Action action, bool waitForEndOfFrame = true)
+        public static IEnumerator DelayedAction(Action action, int framesToWait = 1, bool waitForEndOfFrame = true)
         {
             if (action == null)
                 yield break;
 
-            if (waitForEndOfFrame)
-                yield return _wait;
-            else
-                yield return null;
+            WaitForEndOfFrame wait = waitForEndOfFrame ? _wait : null;
+            while (framesToWait-- > 0)
+                yield return wait;
 
             action.Invoke();
         }
