@@ -9,7 +9,6 @@ using SongCore;
 using BeatSaberMarkupLanguage;
 using EnhancedSearchAndFilters.Filters;
 using EnhancedSearchAndFilters.Tweaks;
-using EnhancedSearchAndFilters.UI.ViewControllers;
 using EnhancedSearchAndFilters.UI.FlowCoordinators;
 using EnhancedSearchAndFilters.SongData;
 using UIUtilities = EnhancedSearchAndFilters.Utilities.UIUtilities;
@@ -51,23 +50,6 @@ namespace EnhancedSearchAndFilters.UI
 
             _levelCollectionTableView = viewControllersContainer.GetComponentInChildren<LevelCollectionTableView>(true);
             LevelSelectionNavigationController = viewControllersContainer.GetComponentInChildren<LevelSelectionNavigationController>(true);
-
-            var referenceDetailView = Resources.FindObjectsOfTypeAll<StandardLevelDetailView>().FirstOrDefault();
-            if (referenceDetailView == null)
-            {
-                Logger.log.Warn("Unable to get reference StandardLevelDetailView");
-            }
-            else
-            {
-                var referenceDetailViewGO = Instantiate(referenceDetailView.gameObject, this.transform);
-                referenceDetailViewGO.name = "ESAFReferenceStandardLevelDetailView";
-                referenceDetailViewGO.SetActive(false);
-
-                SongDetailsViewController.BlurRenderer = referenceDetailView.GetPrivateField<KawaseBlurRendererSO>("_kawaseBlurRenderer");
-
-                Destroy(referenceDetailViewGO.GetComponent<StandardLevelDetailView>());
-                SongDetailsViewController.ReferenceDetailView = referenceDetailViewGO;
-            }
         }
 
         public void OnLateMenuSceneLoadedFresh()
