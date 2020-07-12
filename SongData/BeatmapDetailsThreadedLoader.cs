@@ -200,7 +200,7 @@ namespace EnhancedSearchAndFilters.SongData
                 }
                 catch (Exception e)
                 {
-                    Logger.log.Warn("Unexpected exception occurred in caching thread");
+                    Logger.log.Error("Unexpected exception occurred in caching thread");
                     Logger.log.Debug(e);
                 }
             }
