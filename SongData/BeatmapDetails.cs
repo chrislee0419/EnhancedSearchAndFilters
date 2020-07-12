@@ -221,7 +221,18 @@ namespace EnhancedSearchAndFilters.SongData
                     if (string.IsNullOrEmpty(fileContents))
                         yield break;
 
-                    BeatmapSaveData beatmapSaveData = BeatmapSaveData.DeserializeFromJSONString(fileContents);
+                    BeatmapSaveData beatmapSaveData = null;
+                    try
+                    {
+                        beatmapSaveData = BeatmapSaveData.DeserializeFromJSONString(fileContents);
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.log.Warn($"Exception occurred while trying to deserialize difficulty beatmap to BeatmapSaveData for '{customLevel.songName}'");
+                        Logger.log.Debug(e);
+
+                        yield break;
+                    }
 
                     // missing difficulty files
                     if (beatmapSaveData == null)
