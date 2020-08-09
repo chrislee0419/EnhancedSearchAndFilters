@@ -567,16 +567,12 @@ namespace EnhancedSearchAndFilters.UI.Components
 
             ShowCharacteristicIcons(beatmapLevel.previewDifficultyBeatmapSets.Select(x => x.beatmapCharacteristic));
 
-            // if we can't find the PlayerData object for whatever reason, assume the level has been played before
+            int playCount = PlayerDataHelper.Instance?.GetPlayCountForLevel(beatmapLevel.levelID) ?? 0;
+            _detailsText.text += $": Has been played {playCount} time{(playCount == 1 ? "" : "s")}\n";
+
+            // if we can't find the PlayerData object for whatever reason, assume the level has been completed before
             if (!(PlayerDataHelper.Instance?.HasCompletedLevel(beatmapLevel.levelID) ?? true))
-            {
                 _detailsText.text += ": Has never been completed\n";
-            }
-            else
-            {
-                int playCount = PlayerDataHelper.Instance?.GetPlayCountForLevel(beatmapLevel.levelID) ?? 0;
-                _detailsText.text += $": Has been completed {playCount} time{(playCount == 1 ? "" : "s")}\n";
-            }
 
             foreach (var dbs in beatmapLevelData.difficultyBeatmapSets)
             {
