@@ -1,7 +1,8 @@
 ﻿<vertical id="root" child-expand-width="true" child-expand-height="false" child-align="UpperCenter" anchor-min-x="0" anchor-min-y="0" anchor-max-x="1" anchor-max-y="1" spacing="3" pad="2">
-  <vertical child-expand-height="false" vertical-fit="PreferredSize" spacing="2" pad="2">
+  <vertical child-expand-height="false" preferred-height="20" vertical-fit="PreferredSize" spacing="1" pad="2">
     <text text="Filter According To Your Play Stats" font-size="5.5" />
-    <text text=": Use the Difficulty filter to restrict which difficulties the Player Stats filter are applied to" font-size="3.8" font-color="#AAAAAA" />
+    <text text=": Use the Difficulty filter to restrict which difficulties all Player Stats subfilters are applied to" font-size="3.8" font-color="#AAAAAA" />
+    <text text=": Use the Beatmap Characteristics filter to restrict which characteristics the Highest Rank Achieved filter are applied to" font-size="3.8" font-color="#AAAAAA" />
   </vertical>
   <vertical preferred-width="100" child-expand-width="true" child-expand-height="true">
     <bg>
@@ -27,6 +28,17 @@
                     anchor-max-x="1" anchor-max-y="1"
                     size-delta-x="0" size-delta-y="10"
                     anchor-pos-x="0" anchor-pos-y="-15" />
+      <list-setting text="Highest Rank Achieved"
+                    hover-hint="Filters out songs that have a higher rank than what is chosen here (ignores lightmaps)"
+                    value="rank-value"
+                    options="rank-options"
+                    apply-on-change="true"
+                    get-event="refresh-values"
+                    formatter="rank-formatter"
+                    anchor-min-x="0" anchor-min-y="1"
+                    anchor-max-x="1" anchor-max-y="1"
+                    size-delta-x="0" size-delta-y="10"
+                    anchor-pos-x="0" anchor-pos-y="-25" />
     </bg>
   </vertical>
 </vertical>

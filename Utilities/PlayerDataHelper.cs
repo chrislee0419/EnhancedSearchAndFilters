@@ -133,5 +133,45 @@ namespace EnhancedSearchAndFilters.Utilities
             levelID = BeatmapDetailsLoader.GetSimplifiedLevelID(levelID);
             return _playerData.levelsStatsData.Where(x => x.levelID.StartsWith(levelID)).Sum(x => x.playCount);
         }
+
+        public static readonly string[] AllCharacteristicStrings = new string[]
+        {
+            "Standard",
+            "NoArrows",
+            "OneSaber",
+            "Lawless",
+            "Lightshow",
+            "90Degree",
+            "360Degree"
+        };
+
+        /// <summary>
+        /// Returns the highest rank achieved for a level and a given list of difficulties.
+        /// </summary>
+        /// <param name="levelID">The level ID of the level to search through.</param>
+        /// <param name="difficulties">A list of BeatmapDifficulties to search through. Use null to search through all difficulties.</param>
+        /// <param name="characteristics">A list of characteristics to search through. Each characteristic is represented by its serialized string. 
+        /// Use null to search through all characteristics.</param>
+        /// <returns>The highest RankModel.Rank enum found for the selected difficulties, or null if the level has not yet been completed.</returns>
+        public RankModel.Rank? GetHighestRankForLevel(string levelID, IEnumerable<BeatmapDifficulty> difficulties = null, IEnumerable<string> characteristics = null)
+        {
+            levelID = BeatmapDetailsLoader.GetSimplifiedLevelID(levelID);
+
+            if (difficulties == null)
+                difficulties = LocalLeaderboardDataHelper.AllDifficulties;
+            if (characteristics == null)
+                characteristics = AllCharacteristicStrings;
+
+            var validEntries = _playerData.levelsStatsData.Where(x =>
+                x.levelID.StartsWith(levelID) &&
+                x.highScore != 0 &&
+                difficulties.Contains(x.difficulty) &&
+                characteristics.Contains(x.beatmapCharacteristic.serializedName));
+
+            if (validEntries.Count() > 0)
+                return validEntries.Max(x => x.maxRank);
+            else
+                return null;
+        }
     }
 }
