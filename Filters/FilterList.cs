@@ -141,11 +141,16 @@ namespace EnhancedSearchAndFilters.Filters
         {
             bool hasApplied = false;
 
+            // if necessary, apply all staged settings before performing the actual filtering
+            // this needs to be done here because some filters depend on the applied settings of other filters when filtering
+            if (applyStagedSettings)
+            {
+                foreach (var filter in CurrentFilterList)
+                    filter.ApplyStagingValues();
+            }
+
             foreach (var filter in CurrentFilterList)
             {
-                if (applyStagedSettings)
-                    filter.ApplyStagingValues();
-
                 if (filter.IsFilterApplied)
                 {
                     filter.FilterSongList(ref detailsList);

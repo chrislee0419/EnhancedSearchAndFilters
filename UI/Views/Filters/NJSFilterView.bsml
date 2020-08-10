@@ -1,76 +1,55 @@
-﻿<vertical id="root" child-expand-width="true" anchor-min-x="0" anchor-min-y="0" anchor-max-x="1" anchor-max-y="1" size-delta-x="0" size-delta-y="0" pad="2">
-  <text text="Filter Out Songs Where Notes Move Too Fast/Slow" font-size="5.5" />
-  <horizontal child-expand-height="true" spacing="3" pad="2">
-    <vertical preferred-width="80" child-expand-width="true" child-expand-height="true" pad-top="2">
-      <bg>
-        <checkbox text="Enable Minimum NJS Filter"
-                  value="min-checkbox-value"
-                  apply-on-change="true"
-                  get-event="refresh-values"
-                  anchor-min-x="0" anchor-min-y="1"
-                  anchor-max-x="1" anchor-max-y="1"
-                  size-delta-x="0" size-delta-y="10"
-                  anchor-pos-x="0" anchor-pos-y="-5" />
-        <increment-setting id="min-increment-setting"
-                           active="false"
-                           text="        Minimum NJS"
-                           hover-hint="Filters out songs that have a smaller NJS than this value"
-                           value="min-increment-value"
-                           min="~min-value"
-                           max="~max-value"
-                           integer-only="true"
-                           apply-on-change="true"
-                           get-event="refresh-values"
-                           anchor-min-x="0" anchor-min-y="1"
-                           anchor-max-x="1" anchor-max-y="1"
-                           size-delta-x="0" size-delta-y="10"
-                           anchor-pos-x="0" anchor-pos-y="-10" />
-        <checkbox text="Enable Maximum NJS Filter"
-                  value="max-checkbox-value"
-                  apply-on-change="true"
-                  get-event="refresh-values"
-                  anchor-min-x="0" anchor-min-y="1"
-                  anchor-max-x="1" anchor-max-y="1"
-                  size-delta-x="0" size-delta-y="10"
-                  anchor-pos-x="0" anchor-pos-y="-25" />
-        <increment-setting id="max-increment-setting"
-                           active="false"
-                           text="        Maximum NJS"
-                           hover-hint="Filters out songs that have a larger NJS than this value"
-                           value="max-increment-value"
-                           min="~min-value"
-                           max="~max-value"
-                           integer-only="true"
-                           apply-on-change="true"
-                           get-event="refresh-values"
-                           anchor-min-x="0" anchor-min-y="1"
-                           anchor-max-x="1" anchor-max-y="1"
-                           size-delta-x="0" size-delta-y="10"
-                           anchor-pos-x="0" anchor-pos-y="-30" />
-      </bg>
-    </vertical>
-    <vertical bg="round-rect-panel" preferred-width="59" child-expand-width="true" pad="3">
-      <text text="Difficulties To Apply NJS Filter To:" font-size="4.5" />
-      <checkbox text="Easy"
-                value="easy-value"
+﻿<vertical id="root" child-expand-width="true" horizontal-fit="Unconstrained" anchor-min-x="0" anchor-min-y="0" anchor-max-x="1" anchor-max-y="1" size-delta-x="0" size-delta-y="0" spacing="3" pad="2">
+  <vertical preferred-height="18" vertical-fit="PreferredSize" spacing="2" pad="2">
+    <text text="Filter Out Songs Where Notes Move Too Fast/Slow" font-size="5.5" />
+    <text text=": Use the Difficulty filter to restrict which difficulties the NJS filter are applied to" font-size="3.8" font-color="#AAAAAA" />
+    <text text=": Use the Beatmap Characteristics filter to restrict which characteristics the NJS filter are applied to" font-size="3.8" font-color="#AAAAAA" />
+  </vertical>
+  <vertical preferred-height="50" preferred-width="100" child-expand-width="true" child-expand-height="true">
+    <bg>
+      <checkbox text="Enable Minimum NJS Filter"
+                value="min-checkbox-value"
                 apply-on-change="true"
-                get-event="refresh-values" />
-      <checkbox text="Normal"
-                value="normal-value"
+                get-event="refresh-values"
+                anchor-min-x="0" anchor-min-y="1"
+                anchor-max-x="1" anchor-max-y="1"
+                size-delta-x="0" size-delta-y="10"
+                anchor-pos-x="0" anchor-pos-y="-5" />
+      <increment-setting id="min-increment-setting"
+                         active="false"
+                         text="        Minimum NJS"
+                         hover-hint="Filters out songs that have a smaller NJS than this value"
+                         value="min-increment-value"
+                         min="~min-value"
+                         max="~max-value"
+                         integer-only="true"
+                         apply-on-change="true"
+                         get-event="refresh-values"
+                         anchor-min-x="0" anchor-min-y="1"
+                         anchor-max-x="1" anchor-max-y="1"
+                         size-delta-x="0" size-delta-y="10"
+                         anchor-pos-x="0" anchor-pos-y="-10" />
+      <checkbox text="Enable Maximum NJS Filter"
+                value="max-checkbox-value"
                 apply-on-change="true"
-                get-event="refresh-values" />
-      <checkbox text="Hard"
-                value="hard-value"
-                apply-on-change="true"
-                get-event="refresh-values" />
-      <checkbox text="Expert"
-                value="expert-value"
-                apply-on-change="true"
-                get-event="refresh-values" />
-      <checkbox text="Expert+"
-                value="expert-plus-value"
-                apply-on-change="true"
-                get-event="refresh-values" />
-    </vertical>
-  </horizontal>
+                get-event="refresh-values"
+                anchor-min-x="0" anchor-min-y="1"
+                anchor-max-x="1" anchor-max-y="1"
+                size-delta-x="0" size-delta-y="10"
+                anchor-pos-x="0" anchor-pos-y="-25" />
+      <increment-setting id="max-increment-setting"
+                         active="false"
+                         text="        Maximum NJS"
+                         hover-hint="Filters out songs that have a larger NJS than this value"
+                         value="max-increment-value"
+                         min="~min-value"
+                         max="~max-value"
+                         integer-only="true"
+                         apply-on-change="true"
+                         get-event="refresh-values"
+                         anchor-min-x="0" anchor-min-y="1"
+                         anchor-max-x="1" anchor-max-y="1"
+                         size-delta-x="0" size-delta-y="10"
+                         anchor-pos-x="0" anchor-pos-y="-30" />
+    </bg>
+  </vertical>
 </vertical>

@@ -5,19 +5,19 @@ using EnhancedSearchAndFilters.SongData;
 
 namespace EnhancedSearchAndFilters.Filters
 {
-    internal class CharacteristicsFilter : FilterBase
+    public class CharacteristicsFilter : FilterBase
     {
-        public override string Name => "Beatmap Characteristics";
-        public override bool IsFilterApplied => _oneSaberAppliedValue ||
-            _noArrowsAppliedValue ||
-            _90AppliedValue ||
-            _360AppliedValue ||
-            _lightshowAppliedValue;
-        public override bool HasChanges => _oneSaberAppliedValue != _oneSaberStagingValue ||
-            _noArrowsAppliedValue != _noArrowsStagingValue ||
-            _90AppliedValue != _90StagingValue ||
-            _360AppliedValue != _360StagingValue ||
-            _lightshowAppliedValue != _lightshowStagingValue;
+        public override string Name => FilterName;
+        public override bool IsFilterApplied => OneSaberAppliedValue ||
+            NoArrowsAppliedValue ||
+            Mode90AppliedValue ||
+            Mode360AppliedValue ||
+            LightshowAppliedValue;
+        public override bool HasChanges => OneSaberAppliedValue != _oneSaberStagingValue ||
+            NoArrowsAppliedValue != _noArrowsStagingValue ||
+            Mode90AppliedValue != _90StagingValue ||
+            Mode360AppliedValue != _360StagingValue ||
+            LightshowAppliedValue != _lightshowStagingValue;
         public override bool IsStagingDefaultValues => _oneSaberStagingValue == false &&
             _noArrowsStagingValue == false &&
             _90StagingValue == false &&
@@ -83,11 +83,18 @@ namespace EnhancedSearchAndFilters.Filters
             }
         }
 
-        private bool _oneSaberAppliedValue = false;
-        private bool _noArrowsAppliedValue = false;
-        private bool _90AppliedValue = false;
-        private bool _360AppliedValue = false;
-        private bool _lightshowAppliedValue = false;
+        public bool OneSaberAppliedValue { get; private set; } = false;
+        public bool NoArrowsAppliedValue { get; private set; } = false;
+        public bool Mode90AppliedValue { get; private set; } = false;
+        public bool Mode360AppliedValue { get; private set; } = false;
+        public bool LightshowAppliedValue { get; private set; } = false;
+
+        public const string FilterName = "Beatmap Characteristics";
+
+        public const string OneSaberSerializedCharacteristicName = "OneSaber";
+        public const string NoArrowsSerializedCharacteristicName = "NoArrows";
+        public const string Mode90DegreeSerializedCharacteristicName = "90Degree";
+        public const string Mode360DegreeSerializedCharacteristicName = "360Degree";
 
         public override void SetDefaultValuesToStaging()
         {
@@ -102,31 +109,31 @@ namespace EnhancedSearchAndFilters.Filters
 
         public override void SetAppliedValuesToStaging()
         {
-            _oneSaberStagingValue = _oneSaberAppliedValue;
-            _noArrowsStagingValue = _noArrowsAppliedValue;
-            _90StagingValue = _90AppliedValue;
-            _360StagingValue = _360AppliedValue;
-            _lightshowStagingValue = _lightshowAppliedValue;
+            _oneSaberStagingValue = OneSaberAppliedValue;
+            _noArrowsStagingValue = NoArrowsAppliedValue;
+            _90StagingValue = Mode90AppliedValue;
+            _360StagingValue = Mode360AppliedValue;
+            _lightshowStagingValue = LightshowAppliedValue;
 
             RefreshValues();
         }
 
         public override void ApplyStagingValues()
         {
-            _oneSaberAppliedValue = _oneSaberStagingValue;
-            _noArrowsAppliedValue = _noArrowsStagingValue;
-            _90AppliedValue = _90StagingValue;
-            _360AppliedValue = _360StagingValue;
-            _lightshowAppliedValue = _lightshowStagingValue;
+            OneSaberAppliedValue = _oneSaberStagingValue;
+            NoArrowsAppliedValue = _noArrowsStagingValue;
+            Mode90AppliedValue = _90StagingValue;
+            Mode360AppliedValue = _360StagingValue;
+            LightshowAppliedValue = _lightshowStagingValue;
         }
 
         public override void ApplyDefaultValues()
         {
-            _oneSaberAppliedValue = false;
-            _noArrowsAppliedValue = false;
-            _90AppliedValue = false;
-            _360AppliedValue = false;
-            _lightshowAppliedValue = false;
+            OneSaberAppliedValue = false;
+            NoArrowsAppliedValue = false;
+            Mode90AppliedValue = false;
+            Mode360AppliedValue = false;
+            LightshowAppliedValue = false;
         }
 
         public override void FilterSongList(ref List<BeatmapDetails> detailsList)
@@ -138,24 +145,24 @@ namespace EnhancedSearchAndFilters.Filters
             {
                 BeatmapDetails beatmap = detailsList[i];
 
-                if (_lightshowAppliedValue &&
+                if (LightshowAppliedValue &&
                     !beatmap.DifficultyBeatmapSets.Any(diffSet => diffSet.DifficultyBeatmaps.Any(diff => diff.NotesCount == 0)))
                 {
                     detailsList.RemoveAt(i);
                 }
-                else if (_oneSaberAppliedValue && !beatmap.DifficultyBeatmapSets.Any(diffSet => diffSet.CharacteristicName == "OneSaber"))
+                else if (OneSaberAppliedValue && !beatmap.DifficultyBeatmapSets.Any(diffSet => diffSet.CharacteristicName == OneSaberSerializedCharacteristicName))
                 {
                     detailsList.RemoveAt(i);
                 }
-                else if (_noArrowsAppliedValue && !beatmap.DifficultyBeatmapSets.Any(diffSet => diffSet.CharacteristicName == "NoArrows"))
+                else if (NoArrowsAppliedValue && !beatmap.DifficultyBeatmapSets.Any(diffSet => diffSet.CharacteristicName == NoArrowsSerializedCharacteristicName))
                 {
                     detailsList.RemoveAt(i);
                 }
-                else if (_90AppliedValue && !beatmap.DifficultyBeatmapSets.Any(diffSet => diffSet.CharacteristicName == "90Degree"))
+                else if (Mode90AppliedValue && !beatmap.DifficultyBeatmapSets.Any(diffSet => diffSet.CharacteristicName == Mode90DegreeSerializedCharacteristicName))
                 {
                     detailsList.RemoveAt(i);
                 }
-                else if (_360AppliedValue && !beatmap.DifficultyBeatmapSets.Any(diffSet => diffSet.CharacteristicName == "360Degree"))
+                else if (Mode360AppliedValue && !beatmap.DifficultyBeatmapSets.Any(diffSet => diffSet.CharacteristicName == Mode360DegreeSerializedCharacteristicName))
                 {
                     detailsList.RemoveAt(i);
                 }
@@ -169,11 +176,11 @@ namespace EnhancedSearchAndFilters.Filters
         public override List<FilterSettingsKeyValuePair> GetAppliedValuesAsPairs()
         {
             return FilterSettingsKeyValuePair.CreateFilterSettingsList(
-                "oneSaber", _oneSaberAppliedValue,
-                "noArrows", _noArrowsAppliedValue,
-                "90Degree", _90AppliedValue,
-                "360Degree", _360AppliedValue,
-                "lightshow", _lightshowAppliedValue);
+                "oneSaber", OneSaberAppliedValue,
+                "noArrows", NoArrowsAppliedValue,
+                "90Degree", Mode90AppliedValue,
+                "360Degree", Mode360AppliedValue,
+                "lightshow", LightshowAppliedValue);
         }
 
         public override void SetStagingValuesFromPairs(List<FilterSettingsKeyValuePair> settingsList)

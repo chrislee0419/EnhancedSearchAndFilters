@@ -5,15 +5,15 @@ using EnhancedSearchAndFilters.SongData;
 
 namespace EnhancedSearchAndFilters.Filters
 {
-    internal class DifficultyFilter : FilterBase
+    public class DifficultyFilter : FilterBase
     {
-        public override string Name => "Difficulty";
-        public override bool IsFilterApplied => _easyAppliedValue || _normalAppliedValue || _hardAppliedValue || _expertAppliedValue || _expertPlusAppliedValue;
-        public override bool HasChanges => _easyStagingValue != _easyAppliedValue ||
-            _normalStagingValue != _normalAppliedValue ||
-            _hardStagingValue != _hardAppliedValue ||
-            _expertStagingValue != _expertAppliedValue ||
-            _expertPlusStagingValue != _expertPlusAppliedValue;
+        public override string Name => FilterName;
+        public override bool IsFilterApplied => EasyAppliedValue || NormalAppliedValue || HardAppliedValue || ExpertAppliedValue || ExpertPlusAppliedValue;
+        public override bool HasChanges => _easyStagingValue != EasyAppliedValue ||
+            _normalStagingValue != NormalAppliedValue ||
+            _hardStagingValue != HardAppliedValue ||
+            _expertStagingValue != ExpertAppliedValue ||
+            _expertPlusStagingValue != ExpertPlusAppliedValue;
         public override bool IsStagingDefaultValues => _easyStagingValue == false &&
             _normalStagingValue == false &&
             _hardStagingValue == false &&
@@ -79,11 +79,13 @@ namespace EnhancedSearchAndFilters.Filters
             }
         }
 
-        private bool _easyAppliedValue = false;
-        private bool _normalAppliedValue = false;
-        private bool _hardAppliedValue = false;
-        private bool _expertAppliedValue = false;
-        private bool _expertPlusAppliedValue = false;
+        public bool EasyAppliedValue { get; private set; } = false;
+        public bool NormalAppliedValue { get; private set; } = false;
+        public bool HardAppliedValue { get; private set; } = false;
+        public bool ExpertAppliedValue { get; private set; } = false;
+        public bool ExpertPlusAppliedValue { get; private set; } = false;
+
+        public const string FilterName = "Difficulty";
 
         public override void SetDefaultValuesToStaging()
         {
@@ -98,31 +100,31 @@ namespace EnhancedSearchAndFilters.Filters
 
         public override void SetAppliedValuesToStaging()
         {
-            _easyStagingValue = _easyAppliedValue;
-            _normalStagingValue = _normalAppliedValue;
-            _hardStagingValue = _hardAppliedValue;
-            _expertStagingValue = _expertAppliedValue;
-            _expertPlusStagingValue = _expertPlusAppliedValue;
+            _easyStagingValue = EasyAppliedValue;
+            _normalStagingValue = NormalAppliedValue;
+            _hardStagingValue = HardAppliedValue;
+            _expertStagingValue = ExpertAppliedValue;
+            _expertPlusStagingValue = ExpertPlusAppliedValue;
 
             RefreshValues();
         }
 
         public override void ApplyStagingValues()
         {
-            _easyAppliedValue = _easyStagingValue;
-            _normalAppliedValue = _normalStagingValue;
-            _hardAppliedValue = _hardStagingValue;
-            _expertAppliedValue = _expertStagingValue;
-            _expertPlusAppliedValue = _expertPlusStagingValue;
+            EasyAppliedValue = _easyStagingValue;
+            NormalAppliedValue = _normalStagingValue;
+            HardAppliedValue = _hardStagingValue;
+            ExpertAppliedValue = _expertStagingValue;
+            ExpertPlusAppliedValue = _expertPlusStagingValue;
         }
 
         public override void ApplyDefaultValues()
         {
-            _easyAppliedValue = false;
-            _normalAppliedValue = false;
-            _hardAppliedValue = false;
-            _expertAppliedValue = false;
-            _expertPlusAppliedValue = false;
+            EasyAppliedValue = false;
+            NormalAppliedValue = false;
+            HardAppliedValue = false;
+            ExpertAppliedValue = false;
+            ExpertPlusAppliedValue = false;
         }
 
         public override void FilterSongList(ref List<BeatmapDetails> detailsList)
@@ -137,11 +139,11 @@ namespace EnhancedSearchAndFilters.Filters
                 {
                     var difficulties = difficultySet.DifficultyBeatmaps.Select(x => (x.Difficulty, x.NotesCount != 0)).ToArray();
 
-                    if ((!_easyAppliedValue || difficulties.Any(x => x.Difficulty == BeatmapDifficulty.Easy && x.Item2)) &&
-                        (!_normalAppliedValue || difficulties.Any(x => x.Difficulty == BeatmapDifficulty.Normal && x.Item2)) &&
-                        (!_hardAppliedValue || difficulties.Any(x => x.Difficulty == BeatmapDifficulty.Hard && x.Item2)) &&
-                        (!_expertAppliedValue || difficulties.Any(x => x.Difficulty == BeatmapDifficulty.Expert && x.Item2)) &&
-                        (!_expertPlusAppliedValue || difficulties.Any(x => x.Difficulty == BeatmapDifficulty.ExpertPlus && x.Item2)))
+                    if ((!EasyAppliedValue || difficulties.Any(x => x.Difficulty == BeatmapDifficulty.Easy && x.Item2)) &&
+                        (!NormalAppliedValue || difficulties.Any(x => x.Difficulty == BeatmapDifficulty.Normal && x.Item2)) &&
+                        (!HardAppliedValue || difficulties.Any(x => x.Difficulty == BeatmapDifficulty.Hard && x.Item2)) &&
+                        (!ExpertAppliedValue || difficulties.Any(x => x.Difficulty == BeatmapDifficulty.Expert && x.Item2)) &&
+                        (!ExpertPlusAppliedValue || difficulties.Any(x => x.Difficulty == BeatmapDifficulty.ExpertPlus && x.Item2)))
                     {
                         remove = false;
                         break;
@@ -158,11 +160,11 @@ namespace EnhancedSearchAndFilters.Filters
         public override List<FilterSettingsKeyValuePair> GetAppliedValuesAsPairs()
         {
             return FilterSettingsKeyValuePair.CreateFilterSettingsList(
-                "easy", _easyAppliedValue,
-                "normal", _normalAppliedValue,
-                "hard", _hardAppliedValue,
-                "expert", _expertAppliedValue,
-                "expertPlus", _expertPlusAppliedValue);
+                "easy", EasyAppliedValue,
+                "normal", NormalAppliedValue,
+                "hard", HardAppliedValue,
+                "expert", ExpertAppliedValue,
+                "expertPlus", ExpertPlusAppliedValue);
         }
 
         public override void SetStagingValuesFromPairs(List<FilterSettingsKeyValuePair> settingsList)

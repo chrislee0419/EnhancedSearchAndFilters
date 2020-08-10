@@ -16,33 +16,21 @@ namespace EnhancedSearchAndFilters.Filters
             {
                 if (IsFilterApplied)
                     return HasChanges ? FilterStatus.AppliedAndChanged : FilterStatus.Applied;
-                else if ((_minEnabledStagingValue || _maxEnabledStagingValue) &&
-                    (_easyStagingValue || _normalStagingValue || _hardStagingValue || _expertStagingValue || _expertPlusStagingValue))
+                else if (_minEnabledStagingValue || _maxEnabledStagingValue)
                     return FilterStatus.NotAppliedAndChanged;
                 else
                     return FilterStatus.NotApplied;
             }
         }
-        public override bool IsFilterApplied => (_minEnabledAppliedValue || _maxEnabledAppliedValue) &&
-            (_easyAppliedValue || _normalAppliedValue || _hardAppliedValue || _expertAppliedValue || _expertPlusAppliedValue);
+        public override bool IsFilterApplied => _minEnabledAppliedValue || _maxEnabledAppliedValue;
         public override bool HasChanges => _minEnabledStagingValue != _minEnabledAppliedValue ||
             _maxEnabledStagingValue != _maxEnabledAppliedValue ||
             _minStagingValue != _minAppliedValue ||
-            _maxStagingValue != _maxAppliedValue ||
-            _easyStagingValue != _easyAppliedValue ||
-            _normalStagingValue != _normalAppliedValue ||
-            _hardStagingValue != _hardAppliedValue ||
-            _expertStagingValue != _expertAppliedValue ||
-            _expertPlusStagingValue != _expertPlusAppliedValue;
+            _maxStagingValue != _maxAppliedValue;
         public override bool IsStagingDefaultValues => _minEnabledStagingValue == false &&
             _maxEnabledStagingValue == false &&
             _minStagingValue == DefaultMinValue &&
-            _maxStagingValue == DefaultMaxValue &&
-            _easyStagingValue == false &&
-            _normalStagingValue == false &&
-            _hardStagingValue == false &&
-            _expertStagingValue == false &&
-            _expertPlusStagingValue == false;
+            _maxStagingValue == DefaultMaxValue;
 
         protected override string ViewResource => "EnhancedSearchAndFilters.UI.Views.Filters.NJSFilterView.bsml";
         protected override string ContainerGameObjectName => "NJSFilterViewContainer";
@@ -102,71 +90,11 @@ namespace EnhancedSearchAndFilters.Filters
                 InvokeSettingChanged();
             }
         }
-        private bool _easyStagingValue = false;
-        [UIValue("easy-value")]
-        public bool EasyStagingValue
-        {
-            get => _easyStagingValue;
-            set
-            {
-                _easyStagingValue = value;
-                InvokeSettingChanged();
-            }
-        }
-        private bool _normalStagingValue = false;
-        [UIValue("normal-value")]
-        public bool NormalStagingValue
-        {
-            get => _normalStagingValue;
-            set
-            {
-                _normalStagingValue = value;
-                InvokeSettingChanged();
-            }
-        }
-        private bool _hardStagingValue = false;
-        [UIValue("hard-value")]
-        public bool HardStagingValue
-        {
-            get => _hardStagingValue;
-            set
-            {
-                _hardStagingValue = value;
-                InvokeSettingChanged();
-            }
-        }
-        private bool _expertStagingValue = false;
-        [UIValue("expert-value")]
-        public bool ExpertStagingValue
-        {
-            get => _expertStagingValue;
-            set
-            {
-                _expertStagingValue = value;
-                InvokeSettingChanged();
-            }
-        }
-        private bool _expertPlusStagingValue = false;
-        [UIValue("expert-plus-value")]
-        public bool ExpertPlusStagingValue
-        {
-            get => _expertPlusStagingValue;
-            set
-            {
-                _expertPlusStagingValue = value;
-                InvokeSettingChanged();
-            }
-        }
 
         private bool _minEnabledAppliedValue = false;
         private bool _maxEnabledAppliedValue = false;
         private int _minAppliedValue = DefaultMinValue;
         private int _maxAppliedValue = DefaultMaxValue;
-        private bool _easyAppliedValue = false;
-        private bool _normalAppliedValue = false;
-        private bool _hardAppliedValue = false;
-        private bool _expertAppliedValue = false;
-        private bool _expertPlusAppliedValue = false;
 
         private const int DefaultMinValue = 10;
         private const int DefaultMaxValue = 20;
@@ -190,11 +118,6 @@ namespace EnhancedSearchAndFilters.Filters
             _maxEnabledStagingValue = false;
             _minStagingValue = DefaultMinValue;
             _maxStagingValue = DefaultMaxValue;
-            _easyStagingValue = false;
-            _normalStagingValue = false;
-            _hardStagingValue = false;
-            _expertStagingValue = false;
-            _expertPlusStagingValue = false;
 
             if (_viewGameObject != null)
             {
@@ -211,11 +134,6 @@ namespace EnhancedSearchAndFilters.Filters
             _maxEnabledStagingValue = _maxEnabledAppliedValue;
             _minStagingValue = _minAppliedValue;
             _maxStagingValue = _maxAppliedValue;
-            _easyStagingValue = _easyAppliedValue;
-            _normalStagingValue = _normalAppliedValue;
-            _hardStagingValue = _hardAppliedValue;
-            _expertStagingValue = _expertAppliedValue;
-            _expertPlusStagingValue = _expertPlusAppliedValue;
 
             if (_viewGameObject != null)
             {
@@ -232,11 +150,6 @@ namespace EnhancedSearchAndFilters.Filters
             _maxEnabledAppliedValue = _maxEnabledStagingValue;
             _minAppliedValue = _minStagingValue;
             _maxAppliedValue = _maxStagingValue;
-            _easyAppliedValue = _easyStagingValue;
-            _normalAppliedValue = _normalStagingValue;
-            _hardAppliedValue = _hardStagingValue;
-            _expertAppliedValue = _expertStagingValue;
-            _expertPlusAppliedValue = _expertPlusStagingValue;
         }
 
         public override void ApplyDefaultValues()
@@ -245,17 +158,72 @@ namespace EnhancedSearchAndFilters.Filters
             _maxEnabledAppliedValue = false;
             _minAppliedValue = DefaultMinValue;
             _maxAppliedValue = DefaultMaxValue;
-            _easyAppliedValue = false;
-            _normalAppliedValue = false;
-            _hardAppliedValue = false;
-            _expertAppliedValue = false;
-            _expertPlusAppliedValue = false;
         }
 
         public override void FilterSongList(ref List<BeatmapDetails> detailsList)
         {
             if (!IsFilterApplied)
                 return;
+
+            bool testEasy = true;
+            bool testNormal = true;
+            bool testHard = true;
+            bool testExpert = true;
+            bool testExpertPlus = true;
+
+            DifficultyFilter diffFilter = FilterList.ActiveFilters.Where(x => x.Name == DifficultyFilter.FilterName && x.IsFilterApplied).FirstOrDefault() as DifficultyFilter;
+            if (diffFilter != null)
+            {
+                testEasy = diffFilter.EasyAppliedValue;
+                testNormal = diffFilter.NormalAppliedValue;
+                testHard = diffFilter.HardAppliedValue;
+                testExpert = diffFilter.ExpertAppliedValue;
+                testExpertPlus = diffFilter.ExpertPlusAppliedValue;
+            }
+
+            const string StandardCharacteristicName = "Standard";
+            const string LightmapCharacteristicName = "Lightmap";
+            List<string> testCharacteristics;
+            CharacteristicsFilter charFilter = FilterList.ActiveFilters.Where(x => x.Name == CharacteristicsFilter.FilterName && x.IsFilterApplied).FirstOrDefault() as CharacteristicsFilter;
+            if (charFilter != null)
+            {
+                if (charFilter.LightshowAppliedValue && !charFilter.OneSaberAppliedValue && !charFilter.NoArrowsAppliedValue && !charFilter.Mode90AppliedValue && !charFilter.Mode360AppliedValue)
+                {
+                    testCharacteristics = new List<string>
+                    {
+                        StandardCharacteristicName,
+                        LightmapCharacteristicName,
+                        CharacteristicsFilter.OneSaberSerializedCharacteristicName,
+                        CharacteristicsFilter.NoArrowsSerializedCharacteristicName,
+                        CharacteristicsFilter.Mode90DegreeSerializedCharacteristicName,
+                        CharacteristicsFilter.Mode360DegreeSerializedCharacteristicName,
+                    };
+                }
+                else
+                {
+                    testCharacteristics = new List<string>();
+                    if (charFilter.OneSaberAppliedValue)
+                        testCharacteristics.Add(CharacteristicsFilter.OneSaberSerializedCharacteristicName);
+                    if (charFilter.NoArrowsAppliedValue)
+                        testCharacteristics.Add(CharacteristicsFilter.NoArrowsSerializedCharacteristicName);
+                    if (charFilter.Mode90AppliedValue)
+                        testCharacteristics.Add(CharacteristicsFilter.Mode90DegreeSerializedCharacteristicName);
+                    if (charFilter.Mode360AppliedValue)
+                        testCharacteristics.Add(CharacteristicsFilter.Mode360DegreeSerializedCharacteristicName);
+                }
+            }
+            else
+            {
+                testCharacteristics = new List<string>
+                    {
+                        StandardCharacteristicName,
+                        LightmapCharacteristicName,
+                        CharacteristicsFilter.OneSaberSerializedCharacteristicName,
+                        CharacteristicsFilter.NoArrowsSerializedCharacteristicName,
+                        CharacteristicsFilter.Mode90DegreeSerializedCharacteristicName,
+                        CharacteristicsFilter.Mode360DegreeSerializedCharacteristicName,
+                    };
+            }
 
             for (int i = 0; i < detailsList.Count;)
             {
@@ -268,13 +236,13 @@ namespace EnhancedSearchAndFilters.Filters
                     continue;
                 }
 
-                var difficultySets = details.DifficultyBeatmapSets;
+                var difficultySets = details.DifficultyBeatmapSets.Where(x => testCharacteristics.Contains(x.CharacteristicName));
 
-                if (TestDifficulty(BeatmapDifficulty.Easy, _easyAppliedValue, difficultySets) &&
-                    TestDifficulty(BeatmapDifficulty.Normal, _normalAppliedValue, difficultySets) &&
-                    TestDifficulty(BeatmapDifficulty.Hard, _hardAppliedValue, difficultySets) &&
-                    TestDifficulty(BeatmapDifficulty.Expert, _expertAppliedValue, difficultySets) &&
-                    TestDifficulty(BeatmapDifficulty.ExpertPlus, _expertPlusAppliedValue, difficultySets))
+                if (TestDifficulty(BeatmapDifficulty.Easy, testEasy, difficultySets) &&
+                    TestDifficulty(BeatmapDifficulty.Normal, testNormal, difficultySets) &&
+                    TestDifficulty(BeatmapDifficulty.Hard, testHard, difficultySets) &&
+                    TestDifficulty(BeatmapDifficulty.Expert, testExpert, difficultySets) &&
+                    TestDifficulty(BeatmapDifficulty.ExpertPlus, testExpertPlus, difficultySets))
                     ++i;
                 else
                     detailsList.RemoveAt(i);
@@ -288,7 +256,7 @@ namespace EnhancedSearchAndFilters.Filters
         /// <param name="difficultyAppliedValue">The applied value of the difficulty.</param>
         /// <param name="difficultyBeatmapSets"></param>
         /// <returns>True, if the beatmap contains at least one difficulty that fulfills the filter settings or we don't need to check. Otherwise, false.</returns>
-        private bool TestDifficulty(BeatmapDifficulty difficulty, bool difficultyAppliedValue, SimplifiedDifficultyBeatmapSet[] difficultyBeatmapSets)
+        private bool TestDifficulty(BeatmapDifficulty difficulty, bool difficultyAppliedValue, IEnumerable<SimplifiedDifficultyBeatmapSet> difficultyBeatmapSets)
         {
             if (!difficultyAppliedValue)
                 return true;
@@ -322,12 +290,7 @@ namespace EnhancedSearchAndFilters.Filters
                 "minEnabled", _minEnabledAppliedValue,
                 "minValue", _minAppliedValue,
                 "maxEnabled", _maxEnabledAppliedValue,
-                "maxValue", _maxAppliedValue,
-                "easy", _easyAppliedValue,
-                "normal", _normalAppliedValue,
-                "hard", _hardAppliedValue,
-                "expert", _expertAppliedValue,
-                "expertPlus", _expertPlusAppliedValue);
+                "maxValue", _maxAppliedValue);
         }
 
         public override void SetStagingValuesFromPairs(List<FilterSettingsKeyValuePair> settingsList)
@@ -338,30 +301,10 @@ namespace EnhancedSearchAndFilters.Filters
             {
                 if (bool.TryParse(pair.Value, out bool boolValue))
                 {
-                    switch (pair.Key)
-                    {
-                        case "minEnabled":
-                            _minEnabledStagingValue = boolValue;
-                            break;
-                        case "maxEnabled":
-                            _maxEnabledStagingValue = boolValue;
-                            break;
-                        case "easy":
-                            _easyStagingValue = boolValue;
-                            break;
-                        case "normal":
-                            _normalStagingValue = boolValue;
-                            break;
-                        case "hard":
-                            _hardStagingValue = boolValue;
-                            break;
-                        case "expert":
-                            _expertStagingValue = boolValue;
-                            break;
-                        case "expertPlus":
-                            _expertPlusStagingValue = boolValue;
-                            break;
-                    }
+                    if (pair.Key == "minEnabled")
+                        _minEnabledStagingValue = boolValue;
+                    else if (pair.Key == "maxEnabled")
+                        _maxEnabledStagingValue = boolValue;
                 }
                 else if (int.TryParse(pair.Value, out int intValue))
                 {

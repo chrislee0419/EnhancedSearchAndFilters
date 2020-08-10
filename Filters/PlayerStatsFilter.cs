@@ -12,19 +12,9 @@ namespace EnhancedSearchAndFilters.Filters
         public override string Name => "Player Stats";
         public override bool IsFilterApplied => _hasCompletedAppliedValue != SongCompletedFilterOption.Off || _hasFullComboAppliedValue != SongFullComboFilterOption.Off;
         public override bool HasChanges => _hasCompletedStagingValue != _hasCompletedAppliedValue ||
-            _hasFullComboStagingValue != _hasFullComboAppliedValue ||
-            _easyStagingValue != _easyAppliedValue ||
-            _normalStagingValue != _normalAppliedValue ||
-            _hardStagingValue != _hardAppliedValue ||
-            _expertStagingValue != _expertAppliedValue ||
-            _expertPlusStagingValue != _expertPlusAppliedValue;
+            _hasFullComboStagingValue != _hasFullComboAppliedValue;
         public override bool IsStagingDefaultValues => _hasCompletedStagingValue == SongCompletedFilterOption.Off &&
-            _hasFullComboStagingValue == SongFullComboFilterOption.Off &&
-            _easyStagingValue == false &&
-            _normalStagingValue == false &&
-            _hardStagingValue == false &&
-            _expertStagingValue == false &&
-            _expertPlusStagingValue == false;
+            _hasFullComboStagingValue == SongFullComboFilterOption.Off;
 
         protected override string ViewResource => "EnhancedSearchAndFilters.UI.Views.Filters.PlayerStatsFilterView.bsml";
         protected override string ContainerGameObjectName => "PlayerStatsFilterViewContainer";
@@ -51,69 +41,9 @@ namespace EnhancedSearchAndFilters.Filters
                 InvokeSettingChanged();
             }
         }
-        private bool _easyStagingValue = false;
-        [UIValue("easy-value")]
-        public bool EasyStagingValue
-        {
-            get => _easyStagingValue;
-            set
-            {
-                _easyStagingValue = value;
-                InvokeSettingChanged();
-            }
-        }
-        private bool _normalStagingValue = false;
-        [UIValue("normal-value")]
-        public bool NormalStagingValue
-        {
-            get => _normalStagingValue;
-            set
-            {
-                _normalStagingValue = value;
-                InvokeSettingChanged();
-            }
-        }
-        private bool _hardStagingValue = false;
-        [UIValue("hard-value")]
-        public bool HardStagingValue
-        {
-            get => _hardStagingValue;
-            set
-            {
-                _hardStagingValue = value;
-                InvokeSettingChanged();
-            }
-        }
-        private bool _expertStagingValue = false;
-        [UIValue("expert-value")]
-        public bool ExpertStagingValue
-        {
-            get => _expertStagingValue;
-            set
-            {
-                _expertStagingValue = value;
-                InvokeSettingChanged();
-            }
-        }
-        private bool _expertPlusStagingValue = false;
-        [UIValue("expert-plus-value")]
-        public bool ExpertPlusStagingValue
-        {
-            get => _expertPlusStagingValue;
-            set
-            {
-                _expertPlusStagingValue = value;
-                InvokeSettingChanged();
-            }
-        }
 
         private SongCompletedFilterOption _hasCompletedAppliedValue = SongCompletedFilterOption.Off;
         private SongFullComboFilterOption _hasFullComboAppliedValue = SongFullComboFilterOption.Off;
-        private bool _easyAppliedValue = false;
-        private bool _normalAppliedValue = false;
-        private bool _hardAppliedValue = false;
-        private bool _expertAppliedValue = false;
-        private bool _expertPlusAppliedValue = false;
 
         [UIValue("completed-options")]
         private static readonly List<object> SongCompletedOptions = Enum.GetValues(typeof(SongCompletedFilterOption)).Cast<SongCompletedFilterOption>().Select(x => (object)x).ToList();
@@ -124,11 +54,6 @@ namespace EnhancedSearchAndFilters.Filters
         {
             _hasCompletedStagingValue = SongCompletedFilterOption.Off;
             _hasFullComboStagingValue = SongFullComboFilterOption.Off;
-            _easyStagingValue = false;
-            _normalStagingValue = false;
-            _hardStagingValue = false;
-            _expertStagingValue = false;
-            _expertPlusStagingValue = false;
 
             RefreshValues();
         }
@@ -137,11 +62,6 @@ namespace EnhancedSearchAndFilters.Filters
         {
             _hasCompletedStagingValue = _hasCompletedAppliedValue;
             _hasFullComboStagingValue = _hasFullComboAppliedValue;
-            _easyStagingValue = _easyAppliedValue;
-            _normalStagingValue = _normalAppliedValue;
-            _hardStagingValue = _hardAppliedValue;
-            _expertStagingValue = _expertAppliedValue;
-            _expertPlusStagingValue = _expertPlusAppliedValue;
 
             RefreshValues();
         }
@@ -150,22 +70,12 @@ namespace EnhancedSearchAndFilters.Filters
         {
             _hasCompletedAppliedValue = _hasCompletedStagingValue;
             _hasFullComboAppliedValue = _hasFullComboStagingValue;
-            _easyAppliedValue = _easyStagingValue;
-            _normalAppliedValue = _normalStagingValue;
-            _hardAppliedValue = _hardStagingValue;
-            _expertAppliedValue = _expertStagingValue;
-            _expertPlusAppliedValue = _expertPlusStagingValue;
         }
 
         public override void ApplyDefaultValues()
         {
             _hasCompletedAppliedValue = SongCompletedFilterOption.Off;
             _hasFullComboAppliedValue = SongFullComboFilterOption.Off;
-            _easyAppliedValue = false;
-            _normalAppliedValue = false;
-            _hardAppliedValue = false;
-            _expertAppliedValue = false;
-            _expertPlusAppliedValue = false;
         }
 
         public override void FilterSongList(ref List<BeatmapDetails> detailsList)
@@ -173,17 +83,34 @@ namespace EnhancedSearchAndFilters.Filters
             if (!IsFilterApplied)
                 return;
 
-            List<BeatmapDifficulty> diffList = new List<BeatmapDifficulty>(5);
-            if (_easyAppliedValue)
-                diffList.Add(BeatmapDifficulty.Easy);
-            if (_normalAppliedValue)
-                diffList.Add(BeatmapDifficulty.Normal);
-            if (_hardAppliedValue)
-                diffList.Add(BeatmapDifficulty.Hard);
-            if (_expertAppliedValue)
-                diffList.Add(BeatmapDifficulty.Expert);
-            if (_expertPlusAppliedValue)
-                diffList.Add(BeatmapDifficulty.ExpertPlus);
+            DifficultyFilter diffFilter = FilterList.ActiveFilters.Where(x => x.Name == DifficultyFilter.FilterName && x.IsFilterApplied).FirstOrDefault() as DifficultyFilter;
+
+            List<BeatmapDifficulty> diffList;
+            if (diffFilter != null)
+            {
+                diffList = new List<BeatmapDifficulty>(5);
+                if (diffFilter.EasyAppliedValue)
+                    diffList.Add(BeatmapDifficulty.Easy);
+                if (diffFilter.NormalAppliedValue)
+                    diffList.Add(BeatmapDifficulty.Normal);
+                if (diffFilter.HardAppliedValue)
+                    diffList.Add(BeatmapDifficulty.Hard);
+                if (diffFilter.ExpertAppliedValue)
+                    diffList.Add(BeatmapDifficulty.Expert);
+                if (diffFilter.ExpertPlusAppliedValue)
+                    diffList.Add(BeatmapDifficulty.ExpertPlus);
+            }
+            else
+            {
+                diffList = new List<BeatmapDifficulty>(5)
+                {
+                    BeatmapDifficulty.Easy,
+                    BeatmapDifficulty.Normal,
+                    BeatmapDifficulty.Hard,
+                    BeatmapDifficulty.Expert,
+                    BeatmapDifficulty.ExpertPlus,
+                };
+            }
 
             // touch the helper singletons to make sure they're instantiated before the parallel query
             // also, might as well do a check to see if they were able to be instantiated
@@ -231,12 +158,7 @@ namespace EnhancedSearchAndFilters.Filters
         {
             return FilterSettingsKeyValuePair.CreateFilterSettingsList(
                 "completed", _hasCompletedAppliedValue,
-                "fullCombo", _hasFullComboAppliedValue,
-                "easy", _easyAppliedValue,
-                "normal", _normalAppliedValue,
-                "hard", _hardAppliedValue,
-                "expert", _expertAppliedValue,
-                "expertPlus", _expertPlusAppliedValue);
+                "fullCombo", _hasFullComboAppliedValue);
         }
 
         public override void SetStagingValuesFromPairs(List<FilterSettingsKeyValuePair> settingsList)
@@ -245,28 +167,7 @@ namespace EnhancedSearchAndFilters.Filters
 
             foreach (var pair in settingsList)
             {
-                if (bool.TryParse(pair.Value, out bool boolValue))
-                {
-                    switch (pair.Key)
-                    {
-                        case "easy":
-                            _easyStagingValue = boolValue;
-                            break;
-                        case "normal":
-                            _normalStagingValue = boolValue;
-                            break;
-                        case "hard":
-                            _hardStagingValue = boolValue;
-                            break;
-                        case "expert":
-                            _expertStagingValue = boolValue;
-                            break;
-                        case "expertPlus":
-                            _expertPlusStagingValue = boolValue;
-                            break;
-                    }
-                }
-                else if (pair.Key == "completed" && Enum.TryParse(pair.Value, out SongCompletedFilterOption completedValue))
+                if (pair.Key == "completed" && Enum.TryParse(pair.Value, out SongCompletedFilterOption completedValue))
                 {
                     _hasCompletedStagingValue = completedValue;
                 }
