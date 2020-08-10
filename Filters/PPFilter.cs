@@ -13,6 +13,18 @@ namespace EnhancedSearchAndFilters.Filters
         public override string Name => "Ranked Songs (PP)";
         [UIValue("is-available")]
         public override bool IsAvailable => Tweaks.SongDataCoreTweaks.IsModAvailable;
+        public override FilterStatus Status
+        {
+            get
+            {
+                if (IsFilterApplied)
+                    return HasChanges ? FilterStatus.AppliedAndChanged : FilterStatus.Applied;
+                else if (_rankedStagingValue != RankFilterOption.Off && HasChanges)
+                    return FilterStatus.NotAppliedAndChanged;
+                else
+                    return FilterStatus.NotApplied;
+            }
+        }
         public override bool IsFilterApplied => _rankedAppliedValue != RankFilterOption.Off;
         public override bool HasChanges => _rankedAppliedValue != _rankedStagingValue ||
             _minEnabledAppliedValue != _minEnabledStagingValue ||

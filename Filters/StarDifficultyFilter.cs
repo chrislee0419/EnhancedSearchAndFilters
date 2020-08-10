@@ -13,6 +13,18 @@ namespace EnhancedSearchAndFilters.Filters
         public override string Name => "Star Rating";
         [UIValue("is-available")]
         public override bool IsAvailable => Tweaks.SongDataCoreTweaks.IsModAvailable;
+        public override FilterStatus Status
+        {
+            get
+            {
+                if (IsFilterApplied)
+                    return HasChanges ? FilterStatus.AppliedAndChanged : FilterStatus.Applied;
+                else if ((_minEnabledStagingValue || _maxEnabledStagingValue) && HasChanges)
+                    return FilterStatus.NotAppliedAndChanged;
+                else
+                    return FilterStatus.NotApplied;
+            }
+        }
         public override bool IsFilterApplied => _minEnabledAppliedValue || _maxEnabledAppliedValue;
         public override bool HasChanges => _minEnabledAppliedValue != _minEnabledStagingValue ||
             _maxEnabledAppliedValue != _maxEnabledStagingValue ||

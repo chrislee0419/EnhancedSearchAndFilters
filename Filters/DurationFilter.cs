@@ -10,6 +10,18 @@ namespace EnhancedSearchAndFilters.Filters
     internal class DurationFilter : FilterBase
     {
         public override string Name => "Song Length";
+        public override FilterStatus Status
+        {
+            get
+            {
+                if (IsFilterApplied)
+                    return HasChanges ? FilterStatus.AppliedAndChanged : FilterStatus.Applied;
+                else if ((_minEnabledStagingValue || _maxEnabledStagingValue) && HasChanges)
+                    return FilterStatus.NotAppliedAndChanged;
+                else
+                    return FilterStatus.NotApplied;
+            }
+        }
         public override bool IsFilterApplied => _minEnabledAppliedValue || _maxEnabledAppliedValue;
         public override bool HasChanges => _minEnabledAppliedValue != _minEnabledStagingValue ||
             _maxEnabledAppliedValue != _maxEnabledStagingValue ||

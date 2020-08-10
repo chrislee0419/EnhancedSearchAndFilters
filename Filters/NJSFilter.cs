@@ -16,7 +16,7 @@ namespace EnhancedSearchAndFilters.Filters
             {
                 if (IsFilterApplied)
                     return HasChanges ? FilterStatus.AppliedAndChanged : FilterStatus.Applied;
-                else if (_minEnabledStagingValue || _maxEnabledStagingValue)
+                else if ((_minEnabledStagingValue || _maxEnabledStagingValue) && HasChanges)
                     return FilterStatus.NotAppliedAndChanged;
                 else
                     return FilterStatus.NotApplied;

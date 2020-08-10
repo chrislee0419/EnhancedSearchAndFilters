@@ -11,6 +11,18 @@ namespace EnhancedSearchAndFilters.Filters
     internal class NoteDensityFilter : FilterBase
     {
         public override string Name => "Note Density";
+        public override FilterStatus Status
+        {
+            get
+            {
+                if (IsFilterApplied)
+                    return HasChanges ? FilterStatus.AppliedAndChanged : FilterStatus.Applied;
+                else if ((_minEnabledStagingValue || _maxEnabledStagingValue) && HasChanges)
+                    return FilterStatus.NotAppliedAndChanged;
+                else
+                    return FilterStatus.NotApplied;
+            }
+        }
         public override bool IsFilterApplied => _minEnabledAppliedValue || _maxEnabledAppliedValue;
         public override bool HasChanges => _minEnabledStagingValue != _minEnabledAppliedValue ||
             _minStagingValue != _minAppliedValue ||
