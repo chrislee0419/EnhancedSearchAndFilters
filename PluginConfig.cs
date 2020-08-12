@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Text;
 using BS_Utils.Utilities;
+using UnityEngine;
 
 namespace EnhancedSearchAndFilters
 {
@@ -75,7 +77,64 @@ namespace EnhancedSearchAndFilters
             }
             set => config.SetInt(MainSection, "SearchKeyboard", (int)value);
         }
-        public const SearchKeyboardType SearchKeyboardDefaultValue = SearchKeyboardType.Detached;
+        public const SearchKeyboardType SearchKeyboardDefaultValue = SearchKeyboardType.Floating;
+
+        public static Vector3 FloatingSearchKeyboardPosition
+        {
+            get
+            {
+                string value = config.GetString(MainSection, "DetachedSearchKeyboardPosition", "0.0,0.4,2.0", true);
+                string[] strs = value.Split(SplitCharArray, StringSplitOptions.RemoveEmptyEntries);
+                if (strs.Length != 3)
+                    return FloatingSearchKeyboardPositionDefaultValue;
+
+                Vector3 pos = new Vector3();
+                if (float.TryParse(strs[0], out pos.x) && float.TryParse(strs[1], out pos.y) && float.TryParse(strs[2], out pos.z))
+                    return pos;
+                else
+                    return FloatingSearchKeyboardPositionDefaultValue;
+            }
+            set
+            {
+                StringBuilder sb = new StringBuilder(value.x.ToString());
+                sb.Append(',');
+                sb.Append(value.y);
+                sb.Append(',');
+                sb.Append(value.z);
+                config.SetString(MainSection, "DetachedSearchKeyboardPosition", sb.ToString());
+            }
+        }
+        public static readonly Vector3 FloatingSearchKeyboardPositionDefaultValue = new Vector3(0f, 0.4f, 2f);
+        private static readonly char[] SplitCharArray = new char[] { ',' };
+
+        public static Quaternion FloatingSearchKeyboardRotation
+        {
+            get
+            {
+                string value = config.GetString(MainSection, "DetachedSearchKeyboardRotation", "0.4617486,0.0,0.0,0.8870108", true);
+                string[] strs = value.Split(SplitCharArray, StringSplitOptions.RemoveEmptyEntries);
+                if (strs.Length != 4)
+                    return FloatingSearchKeyboardRotationDefaultValue;
+
+                Quaternion rot = new Quaternion();
+                if (float.TryParse(strs[0], out rot.x) && float.TryParse(strs[1], out rot.y) && float.TryParse(strs[2], out rot.z) && float.TryParse(strs[3], out rot.w))
+                    return rot;
+                else
+                    return FloatingSearchKeyboardRotationDefaultValue;
+            }
+            set
+            {
+                StringBuilder sb = new StringBuilder(value.x.ToString());
+                sb.Append(',');
+                sb.Append(value.y);
+                sb.Append(',');
+                sb.Append(value.z);
+                sb.Append(',');
+                sb.Append(value.w);
+                config.SetString(MainSection, "DetachedSearchKeyboardRotation", sb.ToString());
+            }
+        }
+        public static readonly Quaternion FloatingSearchKeyboardRotationDefaultValue = Quaternion.Euler(55f, 0f, 0f);
 
         public static bool TwoHandedTyping
         {
@@ -174,7 +233,7 @@ namespace EnhancedSearchAndFilters
 
     internal enum SearchKeyboardType
     {
-        Detached = 0,
+        Floating = 0,
         RightScreen = 1,
         Compact = 2
     }

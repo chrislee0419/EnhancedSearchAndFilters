@@ -182,7 +182,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 
             switch (PluginConfig.SearchKeyboard)
             {
-                case SearchKeyboardType.Detached:
+                case SearchKeyboardType.Floating:
                     var floatingKeyboardManager = this.gameObject.AddComponent<FloatingSearchKeyboardManager>();
                     _keyboardManager = floatingKeyboardManager;
                     break;

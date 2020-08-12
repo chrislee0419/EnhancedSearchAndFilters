@@ -157,7 +157,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         [UIValue("keyboard-type-hover-hint")]
         private const string KeyboardTypeHoverHintText =
             "Specify the type of keyboard to use.\n" +
-            "<color=#11FF11>'Detached' - Place the keyboard on its own moveable screen.</color>\n" +
+            "<color=#11FF11>'Floating' - Place the keyboard on its own moveable screen.</color>\n" +
             "<color=#11FF11>'Right Screen' - Place the keyboard on the right menu screen.</color>\n" +
             "<color=#11FF11>'Compact' - Use a minified keyboard on the center menu screen.</color>";
         [UIValue("two-handed-typing-hover-hint")]
@@ -197,8 +197,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         {
             switch ((SearchKeyboardType)value)
             {
-                case SearchKeyboardType.Detached:
-                    return "Detached";
+                case SearchKeyboardType.Floating:
+                    return "Floating";
                 case SearchKeyboardType.RightScreen:
                     return "<size=80%>Right Screen</size>";
                 case SearchKeyboardType.Compact:
