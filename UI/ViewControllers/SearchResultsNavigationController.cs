@@ -18,6 +18,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
     {
         public event Action ForceShowButtonPressed;
         public event Action LastSearchButtonPressed;
+        public event Action ResetKeyboardPositionButtonPressed;
 
 #pragma warning disable CS0649
         [UIObject("header")]
@@ -31,6 +32,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         private Button _lastSearchButton;
         [UIComponent("last-search-text")]
         private TextMeshProUGUI _lastSearchText;
+        [UIComponent("reset-keyboard-pos-button")]
+        private Button _resetKeyboardPosButton;
 #pragma warning restore CS0649
 
         private GameObject _loadingSpinner;
@@ -87,6 +90,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _forceButton.gameObject.SetActive(false);
             _lastSearchButton.gameObject.SetActive(false);
             _lastSearchText.gameObject.SetActive(false);
+            _resetKeyboardPosButton.gameObject.SetActive(PluginConfig.SearchKeyboard == SearchKeyboardType.Floating);
             SetHeaderActive(PluginConfig.SearchKeyboard != SearchKeyboardType.Compact);
         }
 
@@ -103,6 +107,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _forceButton.gameObject.SetActive(false);
             _lastSearchButton.gameObject.SetActive(false);
             _lastSearchText.gameObject.SetActive(false);
+            _resetKeyboardPosButton.gameObject.SetActive(false);
 
             SetHeaderActive(PluginConfig.SearchKeyboard != SearchKeyboardType.Compact);
             _loadingSpinner.SetActive(true);
@@ -114,6 +119,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _forceButton.gameObject.SetActive(false);
             _lastSearchButton.gameObject.SetActive(false);
             _lastSearchText.gameObject.SetActive(false);
+            _resetKeyboardPosButton.gameObject.SetActive(PluginConfig.SearchKeyboard == SearchKeyboardType.Floating);
 
             _resultsText.text = PluginConfig.SearchKeyboard == SearchKeyboardType.RightScreen ? RightScreenKeyboardPlaceholderResultsText : DetachedKeyboardPlaceholderResultsText;
             _resultsText.gameObject.SetActive(true);
@@ -132,6 +138,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
             _forceButton.interactable = searchResultsList.Any() ? true : false;
             _forceButton.gameObject.SetActive(true);
+            _resetKeyboardPosButton.gameObject.SetActive(PluginConfig.SearchKeyboard == SearchKeyboardType.Floating);
             SetHeaderActive(PluginConfig.SearchKeyboard != SearchKeyboardType.Compact);
         }
 
@@ -143,6 +150,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _forceButton.gameObject.SetActive(false);
             _lastSearchButton.gameObject.SetActive(false);
             _lastSearchText.gameObject.SetActive(false);
+            _resetKeyboardPosButton.gameObject.SetActive(false);
         }
 
         private void SetHeaderActive(bool active)
@@ -247,5 +255,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _lastSearchButton.SetButtonText(RedoSearchButtonDefaultText);
             LastSearchButtonPressed?.Invoke();
         }
+
+        [UIAction("reset-keyboard-pos-button-clicked")]
+        private void OnResetKeyboardPositionButtonClicked() => ResetKeyboardPositionButtonPressed?.Invoke();
     }
 }

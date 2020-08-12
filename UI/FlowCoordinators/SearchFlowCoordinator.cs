@@ -71,6 +71,11 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 
                     SearchBehaviour.Instance.StartNewSearch(_levelsSearchSpace, _searchQuery, levels => ShowSearchResult(levels, true));
                 };
+                _searchResultsNavigationController.ResetKeyboardPositionButtonPressed += delegate ()
+                {
+                    if (PluginConfig.SearchKeyboard == SearchKeyboardType.Floating && _keyboardManager is FloatingSearchKeyboardManager keyboardManager)
+                        keyboardManager.ResetPosition();
+                };
 
                 _searchResultsListViewController.SongSelected += delegate (IPreviewBeatmapLevel level)
                 {

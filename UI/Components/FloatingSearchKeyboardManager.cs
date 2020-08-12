@@ -16,11 +16,13 @@ namespace EnhancedSearchAndFilters.UI.Components
 
 #pragma warning disable CS0649
         [UIComponent("lock-image")]
-        private ClickableImage lockImage;
+        private ClickableImage _lockImage;
+        [UIComponent("reset-image")]
+        private ClickableImage _resetImage;
 #pragma warning restore CS0649
 
-        private static Sprite lockSprite;
-        private static Sprite unlockSprite;
+        private static Sprite _lockSprite;
+        private static Sprite _unlockSprite;
 
         private static readonly Color LockDefaultColour = new Color(0.47f, 0.47f, 0.47f);
         private static readonly Color UnlockDefaultColour = new Color(0.67f, 0.67f, 0.67f);
@@ -31,12 +33,12 @@ namespace EnhancedSearchAndFilters.UI.Components
 
         protected override void Awake()
         {
-            if (lockSprite == null)
-                lockSprite = BSUIUtilities.LoadSpriteFromResources(LockImageResourcePath);
-            if (unlockSprite == null)
-                unlockSprite = BSUIUtilities.LoadSpriteFromResources(UnlockImageResourcePath);
+            if (_lockSprite == null)
+                _lockSprite = BSUIUtilities.LoadSpriteFromResources(LockImageResourcePath);
+            if (_unlockSprite == null)
+                _unlockSprite = BSUIUtilities.LoadSpriteFromResources(UnlockImageResourcePath);
 
-            _floatingScreen = FloatingScreen.CreateFloatingScreen(new Vector2(120f, 64f), false, new Vector3(0f, 0.4f, 2f), Quaternion.Euler(55f, 0f, 0f));
+            _floatingScreen = FloatingScreen.CreateFloatingScreen(new Vector2(120f, 64f), false, PluginConfig.FloatingSearchKeyboardPosition, PluginConfig.FloatingSearchKeyboardRotation);
             _floatingScreen.HandleSide = FloatingScreen.Side.Top;
 
             UIUtilities.ParseBSML("EnhancedSearchAndFilters.UI.Views.FloatingKeyboardView.bsml", _floatingScreen.gameObject, this);
@@ -81,23 +83,43 @@ namespace EnhancedSearchAndFilters.UI.Components
             Destroy(_floatingScreen.gameObject);
         }
 
+        public void ResetPosition()
+        {
+            _floatingScreen.ScreenPosition = PluginConfig.FloatingSearchKeyboardPositionDefaultValue;
+            _floatingScreen.ScreenRotation = PluginConfig.FloatingSearchKeyboardRotationDefaultValue;
+            PluginConfig.FloatingSearchKeyboardPosition = PluginConfig.FloatingSearchKeyboardPositionDefaultValue;
+            PluginConfig.FloatingSearchKeyboardRotation = PluginConfig.FloatingSearchKeyboardRotationDefaultValue;
+        }
+
         [UIAction("lock-clicked")]
         private void OnLockClicked()
         {
             if (_floatingScreen.ShowHandle)
             {
-                lockImage.sprite = lockSprite;
-                lockImage.DefaultColor = LockDefaultColour;
+                _lockImage.sprite = _lockSprite;
+                _lockImage.DefaultColor = LockDefaultColour;
 
                 _floatingScreen.ShowHandle = false;
+                _resetImage.gameObject.SetActive(false);
+
+                PluginConfig.FloatingSearchKeyboardPosition = _floatingScreen.ScreenPosition;
+                PluginConfig.FloatingSearchKeyboardRotation = _floatingScreen.ScreenRotation;
             }
             else
             {
-                lockImage.sprite = unlockSprite;
-                lockImage.DefaultColor = UnlockDefaultColour;
+                _lockImage.sprite = _unlockSprite;
+                _lockImage.DefaultColor = UnlockDefaultColour;
 
                 _floatingScreen.ShowHandle = true;
+                _resetImage.gameObject.SetActive(true);
             }
+        }
+
+        [UIAction("reset-clicked")]
+        private void OnResetClicked()
+        {
+            _floatingScreen.ScreenPosition = PluginConfig.FloatingSearchKeyboardPosition;
+            _floatingScreen.ScreenRotation = PluginConfig.FloatingSearchKeyboardRotation;
         }
     }
 }

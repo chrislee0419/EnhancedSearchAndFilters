@@ -4,10 +4,22 @@
                    anchor-min-x='1' anchor-min-y='1'
                    anchor-max-x='1' anchor-max-y='1'
                    size-delta-x='4.5' size-delta-y='4.5'
-                   anchor-pos-x='-2.5' anchor-pos-y='-2.5'
+                   anchor-pos-x='-3' anchor-pos-y='-2.5'
                    pivot-x='1' pivot-y='1'
                    on-click='lock-clicked'
                    preserve-aspect='true'
                    default-color='#777777'
+                   highlight-color='#FFFFFF' />
+  <clickable-image id='reset-image'
+                   src='EnhancedSearchAndFilters.Assets.reset.png'
+                   active='false'
+                   anchor-min-x='0' anchor-min-y='1'
+                   anchor-max-x='0' anchor-max-y='1'
+                   size-delta-x='4.5' size-delta-y='4.5'
+                   anchor-pos-x='3' anchor-pos-y='-2.5'
+                   pivot-x='0' pivot-y='1'
+                   on-click='reset-clicked'
+                   preserve-aspect='true'
+                   default-color='#AAAAAA'
                    highlight-color='#FFFFFF' />
 </bg>

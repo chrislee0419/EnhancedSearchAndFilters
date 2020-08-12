@@ -25,4 +25,13 @@
           anchor-max-x="0.5" anchor-max-y="0.5"
           preferred-width="36" preferred-height="10"
           anchor-pos-x="59" anchor-pos-y="-32" />
+  <button id="reset-keyboard-pos-button"
+          text="Reset Keyboard Position"
+          font-size="3"
+          on-click="reset-keyboard-pos-button-clicked"
+          anchor-min-x="0" anchor-min-y="0"
+          anchor-max-x="0" anchor-max-y="0"
+          pivot-x="0" pivot-y="0"
+          preferred-width="34" preferred-height="8"
+          anchor-pos-x="3.5" anchor-pos-y="2.5" />
 </bg>

@@ -329,5 +329,8 @@
     <EmbeddedResource Include="Assets\lock.png" />
     <EmbeddedResource Include="Assets\unlock.png" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\reset.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
