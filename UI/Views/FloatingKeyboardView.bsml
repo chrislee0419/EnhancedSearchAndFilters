@@ -1,0 +1,13 @@
+﻿<bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
+  <clickable-image id='lock-image'
+                   src='~lock-image-path'
+                   anchor-min-x='1' anchor-min-y='1'
+                   anchor-max-x='1' anchor-max-y='1'
+                   size-delta-x='4.5' size-delta-y='4.5'
+                   anchor-pos-x='-2.5' anchor-pos-y='-2.5'
+                   pivot-x='1' pivot-y='1'
+                   on-click='lock-clicked'
+                   preserve-aspect='true'
+                   default-color='#777777'
+                   highlight-color='#FFFFFF' />
+</bg>

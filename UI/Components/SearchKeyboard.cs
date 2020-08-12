@@ -48,7 +48,7 @@ namespace EnhancedSearchAndFilters.UI.Components
         protected bool _symbolModeActive = false;
         protected TextMeshProButton _filterButton;
 
-        protected TextMeshProButton _buttonPrefab;
+        private static TextMeshProButton _buttonPrefab;
 
         protected readonly static string[] KeyArray = new string[]
         {

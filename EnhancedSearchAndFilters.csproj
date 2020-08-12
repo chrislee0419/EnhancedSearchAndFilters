@@ -322,5 +322,12 @@
   <ItemGroup>
     <EmbeddedResource Include="UI\Views\Filters\SearchFilterSettingsView.bsml" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UI\Views\FloatingKeyboardView.bsml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\lock.png" />
+    <EmbeddedResource Include="Assets\unlock.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
