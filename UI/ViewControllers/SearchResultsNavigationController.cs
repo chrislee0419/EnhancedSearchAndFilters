@@ -40,7 +40,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         private CancellationTokenSource _cancellationTokenSource;
 
         [UIValue("results-text-placeholder")]
-        private const string PlaceholderResultsText = "Use the keyboard on the right screen\nto search for a song.\n\n---->";
+        private const string DetachedKeyboardPlaceholderResultsText = "Use the floating keyboard\nto search for a song.";
+        private const string RightScreenKeyboardPlaceholderResultsText = "Use the keyboard on the right screen\nto search for a song.\n\n---->";
 
         private static readonly Vector2 ResultsTextDefaultAnchoredPosition = Vector2.zero;
         private static readonly Vector2 ResultsTextDefaultSizeDelta = new Vector2(120f, 40f);
@@ -75,18 +76,18 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             }
             else
             {
-                _resultsText.text = PlaceholderResultsText;
+                _resultsText.text = PluginConfig.SearchKeyboard == SearchKeyboardType.RightScreen ? RightScreenKeyboardPlaceholderResultsText : DetachedKeyboardPlaceholderResultsText;
                 _resultsText.fontSize = 6f;
             }
 
             AdjustElements();
 
             _loadingSpinner.SetActive(false);
-            _resultsText.gameObject.SetActive(!PluginConfig.CompactSearchMode);
+            _resultsText.gameObject.SetActive(PluginConfig.SearchKeyboard != SearchKeyboardType.Compact);
             _forceButton.gameObject.SetActive(false);
             _lastSearchButton.gameObject.SetActive(false);
             _lastSearchText.gameObject.SetActive(false);
-            SetHeaderActive(!PluginConfig.CompactSearchMode);
+            SetHeaderActive(PluginConfig.SearchKeyboard != SearchKeyboardType.Compact);
         }
 
         protected override void DidDeactivate(DeactivationType deactivationType)
@@ -103,7 +104,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _lastSearchButton.gameObject.SetActive(false);
             _lastSearchText.gameObject.SetActive(false);
 
-            SetHeaderActive(!PluginConfig.CompactSearchMode);
+            SetHeaderActive(PluginConfig.SearchKeyboard != SearchKeyboardType.Compact);
             _loadingSpinner.SetActive(true);
         }
 
@@ -114,7 +115,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             _lastSearchButton.gameObject.SetActive(false);
             _lastSearchText.gameObject.SetActive(false);
 
-            _resultsText.text = PlaceholderResultsText;
+            _resultsText.text = PluginConfig.SearchKeyboard == SearchKeyboardType.RightScreen ? RightScreenKeyboardPlaceholderResultsText : DetachedKeyboardPlaceholderResultsText;
             _resultsText.gameObject.SetActive(true);
             SetHeaderActive(true);
         }
@@ -131,7 +132,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
             _forceButton.interactable = searchResultsList.Any() ? true : false;
             _forceButton.gameObject.SetActive(true);
-            SetHeaderActive(!PluginConfig.CompactSearchMode);
+            SetHeaderActive(PluginConfig.SearchKeyboard != SearchKeyboardType.Compact);
         }
 
         public void HideUIElements()
@@ -161,7 +162,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         /// </summary>
         public void AdjustElements()
         {
-            if (PluginConfig.CompactSearchMode)
+            if (PluginConfig.SearchKeyboard == SearchKeyboardType.Compact)
             {
                 _resultsText.rectTransform.anchoredPosition = ResultsTextCompactAnchoredPosition;
                 _resultsText.rectTransform.sizeDelta = ResultsTextCompactSizeDelta;

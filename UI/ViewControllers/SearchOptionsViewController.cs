@@ -7,6 +7,7 @@ using TMPro;
 using BeatSaberMarkupLanguage.Parser;
 using BeatSaberMarkupLanguage.ViewControllers;
 using BeatSaberMarkupLanguage.Attributes;
+using EnhancedSearchAndFilters.UI.Components;
 
 namespace EnhancedSearchAndFilters.UI.ViewControllers
 {
@@ -24,6 +25,8 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         public int MaxResultsShownMaxValue { get => PluginConfig.MaxSearchResultsUnlimitedValue; }
         [UIValue("song-fields-options")]
         public static List<object> SongFieldsOptions { get => Enum.GetValues(typeof(SearchableSongFields)).Cast<SearchableSongFields>().Select(x => (object)x).ToList(); }
+        [UIValue("keyboard-type-options")]
+        public static List<object> KeyboardTypeOptions { get => Enum.GetValues(typeof(SearchKeyboardType)).Cast<SearchKeyboardType>().Select(x => (object)x).ToList(); }
 
         private int _maxResultsShownStagingValue = PluginConfig.MaxSearchResults;
         [UIValue("max-results-value")]
@@ -89,16 +92,16 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             }
         }
 
-        private bool _compactModeStagingValue = PluginConfig.CompactSearchMode;
-        [UIValue("compact-mode-value")]
-        public bool CompactModeStagingValue
+        private SearchKeyboardType _keyboardTypeStagingValue = PluginConfig.SearchKeyboard;
+        [UIValue("keyboard-type-value")]
+        public SearchKeyboardType KeyboardTypeStagingValue
         {
-            get => _compactModeStagingValue;
+            get => _keyboardTypeStagingValue;
             set
             {
-                if (_compactModeStagingValue == value)
+                if (_keyboardTypeStagingValue == value)
                     return;
-                _compactModeStagingValue = value;
+                _keyboardTypeStagingValue = value;
 
                 _resetButton.interactable = true;
                 _applyButton.interactable = true;
@@ -151,9 +154,12 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
         public const string StripSymbolsHoverHintText =
             "Remove symbols from song title, subtitle, artist, etc. fields when performing search.\n" +
             "<color=#11FF11>Can be useful when searching for song remixes and titles with apostrophes, quotations, or hyphens.</color>";
-        [UIValue("compact-mode-hover-hint")]
-        private const string CompactModeHoverHintText =
-            "Remove the keyboard on the right screen, replacing it with a smaller keyboard on the center screen.";
+        [UIValue("keyboard-type-hover-hint")]
+        private const string KeyboardTypeHoverHintText =
+            "Specify the type of keyboard to use.\n" +
+            "<color=#11FF11>'Detached' - Place the keyboard on its own moveable screen.</color>\n" +
+            "<color=#11FF11>'Right Screen' - Place the keyboard on the right menu screen.</color>\n" +
+            "<color=#11FF11>'Compact' - Use a minified keyboard on the center menu screen.</color>";
         [UIValue("two-handed-typing-hover-hint")]
         private const string TwoHandedTypingHoverHintText =
             "Add a laser pointer to the off-hand for easier two handed typing.";
@@ -186,6 +192,22 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             }
         }
 
+        [UIAction("keyboard-type-formatter")]
+        public static string KeyboardTypeFormatter(object value)
+        {
+            switch ((SearchKeyboardType)value)
+            {
+                case SearchKeyboardType.Detached:
+                    return "Detached";
+                case SearchKeyboardType.RightScreen:
+                    return "<size=80%>Right Screen</size>";
+                case SearchKeyboardType.Compact:
+                    return "Compact";
+                default:
+                    return "ERROR!";
+            }
+        }
+
         [UIAction("default-button-clicked")]
         private void DefaultButtonClicked()
         {
@@ -193,7 +215,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             StripSymbolsStagingValue = PluginConfig.StripSymbolsDefaultValue;
             SplitQueryStagingValue = PluginConfig.SplitQueryByWordsDefaultValue;
             SongFieldsStagingValue = PluginConfig.SongFieldsToSearchDefaultValue;
-            CompactModeStagingValue = PluginConfig.CompactSearchModeDefaultValue;
+            KeyboardTypeStagingValue = PluginConfig.SearchKeyboardDefaultValue;
             TwoHandedTypingStagingValue = PluginConfig.TwoHandedTypingDefaultValue;
 
             _resetButton.interactable = true;
@@ -209,7 +231,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             StripSymbolsStagingValue = PluginConfig.StripSymbols;
             SplitQueryStagingValue = PluginConfig.SplitQueryByWords;
             SongFieldsStagingValue = PluginConfig.SongFieldsToSearch;
-            CompactModeStagingValue = PluginConfig.CompactSearchMode;
+            KeyboardTypeStagingValue = PluginConfig.SearchKeyboard;
             TwoHandedTypingStagingValue = PluginConfig.TwoHandedTyping;
 
             _resetButton.GetComponentInChildren<TextMeshProUGUI>().color = Color.white;
@@ -227,7 +249,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             PluginConfig.StripSymbols = StripSymbolsStagingValue;
             PluginConfig.SplitQueryByWords = SplitQueryStagingValue;
             PluginConfig.SongFieldsToSearch = SongFieldsStagingValue;
-            PluginConfig.CompactSearchMode = CompactModeStagingValue;
+            PluginConfig.SearchKeyboard = KeyboardTypeStagingValue;
             PluginConfig.TwoHandedTyping = TwoHandedTypingStagingValue;
 
             _applyButton.GetComponentInChildren<TextMeshProUGUI>().color = Color.white;

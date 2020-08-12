@@ -200,6 +200,7 @@
     <Compile Include="SongData\BeatmapDetailsCoroutineLoader.cs" />
     <Compile Include="SongData\BeatmapDetailsThreadedLoader.cs" />
     <Compile Include="Tweaks\BeatSaverVotingTweaks.cs" />
+    <Compile Include="UI\Components\FloatingSearchKeyboardManager.cs" />
     <Compile Include="UI\Components\SongDetailsDisplay.cs" />
     <Compile Include="Utilities\AudioFileUtilities.cs" />
     <Compile Include="Utilities\LocalLeaderboardDataHelper.cs" />
@@ -228,11 +229,10 @@
     <Compile Include="UI\SongListUIAdditions.cs" />
     <Compile Include="Utilities\StringUtilities.cs" />
     <Compile Include="Utilities\UIUtilities.cs" />
-    <Compile Include="UI\Components\CompactSearchKeyboard.cs" />
     <Compile Include="UI\ViewControllers\FilterSideViewController.cs" />
     <Compile Include="UI\ViewControllers\FilterMainViewController.cs" />
-    <Compile Include="UI\ViewControllers\SearchCompactKeyboardViewController.cs" />
-    <Compile Include="UI\ViewControllers\SearchKeyboardViewController.cs" />
+    <Compile Include="UI\Components\SearchCompactKeyboardManager.cs" />
+    <Compile Include="UI\Components\SearchKeyboardManager.cs" />
     <Compile Include="UI\ViewControllers\SearchOptionsViewController.cs" />
     <Compile Include="UI\ViewControllers\SearchResultsNavigationController.cs" />
     <Compile Include="UI\ViewControllers\SearchResultsListViewController.cs" />

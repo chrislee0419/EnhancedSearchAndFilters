@@ -106,7 +106,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             if (!this.isActivated)
                 return;
 
-            if (PluginConfig.CompactSearchMode)
+            if (PluginConfig.SearchKeyboard == SearchKeyboardType.Compact)
             {
                 this.rectTransform.sizeDelta = new Vector2(60f, 0f);
 

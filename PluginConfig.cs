@@ -65,12 +65,17 @@ namespace EnhancedSearchAndFilters
         /// <summary>
         /// Use the compact, single-screen keyboard in the search screen.
         /// </summary>
-        public static bool CompactSearchMode
+        public static SearchKeyboardType SearchKeyboard
         {
-            get => config.GetBool(MainSection, "CompactSearchMode", CompactSearchModeDefaultValue, true);
-            set => config.SetBool(MainSection, "CompactSearchMode", value);
+            get
+            {
+                int value = config.GetInt(MainSection, "SearchKeyboard", (int)SearchKeyboardDefaultValue, true);
+                return Enum.IsDefined(typeof(SearchKeyboardType), value) ? (SearchKeyboardType)value : SearchKeyboardDefaultValue;
+
+            }
+            set => config.SetInt(MainSection, "SearchKeyboard", (int)value);
         }
-        public const bool CompactSearchModeDefaultValue = false;
+        public const SearchKeyboardType SearchKeyboardDefaultValue = SearchKeyboardType.Detached;
 
         public static bool TwoHandedTyping
         {
@@ -165,5 +170,12 @@ namespace EnhancedSearchAndFilters
         All = 0,
         TitleAndAuthor = 1,
         TitleOnly = 2
+    }
+
+    internal enum SearchKeyboardType
+    {
+        Detached = 0,
+        RightScreen = 1,
+        Compact = 2
     }
 }

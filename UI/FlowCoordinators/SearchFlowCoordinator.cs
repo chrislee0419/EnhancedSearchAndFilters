@@ -5,6 +5,7 @@ using BeatSaberMarkupLanguage;
 using EnhancedSearchAndFilters.UI.ViewControllers;
 using EnhancedSearchAndFilters.Search;
 using SuggestionType = EnhancedSearchAndFilters.Search.SuggestedWord.SuggestionType;
+using EnhancedSearchAndFilters.UI.Components;
 
 namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 {
@@ -19,8 +20,9 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
         private SongDetailsViewController _songDetailsViewController;
 
         private SearchOptionsViewController _searchOptionsViewController;
-        private SearchKeyboardViewController _searchKeyboardViewController;
-        private SearchCompactKeyboardViewController _searchCompactKeyboardViewController;
+
+        private SearchKeyboardManagerBase _keyboardManager;
+        private ViewController _keyboardViewController;
 
         private LaserPointerInputManager _laserPointerInputManager;
 
@@ -46,8 +48,9 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                 _searchResultsListViewController = BeatSaberUI.CreateViewController<SearchResultsListViewController>();
                 _songDetailsViewController = BeatSaberUI.CreateViewController<SongDetailsViewController>();
                 _searchOptionsViewController = BeatSaberUI.CreateViewController<SearchOptionsViewController>();
-                _searchKeyboardViewController = BeatSaberUI.CreateViewController<SearchKeyboardViewController>();
-                _searchCompactKeyboardViewController = BeatSaberUI.CreateViewController<SearchCompactKeyboardViewController>();
+
+                CreateKeyboardManager();
+
                 _searchResultsNavigationController.ForceShowButtonPressed += delegate ()
                 {
                     ShowSearchResult(SearchBehaviour.Instance.CachedResult, true);
@@ -64,20 +67,17 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                     _searchResultsListViewController.UpdateSongs(new IPreviewBeatmapLevel[0]);
 
                     _searchQuery = _lastSearchQuery;
+                    _keyboardManager.SetText(_searchQuery);
 
-                    if (PluginConfig.CompactSearchMode)
-                        _searchCompactKeyboardViewController.SetText(_searchQuery);
-                    else
-                        _searchKeyboardViewController.SetText(_searchQuery);
                     SearchBehaviour.Instance.StartNewSearch(_levelsSearchSpace, _searchQuery, levels => ShowSearchResult(levels, true));
                 };
 
                 _searchResultsListViewController.SongSelected += delegate (IPreviewBeatmapLevel level)
                 {
-                    if (_searchCompactKeyboardViewController.isInViewControllerHierarchy)
+                    if (PluginConfig.SearchKeyboard == SearchKeyboardType.Compact && _keyboardViewController.isInViewControllerHierarchy)
                         PopViewControllerFromNavigationController(_searchResultsNavigationController, null, true);
                     if (!_songDetailsViewController.isInViewControllerHierarchy)
-                        PushViewControllerToNavigationController(_searchResultsNavigationController, _songDetailsViewController, null, PluginConfig.CompactSearchMode);
+                        PushViewControllerToNavigationController(_searchResultsNavigationController, _songDetailsViewController, null, PluginConfig.SearchKeyboard == SearchKeyboardType.Compact);
                     _songDetailsViewController.SetContent(level);
                     _searchResultsNavigationController.CrossfadeAudioToLevelAsync(level);
                 };
@@ -92,31 +92,19 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                 };
                 _songDetailsViewController.CompactKeyboardButtonPressed += delegate ()
                 {
-                    if (!PluginConfig.CompactSearchMode)
+                    if (PluginConfig.SearchKeyboard != SearchKeyboardType.Compact)
                         return;
 
                     PopViewControllerFromNavigationController(_searchResultsNavigationController, null, true);
-                    PushViewControllerToNavigationController(_searchResultsNavigationController, _searchCompactKeyboardViewController, null, true);
+                    PushViewControllerToNavigationController(_searchResultsNavigationController, _keyboardViewController, null, true);
 
-                    _searchCompactKeyboardViewController.SetText(_searchQuery);
+                    _keyboardManager.SetText(_searchQuery);
                     _searchResultsListViewController.DeselectSong();
                 };
 
                 _searchOptionsViewController.SearchOptionsApplied += OptionsChanged;
 
-                _searchKeyboardViewController.TextKeyPressed += KeyboardTextKeyPressed;
-                _searchKeyboardViewController.DeleteButtonPressed += KeyboardDeleteButtonPressed;
-                _searchKeyboardViewController.ClearButtonPressed += KeyboardClearButtonPressed;
-                _searchKeyboardViewController.PredictionPressed += KeyboardPredictionPressed;
-                _searchKeyboardViewController.FilterButtonPressed += KeyboardFilterButtonPressed;
-
-                _searchCompactKeyboardViewController.TextKeyPressed += KeyboardTextKeyPressed;
-                _searchCompactKeyboardViewController.DeleteButtonPressed += KeyboardDeleteButtonPressed;
-                _searchCompactKeyboardViewController.ClearButtonPressed += KeyboardClearButtonPressed;
-                _searchCompactKeyboardViewController.PredictionPressed += KeyboardPredictionPressed;
-                _searchCompactKeyboardViewController.FilterButtonPressed += KeyboardFilterButtonPressed;
-
-                ProvideInitialViewControllers(_searchResultsNavigationController, _searchOptionsViewController, PluginConfig.CompactSearchMode ? null : _searchKeyboardViewController);
+                ProvideInitialViewControllers(_searchResultsNavigationController, _searchOptionsViewController, PluginConfig.SearchKeyboard == SearchKeyboardType.RightScreen ? _keyboardViewController : null);
             }
             else
             {
@@ -125,6 +113,8 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 
                 if (_laserPointerInputManager != null)
                     _laserPointerInputManager.gameObject.SetActive(true);
+
+                _keyboardManager.Activate();
             }
         }
 
@@ -134,6 +124,8 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 
             if (_laserPointerInputManager != null)
                 _laserPointerInputManager.gameObject.SetActive(false);
+
+            _keyboardManager.Deactivate();
         }
 
         /// <summary>
@@ -165,15 +157,65 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             BackButtonPressed?.Invoke();
         }
 
+        private void CreateKeyboardManager()
+        {
+            if (_keyboardViewController != null)
+            {
+                if (_keyboardViewController.isInViewControllerHierarchy)
+                {
+                    if (_keyboardManager is SearchCompactKeyboardManager)
+                        PopViewControllerFromNavigationController(_searchResultsNavigationController, null, true);
+                    else if (_keyboardManager is RightScreenSearchKeyboardManager)
+                        SetRightScreenViewController(null, true);
+                }
+
+                Destroy(_keyboardViewController.gameObject);
+                _keyboardViewController = null;
+            }
+            if (_keyboardManager != null)
+            {
+                _keyboardManager.Deactivate();
+
+                Destroy(_keyboardManager);
+                _keyboardManager = null;
+            }
+
+            switch (PluginConfig.SearchKeyboard)
+            {
+                case SearchKeyboardType.Detached:
+                    var floatingKeyboardManager = this.gameObject.AddComponent<FloatingSearchKeyboardManager>();
+                    _keyboardManager = floatingKeyboardManager;
+                    break;
+
+                case SearchKeyboardType.RightScreen:
+                    var rightScreenKeyboardManager = this.gameObject.AddComponent<RightScreenSearchKeyboardManager>();
+                    _keyboardManager = rightScreenKeyboardManager;
+                    _keyboardViewController = rightScreenKeyboardManager.ViewController;
+                    break;
+
+                case SearchKeyboardType.Compact:
+                    var compactKeyboardManager = this.gameObject.AddComponent<SearchCompactKeyboardManager>();
+                    _keyboardManager = compactKeyboardManager;
+                    _keyboardViewController = compactKeyboardManager.ViewController;
+                    break;
+            }
+
+            _keyboardManager.TextKeyPressed += KeyboardTextKeyPressed;
+            _keyboardManager.DeleteButtonPressed += KeyboardDeleteButtonPressed;
+            _keyboardManager.ClearButtonPressed += KeyboardClearButtonPressed;
+            _keyboardManager.PredictionPressed += KeyboardPredictionPressed;
+            _keyboardManager.FilterButtonPressed += KeyboardFilterButtonPressed;
+        }
+
         private void PushInitialViewControllersToNavigationController()
         {
             // push view controllers to navigation controller after it has been activated, otherwise the coroutines will not be called
             PopAllViewControllersFromNavigationController(true);
-            if (PluginConfig.CompactSearchMode)
+            if (PluginConfig.SearchKeyboard == SearchKeyboardType.Compact)
             {
                 PushViewControllerToNavigationController(_searchResultsNavigationController, _searchResultsListViewController, delegate ()
                 {
-                    PushViewControllerToNavigationController(_searchResultsNavigationController, _searchCompactKeyboardViewController, delegate ()
+                    PushViewControllerToNavigationController(_searchResultsNavigationController, _keyboardViewController, delegate ()
                     {
                         _readyForDeactivation = true;
                     });
@@ -183,7 +225,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             }
             else
             {
-                SetRightScreenViewController(_searchKeyboardViewController);
+                SetRightScreenViewController(PluginConfig.SearchKeyboard == SearchKeyboardType.RightScreen ? _keyboardViewController : null);
                 _searchResultsNavigationController.ShowPlaceholderText();
                 _readyForDeactivation = true;
             }
@@ -201,7 +243,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             _searchResultsNavigationController.CrossfadeAudioToDefault();
 
             // clear list, just in case the user forced the results to show
-            if (PluginConfig.CompactSearchMode)
+            if (PluginConfig.SearchKeyboard == SearchKeyboardType.Compact)
                 _searchResultsListViewController.UpdateSongs(new IPreviewBeatmapLevel[0]);
 
             if (_searchQuery.Length == 1)
@@ -224,13 +266,13 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                     _searchResultsNavigationController.ShowLoadingSpinner();
                     SearchBehaviour.Instance.StartNewSearch(_levelsSearchSpace, _searchQuery, SearchCompleted);
 
-                    if (PluginConfig.CompactSearchMode)
+                    if (PluginConfig.SearchKeyboard == SearchKeyboardType.Compact)
                         _searchResultsListViewController.UpdateSongs(new IPreviewBeatmapLevel[0]);
                 }
                 else
                 {
                     SearchBehaviour.Instance.StopSearch();
-                    if (PluginConfig.CompactSearchMode)
+                    if (PluginConfig.SearchKeyboard == SearchKeyboardType.Compact)
                     {
                         _searchResultsNavigationController.HideUIElements();
                         _searchResultsListViewController.UpdateSongs(new IPreviewBeatmapLevel[0]);
@@ -253,12 +295,12 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             SearchBehaviour.Instance.StopSearch();
             _searchResultsNavigationController.CrossfadeAudioToDefault();
 
-            if (PluginConfig.CompactSearchMode)
+            if (PluginConfig.SearchKeyboard == SearchKeyboardType.Compact)
             {
                 if (_songDetailsViewController.isInViewControllerHierarchy)
                 {
                     PopViewControllerFromNavigationController(_searchResultsNavigationController, null, true);
-                    PushViewControllerToNavigationController(_searchResultsNavigationController, _searchCompactKeyboardViewController);
+                    PushViewControllerToNavigationController(_searchResultsNavigationController, _keyboardViewController);
                 }
 
                 _searchResultsListViewController.UpdateSongs(new IPreviewBeatmapLevel[0]);
@@ -285,7 +327,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             _searchResultsNavigationController.CrossfadeAudioToDefault();
 
             // clear list, just in case the user forced the results to show
-            if (PluginConfig.CompactSearchMode)
+            if (PluginConfig.SearchKeyboard == SearchKeyboardType.Compact)
                 _searchResultsListViewController.UpdateSongs(new IPreviewBeatmapLevel[0]);
 
             // we need to start a new search when a fuzzy match prediction is pressed,
@@ -312,44 +354,36 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
 
         private void OptionsChanged()
         {
-            _searchKeyboardViewController.SetSymbolButtonInteractivity(!PluginConfig.StripSymbols);
-            _searchCompactKeyboardViewController.SetSymbolButtonInteractivity(!PluginConfig.StripSymbols);
+            CreateKeyboardManager();
+
+            _keyboardManager.SetSymbolButtonInteractivity(!PluginConfig.StripSymbols);
 
             _searchResultsNavigationController.AdjustElements();
             _searchResultsNavigationController.CrossfadeAudioToDefault();
             _searchResultsListViewController.UpdateSize();
 
-            if (PluginConfig.CompactSearchMode)
+            if (PluginConfig.SearchKeyboard == SearchKeyboardType.Compact)
             {
-                if (_searchKeyboardViewController.isInViewControllerHierarchy)
-                    SetRightScreenViewController(null);
                 if (_songDetailsViewController.isInViewControllerHierarchy)
                     PopViewControllerFromNavigationController(_searchResultsNavigationController, null, true);
                 if (!_searchResultsListViewController.isInViewControllerHierarchy)
                     PushViewControllerToNavigationController(_searchResultsNavigationController, _searchResultsListViewController, null, true);
-                if (!_searchCompactKeyboardViewController.isInViewControllerHierarchy)
-                    PushViewControllerToNavigationController(_searchResultsNavigationController, _searchCompactKeyboardViewController);
+
+                PushViewControllerToNavigationController(_searchResultsNavigationController, _keyboardViewController);
                 _searchResultsNavigationController.HideUIElements();
-                _searchCompactKeyboardViewController.SetText(_searchQuery);
-
-                ProvideInitialViewControllers(_searchResultsNavigationController, _searchOptionsViewController, null);
             }
-            else
+            else if (string.IsNullOrEmpty(_searchQuery))
             {
-                if (!_searchKeyboardViewController.isInViewControllerHierarchy)
-                    SetRightScreenViewController(_searchKeyboardViewController);
-                if (_searchCompactKeyboardViewController.isInViewControllerHierarchy)
+                if (_searchResultsListViewController.isInViewControllerHierarchy)
                     PopViewControllerFromNavigationController(_searchResultsNavigationController, null, true);
-                if (string.IsNullOrEmpty(_searchQuery))
-                {
-                    if (_searchResultsListViewController.isInViewControllerHierarchy)
-                        PopViewControllerFromNavigationController(_searchResultsNavigationController, null, true);
-                    _searchResultsNavigationController.ShowPlaceholderText();
-                }
-                _searchKeyboardViewController.SetText(_searchQuery);
-
-                ProvideInitialViewControllers(_searchResultsNavigationController, _searchOptionsViewController, _searchKeyboardViewController);
+                _searchResultsNavigationController.ShowPlaceholderText();
             }
+
+            if (PluginConfig.SearchKeyboard == SearchKeyboardType.RightScreen)
+                SetRightScreenViewController(_keyboardViewController);
+            ProvideInitialViewControllers(_searchResultsNavigationController, _searchOptionsViewController, PluginConfig.SearchKeyboard == SearchKeyboardType.RightScreen ? _keyboardViewController : null);
+
+            _keyboardManager.SetText(_searchQuery);
 
             if (PluginConfig.TwoHandedTyping && _laserPointerInputManager == null)
                 CreateLaserPointerManager();
@@ -366,10 +400,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             }
         }
 
-        private void SearchCompleted(IPreviewBeatmapLevel[] levels)
-        {
-            ShowSearchResult(levels);
-        }
+        private void SearchCompleted(IPreviewBeatmapLevel[] levels) => ShowSearchResult(levels);
 
         private void ShowSearchResult(IPreviewBeatmapLevel[] levels, bool force = false)
         {
@@ -393,7 +424,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
         private void PopAllViewControllersFromNavigationController(bool force = false)
         {
             // we usually don't need to pop view controllers from the centre screen when in compact mode
-            if (PluginConfig.CompactSearchMode && !force)
+            if (PluginConfig.SearchKeyboard == SearchKeyboardType.Compact && !force)
                 return;
 
             int numOfViewControllers = _searchResultsListViewController.isInViewControllerHierarchy ? 1 : 0;

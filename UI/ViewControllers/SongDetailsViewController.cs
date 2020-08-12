@@ -36,7 +36,7 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
             }
             else
             {
-                _songDetailsDisplay.KeyboardButtonActive = PluginConfig.CompactSearchMode;
+                _songDetailsDisplay.KeyboardButtonActive = PluginConfig.SearchKeyboard == SearchKeyboardType.Compact;
             }
         }
 

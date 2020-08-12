@@ -355,7 +355,7 @@ namespace EnhancedSearchAndFilters.UI.Components
             _keyboardButton.GetComponentInChildren<Image>().color = new Color(0f, 0.706f, 1f, 0.784f);
             _keyboardButton.onClick.RemoveAllListeners();
             _keyboardButton.onClick.AddListener(() => KeyboardButtonPressed?.Invoke());
-            _keyboardButton.gameObject.SetActive(PluginConfig.CompactSearchMode);
+            _keyboardButton.gameObject.SetActive(PluginConfig.SearchKeyboard == SearchKeyboardType.Compact);
 
             var detailView = Resources.FindObjectsOfTypeAll<StandardLevelDetailView>().First();
             _blurRenderer = detailView.GetField<KawaseBlurRendererSO, StandardLevelDetailView>("_kawaseBlurRenderer");
