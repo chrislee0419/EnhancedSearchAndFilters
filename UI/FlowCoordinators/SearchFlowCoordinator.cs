@@ -303,15 +303,15 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                     PushViewControllerToNavigationController(_searchResultsNavigationController, _keyboardViewController);
                 }
 
-                _searchResultsListViewController.UpdateSongs(new IPreviewBeatmapLevel[0]);
                 _searchResultsNavigationController.HideUIElements();
             }
             else
             {
                 PopAllViewControllersFromNavigationController();
-                _searchResultsListViewController.UpdateSongs(new IPreviewBeatmapLevel[0]);
                 _searchResultsNavigationController.ShowPlaceholderText();
             }
+
+            _searchResultsListViewController.UpdateSongs(null);
 
             // allow the user to redo the cleared search
             if (!string.IsNullOrEmpty(_lastSearchQuery))
@@ -369,6 +369,9 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
                 if (!_searchResultsListViewController.isInViewControllerHierarchy)
                     PushViewControllerToNavigationController(_searchResultsNavigationController, _searchResultsListViewController, null, true);
 
+                if (_searchQuery.Length == 0)
+                    _searchResultsListViewController.UpdateSongs(null);
+
                 PushViewControllerToNavigationController(_searchResultsNavigationController, _keyboardViewController);
                 _searchResultsNavigationController.HideUIElements();
             }
@@ -394,7 +397,7 @@ namespace EnhancedSearchAndFilters.UI.FlowCoordinators
             {
                 PopAllViewControllersFromNavigationController();
                 _searchResultsNavigationController.ShowLoadingSpinner();
-                _searchResultsListViewController.UpdateSongs(new IPreviewBeatmapLevel[0]);
+                _searchResultsListViewController.UpdateSongs(null);
 
                 SearchBehaviour.Instance.StartNewSearch(_levelsSearchSpace, _searchQuery, SearchCompleted);
             }

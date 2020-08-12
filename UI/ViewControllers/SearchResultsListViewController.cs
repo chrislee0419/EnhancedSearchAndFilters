@@ -124,6 +124,9 @@ namespace EnhancedSearchAndFilters.UI.ViewControllers
 
         public void UpdateSongs(IPreviewBeatmapLevel[] beatmapLevels)
         {
+            if (beatmapLevels == null)
+                beatmapLevels = Array.Empty<IPreviewBeatmapLevel>();
+
             _beatmapLevels = beatmapLevels;
             if (this.isActivated)
             {
