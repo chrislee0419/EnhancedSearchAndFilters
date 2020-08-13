@@ -171,6 +171,9 @@ namespace EnhancedSearchAndFilters.UI
             {
                 string levelID = lastLevelData[0];
 
+                if (levelPack.beatmapLevelCollection?.beatmapLevels == null)
+                    return;
+
                 IPreviewBeatmapLevel level = levelPack.beatmapLevelCollection.beatmapLevels.FirstOrDefault(x => x.levelID == levelID);
                 if (level != null)
                 {
@@ -194,7 +197,8 @@ namespace EnhancedSearchAndFilters.UI
 
         OnError:
             SongSortModule.ResetSortMode();
-            ButtonPanel.instance.UpdateSortButtons();
+            if (ButtonPanel.IsSingletonAvailable)
+                ButtonPanel.instance.UpdateSortButtons();
         }
 
         private void SelectLevel(IPreviewBeatmapLevel level)
