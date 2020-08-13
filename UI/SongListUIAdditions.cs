@@ -124,7 +124,7 @@ namespace EnhancedSearchAndFilters.UI
             Button pageUpButton = _tableView.GetPrivateField<Button>("_pageUpButton");
             if (pageUpButton != null)
             {
-                buttonBinder.AddBinding(pageUpButton, () => StartCoroutine(UIUtilities.DelayedAction(RefreshPageButtons)));
+                buttonBinder.AddBinding(pageUpButton, () => UnityCoroutineHelper.StartDelayedAction(RefreshPageButtons));
 
                 var rt = (pageUpButton.transform as RectTransform);
                 rt.anchorMin = new Vector2(0.5f, rt.anchorMin.y);
@@ -134,7 +134,7 @@ namespace EnhancedSearchAndFilters.UI
             Button pageDownButton = _tableView.GetPrivateField<Button>("_pageDownButton");
             if (pageDownButton != null)
             {
-                buttonBinder.AddBinding(pageDownButton, () => StartCoroutine(UIUtilities.DelayedAction(RefreshPageButtons)));
+                buttonBinder.AddBinding(pageDownButton, () => UnityCoroutineHelper.StartDelayedAction(RefreshPageButtons));
 
                 var rt = (pageDownButton.transform as RectTransform);
                 rt.anchorMin = new Vector2(0.5f, rt.anchorMin.y);
@@ -200,7 +200,7 @@ namespace EnhancedSearchAndFilters.UI
 
         private void SetupDeleteButton(LevelCollectionViewController viewController, IPreviewBeatmapLevel level)
         {
-            StartCoroutine(UIUtilities.DelayedAction(delegate ()
+            UnityCoroutineHelper.StartDelayedAction(delegate ()
             {
                 // can't use GetComponentInChildren to get the StandardLevelDetailView,
                 // since it may not be parented to the StandardLevelDetailViewController (doesn't get parented until it needs to be?)
@@ -212,7 +212,7 @@ namespace EnhancedSearchAndFilters.UI
                 viewController.didSelectLevelEvent += OnLevelSelected;
 
                 OnLevelSelected(viewController, level);
-            }));
+            });
 
             viewController.didSelectLevelEvent -= SetupDeleteButton;
         }

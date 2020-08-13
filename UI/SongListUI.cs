@@ -11,7 +11,7 @@ using EnhancedSearchAndFilters.Filters;
 using EnhancedSearchAndFilters.Tweaks;
 using EnhancedSearchAndFilters.UI.FlowCoordinators;
 using EnhancedSearchAndFilters.SongData;
-using UIUtilities = EnhancedSearchAndFilters.Utilities.UIUtilities;
+using EnhancedSearchAndFilters.Utilities;
 
 namespace EnhancedSearchAndFilters.UI
 {
@@ -91,7 +91,7 @@ namespace EnhancedSearchAndFilters.UI
 
                 PrepareLevelPackSelectedEvent();
                 if (!SongBrowserTweaks.ModLoaded)
-                    StartCoroutine(UIUtilities.DelayedAction(SelectSavedLevelPack));
+                    UnityCoroutineHelper.StartDelayedAction(SelectSavedLevelPack);
                 else if (!SongBrowserTweaks.Initialized)
                     StartCoroutine(GetSongBrowserButtons());
             }
@@ -103,7 +103,7 @@ namespace EnhancedSearchAndFilters.UI
 
                 PrepareLevelPackSelectedEvent();
                 if (!SongBrowserTweaks.ModLoaded)
-                    StartCoroutine(UIUtilities.DelayedAction(SelectSavedLevelPack));
+                    UnityCoroutineHelper.StartDelayedAction(SelectSavedLevelPack);
                 else if (!SongBrowserTweaks.Initialized)
                     StartCoroutine(GetSongBrowserButtons());
             }
@@ -167,7 +167,7 @@ namespace EnhancedSearchAndFilters.UI
 
             // select last level on the next frame, since the sort mode reselection done in LevelPackSelected
             // will be delayed to the next frame and will cause the level to be deselected
-            StartCoroutine(UIUtilities.DelayedAction(delegate ()
+            UnityCoroutineHelper.StartDelayedAction(delegate ()
             {
                 string levelID = lastLevelData[0];
 
@@ -188,7 +188,7 @@ namespace EnhancedSearchAndFilters.UI
                     if (level != null)
                         SelectLevel(level);
                 }
-            }, 2, false));
+            }, 2, false);
 
             return;
 
@@ -649,12 +649,12 @@ namespace EnhancedSearchAndFilters.UI
                     // since the level selection navigation controller shows a level pack using the same event that calls this function
                     // and it technically isn't a guarantee that this function will run after it is set,
                     // delay setting our level pack
-                    StartCoroutine(UIUtilities.DelayedAction(() =>
+                    UnityCoroutineHelper.StartDelayedAction(() =>
                         LevelSelectionNavigationController.SetData(
                             _sortedLevelsLevelPack,
                             true,
                             LevelSelectionNavigationController.GetPrivateField<bool>("_showPlayerStatsInDetailView"),
-                            LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView"))));
+                            LevelSelectionNavigationController.GetPrivateField<bool>("_showPracticeButtonInDetailView")));
                 }
             }
 
@@ -668,7 +668,7 @@ namespace EnhancedSearchAndFilters.UI
             UnapplyFilters();
 
             if (_uiAdditions != null)
-                StartCoroutine(UIUtilities.DelayedAction(_uiAdditions.RefreshPageButtons));
+                UnityCoroutineHelper.StartDelayedAction(_uiAdditions.RefreshPageButtons);
         }
 
         private void DismissSearchFlowCoordinator()

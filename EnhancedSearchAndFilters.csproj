@@ -203,6 +203,7 @@
     <Compile Include="UI\Components\FloatingSearchKeyboardManager.cs" />
     <Compile Include="UI\Components\SongDetailsDisplay.cs" />
     <Compile Include="Utilities\AudioFileUtilities.cs" />
+    <Compile Include="Utilities\UnityCoroutineHelper.cs" />
     <Compile Include="Utilities\LocalLeaderboardDataHelper.cs" />
     <Compile Include="Utilities\PlayerDataHelper.cs" />
     <Compile Include="SongData\SongSortModule.cs" />
