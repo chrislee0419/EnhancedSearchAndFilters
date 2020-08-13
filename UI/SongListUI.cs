@@ -10,6 +10,7 @@ using BeatSaberMarkupLanguage;
 using EnhancedSearchAndFilters.Filters;
 using EnhancedSearchAndFilters.Tweaks;
 using EnhancedSearchAndFilters.UI.FlowCoordinators;
+using EnhancedSearchAndFilters.UI.Components;
 using EnhancedSearchAndFilters.SongData;
 using EnhancedSearchAndFilters.Utilities;
 
@@ -29,6 +30,7 @@ namespace EnhancedSearchAndFilters.UI
         private FilterFlowCoordinator _filterFlowCoordinator;
 
         private SongListUIAdditions _uiAdditions;
+        private BottomScreen _bottomScreen;
 
         private LevelCollectionTableView _levelCollectionTableView;
 
@@ -62,23 +64,17 @@ namespace EnhancedSearchAndFilters.UI
             partyFreePlayButton.onClick.AddListener(() => OnModeSelection(FreePlayMode.Party));
             campaignButton.onClick.AddListener(() => OnModeSelection(FreePlayMode.Campaign));
 
+            if (_bottomScreen != null)
+                _bottomScreen.Dispose();
+
             if (SongBrowserTweaks.ModLoaded)
             {
                 // delay building UI until SongBrowser elements are built (after the user selects mode)
             }
-            else if (!PluginConfig.DisableSearch || !PluginConfig.DisableFilters)
-            {
-                Logger.log.Debug("Creating button panel");
-                InitializeButtonPanel(true);
-            }
             else
             {
-                Logger.log.Debug("Disabling button panel");
-                ButtonPanel.instance.DisablePanel();
+                InitializeAdditionalScreens(true);
             }
-
-            LevelSelectionNavigationController.didActivateEvent += (_, __) => ButtonPanel.instance.ShowPanel();
-            LevelSelectionNavigationController.didDeactivateEvent += (_) => ButtonPanel.instance.HidePanel();
         }
 
         private void OnModeSelection(FreePlayMode mode)
@@ -231,30 +227,52 @@ namespace EnhancedSearchAndFilters.UI
             if (tries <= 0)
             {
                 Logger.log.Warn("SongBrowser buttons could not be found. Creating default buttons panel");
-                InitializeButtonPanel();
+                InitializeAdditionalScreens();
             }
         }
 
-        private void InitializeButtonPanel(bool forceReinit = false)
+        private void InitializeAdditionalScreens(bool forceReinit = false)
         {
-            ButtonPanel.instance.Setup(forceReinit);
-            _uiAdditions = LevelSelectionNavigationController.gameObject.AddComponent<SongListUIAdditions>();
+            if (!PluginConfig.DisableSearch || !PluginConfig.DisableFilters)
+            {
+                Logger.log.Debug("Creating button panel");
+                ButtonPanel.instance.Setup(forceReinit);
+            }
+            else
+            {
+                Logger.log.Debug("Disabling button panel");
+                if (ButtonPanel.IsSingletonAvailable)
+                    ButtonPanel.instance.DisablePanel();
+            }
 
             ButtonPanel.instance.SearchButtonPressed -= SearchButtonPressed;
             ButtonPanel.instance.FilterButtonPressed -= FilterButtonPressed;
             ButtonPanel.instance.ClearFilterButtonPressed -= ClearButtonPressed;
-            ButtonPanel.instance.SortButtonPressed -= SortButtonPressed;
-            ButtonPanel.instance.ApplyQuickFilterPressed -= ApplyQuickFilterPressed;
-            ButtonPanel.instance.ReportButtonPressed -= ReportButtonPressed;
 
             ButtonPanel.instance.SearchButtonPressed += SearchButtonPressed;
             ButtonPanel.instance.FilterButtonPressed += FilterButtonPressed;
             ButtonPanel.instance.ClearFilterButtonPressed += ClearButtonPressed;
-            ButtonPanel.instance.SortButtonPressed += SortButtonPressed;
-            ButtonPanel.instance.ApplyQuickFilterPressed += ApplyQuickFilterPressed;
-            ButtonPanel.instance.ReportButtonPressed += ReportButtonPressed;
 
+            _bottomScreen = new BottomScreen();
+            _bottomScreen.SortButtonPressed += SortButtonPressed;
+            _bottomScreen.QuickFilterApplied += ApplyQuickFilterPressed;
+            _bottomScreen.ReportIssueButtonPressed += ReportButtonPressed;
+
+            _uiAdditions = LevelSelectionNavigationController.gameObject.AddComponent<SongListUIAdditions>();
             _uiAdditions.ConfirmDeleteButtonPressed += ConfirmDeleteButtonPressed;
+
+            LevelSelectionNavigationController.didActivateEvent += delegate (bool firstActivation, ViewController.ActivationType activationType)
+            {
+                if (ButtonPanel.IsSingletonAvailable)
+                    ButtonPanel.instance.ShowPanel();
+                _bottomScreen.ShowScreen();
+            };
+            LevelSelectionNavigationController.didDeactivateEvent += delegate (ViewController.DeactivationType deactivationType)
+            {
+                if (ButtonPanel.IsSingletonAvailable)
+                    ButtonPanel.instance.HidePanel();
+                _bottomScreen.HideScreen();
+            };
         }
 
         private void OnFreePlayFlowCoordinatorFinished(FlowCoordinator unused)
