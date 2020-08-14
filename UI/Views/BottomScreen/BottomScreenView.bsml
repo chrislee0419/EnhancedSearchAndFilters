@@ -1,0 +1,20 @@
+﻿<bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+    xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'
+    anchor-min-x='1' anchor-min-y='0'
+    anchor-max-x='1' anchor-max-y='0'
+    size-delta-x='150' size-delta-y='60'
+    anchor-pos-x='-75' anchor-pos-y='30'>
+  <vertical-icon-segments data='cell-data'
+                          select-cell='cell-selected'
+                          anchor-min-x='1' anchor-min-y='1'
+                          anchor-max-x='1' anchor-max-y='1'
+                          pivot-x='1' pivot-y='0'
+                          anchor-pos-x='-10' anchor-pos-y='-7'
+                          size-delta-x='11' size-delta-y='0' />
+  <bg id='container'
+      bg='round-rect-panel'
+      anchor-min-x='0' anchor-min-y='0'
+      anchor-max-x='1' anchor-max-y='1'
+      size-delta-x='-33' size-delta-y='-6'
+      anchor-pos-x='-13'/>
+</bg>

@@ -1,15 +1,21 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using HMUI;
+using VRUIControls;
+using IPA.Utilities;
 using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.FloatingScreen;
 using EnhancedSearchAndFilters.Filters;
+using EnhancedSearchAndFilters.SongData;
 using EnhancedSearchAndFilters.Utilities;
 using BSUIUtilities = BS_Utils.Utilities.UIUtilities;
+using System.ComponentModel;
 
 namespace EnhancedSearchAndFilters.UI.Components
 {
@@ -28,6 +34,22 @@ namespace EnhancedSearchAndFilters.UI.Components
         private Coroutine _revealAnimation;
         private Coroutine _expandAnimation;
         private Coroutine _contractAnimation;
+
+        private TabBase[] _tabs = new TabBase[3];
+        private TabBase _currentTab = null;
+
+#pragma warning disable CS0649
+        [UIObject("container")]
+        private GameObject _container;
+
+        [UIValue("cell-data")]
+        private readonly List<IconSegmentedControl.DataItem> _cellData = new List<IconSegmentedControl.DataItem>
+        {
+            new IconSegmentedControl.DataItem(BSUIUtilities.LoadSpriteFromResources("EnhancedSearchAndFilters.Assets.sort.png"), "Sort Mode"),
+            new IconSegmentedControl.DataItem(BSUIUtilities.LoadSpriteFromResources("EnhancedSearchAndFilters.Assets.filter.png"), "Quick Filters"),
+            new IconSegmentedControl.DataItem(BSUIUtilities.LoadSpriteFromResources("EnhancedSearchAndFilters.Assets.info.png"), "Mod Information")
+        };
+#pragma warning restore CS0649
 
         private const float DefaultScale = 0.02f;
         private const float HiddenScale = 0f;
@@ -48,6 +70,18 @@ namespace EnhancedSearchAndFilters.UI.Components
             _floatingScreen = FloatingScreen.CreateFloatingScreen(new Vector2(DefaultXSize, DefaultYSize), false, new Vector3(1.5f, 0.05f, 1.5f), Quaternion.Euler(50f, 0f, 0f));
             (_floatingScreen.transform as RectTransform).pivot = new Vector2(1f, 0f);
 
+            // this is needed to fix HoverHint position issues that occur because of the change in pivot done to the floating screen
+            var wrapperCanvasGO = new GameObject("Wrapper", typeof(RectTransform), typeof(Canvas), typeof(VRGraphicRaycaster), typeof(SetMainCameraToCanvas));
+            var rt = wrapperCanvasGO.transform as RectTransform;
+            rt.SetParent(_floatingScreen.transform, false);
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.sizeDelta = Vector2.zero;
+
+            var cameraSetter = wrapperCanvasGO.GetComponent<SetMainCameraToCanvas>();
+            cameraSetter.SetField("_canvas", wrapperCanvasGO.GetComponent<Canvas>());
+            cameraSetter.SetField("_mainCamera", Resources.FindObjectsOfTypeAll<MainCamera>().FirstOrDefault(camera => camera.camera?.stereoTargetEye != StereoTargetEyeMask.None) ?? Resources.FindObjectsOfTypeAll<MainCamera>().FirstOrDefault());
+
             _outlineImage = new GameObject("Outline").AddComponent<Image>();
             _outlineImage.color = OutlineColour;
             _outlineImage.material = UIUtilities.NoGlowMaterial;
@@ -55,7 +89,7 @@ namespace EnhancedSearchAndFilters.UI.Components
             _outlineImage.sprite = Resources.FindObjectsOfTypeAll<Sprite>().LastOrDefault(x => x.name == "RoundRectSmallStroke");
             _outlineImage.preserveAspect = true;
 
-            _outlineImage.rectTransform.SetParent(_floatingScreen.transform, false);
+            _outlineImage.rectTransform.SetParent(wrapperCanvasGO.transform, false);
             _outlineImage.rectTransform.anchorMin = Vector2.zero;
             _outlineImage.rectTransform.anchorMax = Vector2.one;
             _outlineImage.rectTransform.sizeDelta = Vector2.zero;
@@ -67,8 +101,8 @@ namespace EnhancedSearchAndFilters.UI.Components
             hlg.childForceExpandWidth = false;
             hlg.childForceExpandHeight = false;
 
-            var rt = hlg.transform as RectTransform;
-            rt.SetParent(_floatingScreen.transform, false);
+            rt = hlg.transform as RectTransform;
+            rt.SetParent(wrapperCanvasGO.transform, false);
             rt.anchorMin = new Vector2(1f, 0f);
             rt.anchorMax = new Vector2(1f, 0f);
             rt.pivot = new Vector2(1f, 0f);
@@ -90,6 +124,9 @@ namespace EnhancedSearchAndFilters.UI.Components
             _text = BeatSaberUI.CreateText(rt, "OPTIONS", Vector2.zero, Vector2.zero);
             _text.fontSize = 4.4f;
             _text.alignment = TextAlignmentOptions.Center;
+
+            // this needs to be the last child, otherwise the outline image will capture all the controller raycasts first
+            UIUtilities.ParseBSML("EnhancedSearchAndFilters.UI.Views.BottomScreen.BottomScreenView.bsml", wrapperCanvasGO, this);
 
             _hoverEventHandler = _floatingScreen.gameObject.AddComponent<EnterExitEventHandler>();
             _hoverEventHandler.PointerEntered += delegate ()
@@ -126,6 +163,14 @@ namespace EnhancedSearchAndFilters.UI.Components
 
                 _contractAnimation = UnityCoroutineHelper.Start(ContractAnimationCoroutine(immediate));
             };
+
+            var sortModeTab = new SortModeTab(_container);
+            sortModeTab.SortButtonPressed += () => SortButtonPressed?.Invoke();
+            sortModeTab.Visible = true;
+
+            _currentTab = sortModeTab;
+            _tabs[0] = sortModeTab;
+            Logger.log.Notice($"finished constructor, currentTab?={_currentTab == null}");
 
             HideScreen(true);
         }
@@ -293,14 +338,34 @@ namespace EnhancedSearchAndFilters.UI.Components
             _contractAnimation = null;
         }
 
-        public void UpdateSortButtons()
-        {
-            // TODO
-        }
+        public void UpdateSortButtons() => (_tabs[0] as SortModeTab).UpdateButtonsStatus();
 
         public void Dispose()
         {
             MonoBehaviour.Destroy(_floatingScreen);
+        }
+
+        [UIAction("cell-selected")]
+        private void OnCellSelected(SegmentedControl control, int index)
+        {
+            _currentTab.Visible = false;
+
+            if (_tabs[index] == null)
+            {
+                switch (index)
+                {
+                    case 1:
+                        _tabs[index] = new QuickFiltersTab(_container);
+                        break;
+
+                    case 2:
+                        _tabs[index] = new InfoTab(_container);
+                        break;
+                }
+            }
+
+            _tabs[index].Visible = true;
+            _currentTab = _tabs[index];
         }
 
         private abstract class TabBase
@@ -313,8 +378,10 @@ namespace EnhancedSearchAndFilters.UI.Components
 
             protected abstract string ResourceName { get; }
 
+#pragma warning disable CS0649
             [UIObject("root")]
             protected GameObject _gameObject;
+#pragma warning restore CS0649
 
             protected TabBase(GameObject parent)
             {
@@ -324,16 +391,112 @@ namespace EnhancedSearchAndFilters.UI.Components
 
         private class SortModeTab : TabBase
         {
-            protected override string ResourceName => "";
+            public event Action SortButtonPressed;
+
+            protected override string ResourceName => "EnhancedSearchAndFilters.UI.Views.BottomScreen.SortModeTabView.bsml";
+
+            private List<SortModeButton> _buttons;
+            [UIValue("sort-buttons")]
+            public List<object> Buttons
+            {
+                get
+                {
+                    if (_buttons == null)
+                    {
+                        _buttons = new List<SortModeButton>();
+                        foreach (SortMode mode in Enum.GetValues(typeof(SortMode)))
+                        {
+                            var button = new SortModeButton(mode);
+                            button.ButtonPressed += OnSortModeButtonPressed;
+
+                            _buttons.Add(button);
+                        }
+                    }
+
+                    return _buttons.Cast<object>().ToList();
+                }
+            }
+
+            private static readonly Color DefaultColour = Color.white;
+            private static readonly Color SelectedColour = new Color(0.7f, 1f, 0.6f);
+            private static readonly Color SelectedReversedColour = new Color(0.7f, 0.6f, 1f);
 
             public SortModeTab(GameObject parent) : base(parent)
             {
+                UpdateButtonsStatus();
+            }
+
+            public void UpdateButtonsStatus()
+            {
+                foreach (var button in _buttons)
+                {
+                    if (SongSortModule.CurrentSortMode == button.SortMode)
+                        button.ButtonColour = SongSortModule.Reversed ? SelectedReversedColour : SelectedColour;
+                    else
+                        button.ButtonColour = DefaultColour;
+                }
+            }
+
+            private void OnSortModeButtonPressed(SortMode sortMode)
+            {
+                if (sortMode != SongSortModule.CurrentSortMode)
+                    _buttons.First(x => x.SortMode == SongSortModule.CurrentSortMode).ButtonColour = DefaultColour;
+                SongSortModule.CurrentSortMode = sortMode;
+
+                SortButtonPressed?.Invoke();
+            }
+
+            private class SortModeButton
+            {
+                public event Action<SortMode> ButtonPressed;
+
+                public Color ButtonColour
+                {
+                    set
+                    {
+                        if (_buttonStroke == null)
+                            _buttonStroke = _button.GetComponentsInChildren<Image>().First(x => x.name == "Stroke");
+                        if (_buttonStroke != null)
+                            _buttonStroke.color = value;
+                    }
+                }
+
+                public SortMode SortMode { get; private set; }
+
+#pragma warning disable CS0649
+                [UIValue("text")]
+                private string _text;
+                [UIComponent("button")]
+                private Button _button;
+#pragma warning restore CS0649
+
+                private Image _buttonStroke;
+
+                public SortModeButton(SortMode sortMode)
+                {
+                    SortMode = sortMode;
+
+                    _text = Enum.GetName(typeof(SortMode), sortMode);
+
+                    var descriptionAttributes = (DescriptionAttribute[])typeof(SortMode).GetField(_text).GetCustomAttributes(typeof(DescriptionAttribute), true);
+                    if (descriptionAttributes.Length > 0)
+                        _text = descriptionAttributes[0].Description;
+                }
+
+                [UIAction("clicked")]
+                private void OnClick()
+                {
+                    ButtonPressed?.Invoke(SortMode);
+
+                    if (SortMode == SongSortModule.CurrentSortMode)
+                        ButtonColour = SongSortModule.Reversed ? SortModeTab.SelectedReversedColour : SortModeTab.SelectedColour;
+                }
             }
         }
 
         private class QuickFiltersTab : TabBase
         {
-            protected override string ResourceName => "";
+            protected override string ResourceName => "EnhancedSearchAndFilters.UI.Views.BottomScreen.QuickFiltersTabView.bsml";
 
             public QuickFiltersTab(GameObject parent) : base(parent)
             {
@@ -342,7 +505,7 @@ namespace EnhancedSearchAndFilters.UI.Components
 
         private class InfoTab : TabBase
         {
-            protected override string ResourceName => "";
+            protected override string ResourceName => "EnhancedSearchAndFilters.UI.Views.BottomScreen.InfoTabView.bsml";
 
             public InfoTab(GameObject parent) : base(parent)
             {

@@ -1,0 +1,28 @@
+﻿<bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+    xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'
+    id='root'
+    anchor-min-x='0' anchor-min-y='0'
+    anchor-max-x='1' anchor-max-y='1'
+    size-delta-x='0' size-delta-y='0'>
+  <vertical anchor-min-x='0' anchor-min-y='0'
+            anchor-max-x='1' anchor-max-y='1'
+            size-delta-x='0' size-delta-y='0'
+            horizontal-fit='Unconstrained'
+            vertical-fit='Unconstrained'
+            spacing='2'
+            pad='2'>
+    <horizontal vertical-fit='PreferredSize'>
+      <text text='SORT MODE' font-size='5.5' align='Center' />
+    </horizontal>
+    <grid cell-size-x='26' cell-size-y='8'
+          spacing-x='4' spacing-y='4'>
+      <macro.for-each items='sort-buttons'>
+        <button id='button'
+                text='~text'
+                font-size='3.5'
+                stroke-type='Clean'
+                on-click='clicked' />
+      </macro.for-each>
+    </grid>
+  </vertical>
+</bg>

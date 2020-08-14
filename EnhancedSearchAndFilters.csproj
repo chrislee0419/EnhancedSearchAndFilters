@@ -342,5 +342,23 @@
   <ItemGroup>
     <EmbeddedResource Include="Assets\bars.png" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UI\Views\BottomScreen\BottomScreenView.bsml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\sort.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\info.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UI\Views\BottomScreen\SortModeTabView.bsml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UI\Views\BottomScreen\QuickFiltersTabView.bsml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UI\Views\BottomScreen\InfoTabView.bsml" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
