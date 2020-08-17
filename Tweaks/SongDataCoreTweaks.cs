@@ -2,9 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using SemVer;
+
+#if !LESS_DEPS
 using SongDataCore.BeatStar;
-using EnhancedSearchAndFilters.SongData;
 using SongDataCorePlugin = SongDataCore.Plugin;
+#endif
+
+using EnhancedSearchAndFilters.SongData;
 using Version = SemVer.Version;
 
 namespace EnhancedSearchAndFilters.Tweaks
@@ -27,9 +31,21 @@ namespace EnhancedSearchAndFilters.Tweaks
                 }
             }
         }
-        public static bool IsDataAvailable => SongDataCorePlugin.Songs?.IsDataAvailable() ?? false;
+        public static bool IsDataAvailable
+        {
+            get => IsModAvailable ? _GetIsDataAvailable() : false;
+        }
 
         private static readonly Range ValidVersionRange = new Range("^1.3.0");
+
+        private static bool _GetIsDataAvailable()
+        {
+#if !LESS_DEPS
+            return SongDataCorePlugin.Songs?.IsDataAvailable() ?? false;
+#else
+            return false;
+#endif
+        }
 
         /// <summary>
         /// Get the BeatmapDetails associated with a specific levelID from data retrieved by SongDataCore.BeatSaver.
@@ -50,6 +66,10 @@ namespace EnhancedSearchAndFilters.Tweaks
 
         private static SongDataCoreDataStatus _GetBeatmapDetails(CustomPreviewBeatmapLevel level, out BeatmapDetails beatmapDetails)
         {
+#if LESS_DEPS
+            beatmapDetails = null;
+            return SongDataCoreDataStatus.NoData;
+#else
             if (!IsDataAvailable ||
                 !SongDataCorePlugin.Songs.Data.Songs.TryGetValue(BeatmapDetailsLoader.GetCustomLevelHash(level), out var song))
             {
@@ -153,6 +173,7 @@ namespace EnhancedSearchAndFilters.Tweaks
                 beatmapDetails = null;
                 return SongDataCoreDataStatus.ExceptionThrown;
             }
+#endif
         }
 
         /// <summary>
@@ -174,6 +195,10 @@ namespace EnhancedSearchAndFilters.Tweaks
 
         private static bool _IsRanked(string levelID, out float[] ppList)
         {
+#if LESS_DEPS
+            ppList = null;
+            return false;
+#else
             if (!IsDataAvailable ||
                 !SongDataCorePlugin.Songs.Data.Songs.TryGetValue(BeatmapDetailsLoader.GetCustomLevelHash(levelID), out var song))
             {
@@ -183,6 +208,7 @@ namespace EnhancedSearchAndFilters.Tweaks
 
             ppList = song.diffs.Select(x => Convert.ToSingle(x.pp)).Where(x => x > 0).ToArray();
             return ppList.Any();
+#endif
         }
 
         /// <summary>
@@ -200,11 +226,15 @@ namespace EnhancedSearchAndFilters.Tweaks
 
         private static Tuple<string, double>[] _GetStarDifficultyRating(string levelID)
         {
+#if LESS_DEPS
+            return null;
+#else
             if (!IsDataAvailable ||
                 !SongDataCorePlugin.Songs.Data.Songs.TryGetValue(BeatmapDetailsLoader.GetCustomLevelHash(levelID), out var song))
                 return null;
 
             return song.diffs.Select(x => new Tuple<string, double>(x.diff, x.star)).ToArray();
+#endif
         }
     }
 

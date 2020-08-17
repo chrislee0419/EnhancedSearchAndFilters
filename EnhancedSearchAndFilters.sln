@@ -7,11 +7,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnhancedSearchAndFilters", 
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug (Less Dependencies)|Any CPU = Debug (Less Dependencies)|Any CPU
 		Debug|Any CPU = Debug|Any CPU
 		Release (BeatMods)|Any CPU = Release (BeatMods)|Any CPU
 		Release (GitHub)|Any CPU = Release (GitHub)|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{277851F4-328C-421E-A655-9028E26A0B79}.Debug (Less Dependencies)|Any CPU.ActiveCfg = Debug (Less Dependencies)|Any CPU
+		{277851F4-328C-421E-A655-9028E26A0B79}.Debug (Less Dependencies)|Any CPU.Build.0 = Debug (Less Dependencies)|Any CPU
 		{277851F4-328C-421E-A655-9028E26A0B79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{277851F4-328C-421E-A655-9028E26A0B79}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{277851F4-328C-421E-A655-9028E26A0B79}.Release (BeatMods)|Any CPU.ActiveCfg = Release (BeatMods)|Any CPU
