@@ -140,6 +140,9 @@ namespace EnhancedSearchAndFilters.UI
 
             TabBarViewController tabBarVC = LevelFilteringNavigationController.GetPrivateField<TabBarViewController>("_tabBarViewController");
             TabBarViewController.TabBarItem[] tabBarItems = tabBarVC.GetPrivateField<TabBarViewController.TabBarItem[]>("_items");
+            if (tabBarItems == null)
+                goto OnError;
+
             var item = tabBarItems.FirstOrDefault(x => x.title == lastLevelPackCollectionTitle);
             if (item == null)
                 goto OnError;
@@ -153,6 +156,9 @@ namespace EnhancedSearchAndFilters.UI
                 goto OnError;
 
             var levelPacks = tabBarDatas[itemIndex].GetField<IAnnotatedBeatmapLevelCollection[]>("annotatedBeatmapLevelCollections");
+            if (levelPacks == null)
+                goto OnError;
+
             IAnnotatedBeatmapLevelCollection levelPack = levelPacks.FirstOrDefault(x => x.collectionName == lastLevelPackID || (x is IBeatmapLevelPack && ((IBeatmapLevelPack)x).packID == lastLevelPackID));
             if (levelPack == null)
                 goto OnError;
