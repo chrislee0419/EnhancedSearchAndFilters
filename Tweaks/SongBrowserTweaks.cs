@@ -4,10 +4,14 @@ using UnityEngine;
 using UnityEngine.UI;
 using SemVer;
 using BS_Utils.Utilities;
+
+#if !LESS_DEPS
 using SongBrowser;
 using SongBrowser.Internals;
 using SongBrowser.UI;
 using SongBrowser.DataAccess;
+#endif
+
 using EnhancedSearchAndFilters.Filters;
 using EnhancedSearchAndFilters.UI;
 using Version = SemVer.Version;
@@ -58,6 +62,9 @@ namespace EnhancedSearchAndFilters.Tweaks
         /// <returns>A boolean indicating whether the tweaks were done correctly.</returns>
         private static bool _Init()
         {
+#if LESS_DEPS
+            return false;
+#else
             // acquire all the UI elements we need to change before modifying
             LevelCollectionViewController levelCollectionViewController;
             Button xButton;
@@ -174,6 +181,7 @@ namespace EnhancedSearchAndFilters.Tweaks
             Initialized = true;
             Logger.log.Info("Modified SongBrowser's search, filter, and clear filter buttons");
             return true;
+#endif
         }
 
         /// <summary>
@@ -188,6 +196,7 @@ namespace EnhancedSearchAndFilters.Tweaks
 
         private static void _ApplyFilters()
         {
+#if !LESS_DEPS
             // unapply any existing filters first
             //(_songBrowserUI as SongBrowserUI).CancelFilter();
 
@@ -195,6 +204,7 @@ namespace EnhancedSearchAndFilters.Tweaks
             _clearFiltersButton.SetButtonText("Other");
             (_songBrowserUI as SongBrowserUI).ProcessSongList();
             (_songBrowserUI as SongBrowserUI).RefreshSongUI();
+#endif
         }
 
         /// <summary>
@@ -209,9 +219,11 @@ namespace EnhancedSearchAndFilters.Tweaks
 
         private static void _FiltersUnapplied()
         {
+#if !LESS_DEPS
             (_songBrowserUI as SongBrowserUI).CancelFilter();
             (_songBrowserUI as SongBrowserUI).ProcessSongList();
             (_songBrowserUI as SongBrowserUI).RefreshSongUI();
+#endif
         }
 
         /// <summary>
@@ -228,7 +240,11 @@ namespace EnhancedSearchAndFilters.Tweaks
 
         private static bool _IsFilterApplied()
         {
+#if LESS_DEPS
+            return false;
+#else
             return (_songBrowserUI as SongBrowserUI).Model.Settings.filterMode != SongFilterMode.None;
+#endif
         }
 
         public static void DisableOtherFiltersButton()
